@@ -38,7 +38,7 @@ tailwind.config = { theme: { extend: {
   .gold-text { background: linear-gradient(90deg, #f3c76a, #fff1c9, #e0a030); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .modal-bg { position: fixed; inset: 0; z-index: 100; display: none; place-items: center; padding: 16px; background: rgba(15,4,20,.72); backdrop-filter: blur(6px); }
   .modal-bg.show { display: grid; }
-  .modal { width: min(520px, 100%); max-height: 90vh; overflow: auto; border-radius: 22px; padding: 22px; background: #2a0f33; border: 1px solid rgba(243,199,106,.35); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+  .modal { width: min(980px, 100%); max-height: 92vh; overflow: auto; border-radius: 22px; padding: 22px; background: #2a0f33; border: 1px solid rgba(243,199,106,.35); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
   .m-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
   .m-head h3 { font-size: 20px; font-weight: 800; color: #f3c76a; }
   .x-btn { border: 1px solid rgba(243,199,106,.35); border-radius: 12px; padding: 4px 11px; color: #fbf0dc; }
@@ -51,6 +51,25 @@ tailwind.config = { theme: { extend: {
   .toast { position: fixed; left: 16px; bottom: 16px; z-index: 200; padding: 12px 18px; border-radius: 14px; background: #f3c76a; color: #2a0f33; font-weight: 700; font-size: 14px; transform: translateY(120px); transition: .3s; max-width: calc(100vw - 32px); }
   .toast.show { transform: translateY(0); }
   .tag { display: inline-block; padding: 2px 10px; border-radius: 99px; background: rgba(243,199,106,.18); color: #f3c76a; font-size: 12px; }
+  .support-fab { position: fixed; z-index: 80; left: 18px; bottom: 18px; border-radius: 999px; padding: 13px 18px; background: linear-gradient(135deg,#f3c76a,#d9902a); color:#2a0f33; font-weight:800; box-shadow:0 10px 32px #0006; }
+  .chat-list { display:grid; gap:10px; max-height:52vh; overflow:auto; padding:4px 2px 12px; }
+  .chat-bubble { max-width:88%; padding:10px 13px; border-radius:15px; white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px; line-height:1.9; }
+  .chat-user { justify-self:start; background:rgba(243,199,106,.16); border:1px solid rgba(243,199,106,.28); }
+  .chat-admin { justify-self:end; background:rgba(243,199,106,.95); color:#2a0f33; }
+  .chat-meta { display:block; font-size:10px; opacity:.7; margin-top:4px; }
+  .admin-stat { background:linear-gradient(145deg,rgba(243,199,106,.16),rgba(255,240,220,.04));border:1px solid rgba(243,199,106,.24);border-radius:16px;padding:14px; }
+  .admin-section-title { color:#f3c76a;font-weight:800;font-size:17px;margin:22px 0 10px; }
+  .admin-tabs { display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px; }
+  .admin-tabs button { border:1px solid rgba(243,199,106,.35);border-radius:999px;padding:8px 14px;font-size:12px;color:#fbf0dc; }
+  .admin-tabs button.active { background:#f3c76a;color:#2a0f33;font-weight:800; }
+  .admin-scroll { max-height:54vh;overflow:auto;padding:2px; }
+  .admin-chart { display:flex;align-items:end;gap:8px;height:110px;padding:10px 4px 0; }
+  .admin-bar-wrap { flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:end;font-size:10px;color:#fbf0dcaa; }
+  .admin-bar { width:100%;max-width:34px;min-height:3px;border-radius:7px 7px 2px 2px;background:linear-gradient(#f3c76a,#a8541c); }
+  .admin-action { border:1px solid rgba(243,199,106,.4);border-radius:10px;padding:7px 10px;color:#f3c76a;font-size:12px; }
+  .admin-subtitle { color:#f3c76a;font-size:14px;font-weight:800;margin:18px 0 9px; }
+  .admin-mini { display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,240,220,.06);border:1px solid rgba(243,199,106,.15);margin-bottom:7px;font-size:12px; }
+  .admin-notice { border:1px solid rgba(243,199,106,.25);background:rgba(243,199,106,.08);padding:12px;border-radius:14px;font-size:12px;line-height:1.9; }
 </style>
 </head>
 <body>
@@ -147,6 +166,7 @@ tailwind.config = { theme: { extend: {
 
 <div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
+<button class="support-fab" data-act="support" aria-label="گفت‌وگو با پشتیبان">💬 گفت‌وگو با پشتیبان</button>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
@@ -228,7 +248,7 @@ document.getElementById("specialJar").innerHTML = jarSVG("#2e1030", "sp");
 
 /* ---------------- Database (Supabase, with local fallback) ---------------- */
 // برای فعال‌سازی پایگاه داده واقعی، آدرس و کلید پروژه Supabase را اینجا بگذار (راهنما: supabase-setup.sql)
-const CFG = { url: "", key: "" };
+const CFG = { url: "https://gppcrkyxthonpeyeuoyg.supabase.co", key: "sb_publishable_3KFoes-a0z3LW2Y5qkeIsw_SBryBY3g" };
 const OWNER_EMAIL = "leylakazempoor79@gmail.com";   // مالک فروشگاه؛ با این ایمیل وارد شود، پنل مدیریت سفارش‌ها را می‌بیند
 const STATUSES = ["در انتظار تأیید", "در حال آماده‌سازی", "ارسال شد", "تحویل داده شد", "لغو شد"];
 const isOwner = () => !!me && me.email?.toLowerCase() === OWNER_EMAIL;
@@ -291,6 +311,24 @@ const DB = {
     if (sb) { const { error } = await sb.from("orders").update({ status }).eq("code", code); if (error) throw error; return; }
     const all = LS.get("sh_orders", []); const o = all.find(x => x.code === code); if (o) { o.status = status; LS.set("sh_orders", all); }
   },
+  async myMessages() {
+    if (!me) throw new Error("برای گفت‌وگو ابتدا وارد حساب کاربری شوید.");
+    if (sb) { const { data, error } = await sb.from("support_messages").select("id,user_id,sender_role,message,created_at").eq("user_id", me.id).order("created_at", { ascending: true }); if (error) throw error; return data || []; }
+    return LS.get("sh_support_messages", []).filter(m => m.user_id === me.id).sort((a,b) => new Date(a.created_at)-new Date(b.created_at));
+  },
+  async sendMessage(message, userId = me?.id, role = "user") {
+    const clean = String(message || "").trim();
+    if (!clean) throw new Error("متن پیام را وارد کنید.");
+    if (clean.length > 2000) throw new Error("پیام نباید بیشتر از ۲۰۰۰ نویسه باشد.");
+    const row = { user_id: userId, sender_role: role, message: clean };
+    if (sb) { const { error } = await sb.from("support_messages").insert(row); if (error) throw error; return; }
+    const all = LS.get("sh_support_messages", []); all.push({ ...row, id: "m" + Date.now(), created_at: new Date().toISOString() }); LS.set("sh_support_messages", all);
+  },
+  async allSupportMessages() {
+    if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
+    if (sb) { const { data, error } = await sb.from("support_messages").select("id,user_id,sender_role,message,created_at").order("created_at", { ascending: true }).limit(500); if (error) throw error; return data || []; }
+    return LS.get("sh_support_messages", []).sort((a,b) => new Date(a.created_at)-new Date(b.created_at));
+  },
   async track(code) {
     code = code.trim().toUpperCase();
     if (sb) { const { data } = await sb.rpc("track_order", { p_code: code }); return data && data[0] || null; }
@@ -311,12 +349,32 @@ addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 function renderAuth() {
   const el = document.getElementById("authArea");
   el.innerHTML = me
-    ? `<button data-act="panel" class="rounded-full bg-honey px-3 py-1.5 text-xs font-bold text-grape sm:text-sm">👤 ${esc((me.full_name || me.username || "حساب من").split(" ")[0])}</button>`
+    ? (isOwner()
+      ? `<div class="flex gap-1.5"><button data-act="admin" class="btn-gold rounded-full px-3 py-1.5 text-[11px] font-bold sm:text-sm">🔐 پنل مدیریت</button><button data-act="panel" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm">👤 حساب</button></div>`
+      : `<button data-act="panel" class="rounded-full bg-honey px-3 py-1.5 text-xs font-bold text-grape sm:text-sm">👤 ${esc((me.full_name || me.username || "حساب من").split(" ")[0])}</button>`)
     : `<div class="flex gap-1.5"><button data-act="login" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm">ورود</button><button data-act="register" class="btn-gold rounded-full px-3 py-1.5 text-xs sm:text-sm">ثبت‌نام</button></div>`;
 }
 async function refreshUser() { me = await DB.user(); renderAuth(); }
 if (sb) sb.auth.onAuthStateChange(() => refreshUser());
 refreshUser();
+
+/* ---------------- Privacy-conscious visit analytics ---------------- */
+function getVisitorId() {
+  let id = LS.get("sh_visitor_id", "");
+  if (!id) { id = (crypto?.randomUUID ? crypto.randomUUID() : "v-" + Math.random().toString(36).slice(2) + Date.now()); LS.set("sh_visitor_id", id); }
+  return id;
+}
+async function recordSiteVisit() {
+  const path = (location.pathname || "/") + (location.hash || "#home");
+  const visitor_id = getVisitorId();
+  if (sb) {
+    try { const { error } = await sb.from("site_visits").insert({ path, visitor_id }); if (error) console.warn("ثبت بازدید انجام نشد:", error.message); } catch (e) { console.warn(e); }
+  } else {
+    const all = LS.get("sh_site_visits", []); all.push({ path, visitor_id, created_at: new Date().toISOString() }); LS.set("sh_site_visits", all.slice(-3000));
+  }
+}
+recordSiteVisit();
+addEventListener("hashchange", recordSiteVisit);
 
 function authModal(mode) {
   const reg = mode === "register";
@@ -365,28 +423,143 @@ async function panelModal() {
     </form>
     <h4 class="mt-5 mb-2 font-bold text-honey">سفارش‌های من</h4>
     ${orders.length ? orders.map(o => `<div class="row-item"><span dir="ltr">${esc(o.code)}</span><span class="tag">${esc(o.status)}</span><span>${fa(o.total)}</span></div>`).join("") : `<p class="text-sm text-cream/60">هنوز سفارشی ثبت نکرده‌اید.</p>`}
-    ${isOwner() ? `<button data-act="admin" class="btn-gold mt-4 w-full rounded-xl px-4 py-2.5">🛠 مدیریت سفارش‌ها (مالک)</button>` : ""}
+    ${isOwner() ? `<button data-act="admin" class="btn-gold mt-4 w-full rounded-xl px-4 py-2.5">🛠 مدیریت سفارش‌ها</button><button data-act="supportAdmin" class="btn-ghost mt-2 w-full rounded-xl px-4 py-2.5">💬 مدیریت گفت‌وگوهای پشتیبانی</button>` : ""}
     <button data-act="logout" class="btn-ghost mt-3 w-full rounded-xl px-4 py-2.5">خروج از حساب</button>`);
 }
 
 async function adminModal() {
   if (!isOwner()) return;
-  showModal(head("🛠 مدیریت سفارش‌ها") + `<p class="py-6 text-center text-cream/70">در حال بارگذاری…</p>`);
-  let orders = [];
-  try { orders = await DB.allOrders(); } catch (err) { console.error(err); toast("خطا در دریافت سفارش‌ها"); }
-  showModal(head("🛠 مدیریت سفارش‌ها") + (orders.length ? orders.map(o => `
-    <div class="row-item" style="display:block">
-      <div class="flex items-center justify-between gap-2"><b dir="ltr">${esc(o.code)}</b><span class="text-honey">${fa(o.total)} تومان</span></div>
-      <p class="mt-1 text-xs text-cream/80">${esc(o.name)} · <span dir="ltr">${esc(o.phone)}</span></p>
-      <p class="text-xs text-cream/70">${esc(o.address)}</p>
-      <p class="mt-1 text-xs text-cream/70">${(o.items || []).map(i => esc(i.name) + " × " + fa(i.qty)).join("، ")}</p>
-      <select class="field mt-2" data-status="${esc(o.code)}">${STATUSES.map(s => `<option ${s === o.status ? "selected" : ""}>${s}</option>`).join("")}</select>
-    </div>`).join("") : `<p class="py-8 text-center text-cream/70">هنوز سفارشی ثبت نشده است.</p>`));
+  showModal(head("🔐 پنل مدیریت") + `<p class="py-6 text-center text-cream/70">در حال دریافت آمار، کاربران و سفارش‌ها…</p>`);
+  let orders = [], messages = [], users = [], stats = null;
+  try {
+    [orders, messages] = await Promise.all([DB.allOrders(), DB.allSupportMessages()]);
+    if (sb) {
+      const [statsRes, usersRes] = await Promise.all([
+        sb.rpc("admin_dashboard_stats"),
+        sb.rpc("admin_list_users")
+      ]);
+      if (statsRes.error) console.warn("آمار بازدید در دسترس نیست:", statsRes.error.message);
+      else stats = statsRes.data;
+      if (usersRes.error) console.warn("فهرست کاربران در دسترس نیست:", usersRes.error.message);
+      else users = usersRes.data || [];
+    } else {
+      users = LS.get("sh_users", []).map(u => ({ user_id:u.id, email:u.email, full_name:u.full_name, created_at:u.created_at }));
+      const visits = LS.get("sh_site_visits", []);
+      const since = Date.now() - 7*86400000;
+      const recent = visits.filter(v => new Date(v.created_at).getTime() >= since);
+      const counts = {};
+      visits.forEach(v => counts[v.path] = (counts[v.path] || 0) + 1);
+      stats = { registered_users:users.length, total_visits:visits.length, unique_visitors:new Set(visits.map(v=>v.visitor_id)).size, visits_7d:recent.length, top_pages:Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([path,count])=>({path,count})) };
+    }
+  } catch (err) {
+    console.error(err);
+    showModal(head("🔐 پنل مدیریت") + `<p class="text-sm leading-7 text-cream/80">بارگذاری داده‌ها کامل نشد. اتصال Supabase و سیاست‌های امنیتی جدول سفارش‌ها و پیام‌ها را بررسی کن.</p><p class="text-xs text-cream/50">${esc(err.message || "خطای اتصال")}</p><button data-act="supportAdmin" class="btn-ghost mt-4 rounded-xl px-4 py-2">باز کردن صندوق گفت‌وگوها</button>`);
+    return;
+  }
+  const waiting = orders.filter(o => ["در انتظار تأیید", "جدید"].includes(o.status)).length;
+  const inProgress = orders.filter(o => ["در حال آماده‌سازی", "ارسال شد"].includes(o.status)).length;
+  const completed = orders.filter(o => ["تحویل داده شد", "تمام‌شده", "تمام شده"].includes(o.status)).length;
+  const total = orders.length;
+  const completion = total ? Math.round(completed * 100 / total) : 0;
+  const customerMessages = messages.filter(m => m.sender_role !== "admin").length;
+  const days = Array.from({length:7}, (_, i) => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - (6-i)); return d; });
+  const dayCounts = days.map(d => orders.filter(o => { const od = new Date(o.created_at || 0); return od >= d && od < new Date(d.getTime()+86400000); }).length);
+  const maxDay = Math.max(1, ...dayCounts);
+  const chart = days.map((d,i) => `<div class="admin-bar-wrap"><b>${fa(dayCounts[i])}</b><div class="admin-bar" style="height:${Math.max(4, dayCounts[i]/maxDay*64)}px"></div><span>${d.toLocaleDateString("fa-IR",{day:"numeric",month:"short"})}</span></div>`).join("");
+  const orderCards = orders.length ? orders.map(o => `<div class="row-item admin-search-item" data-search="${esc([o.code,o.name,o.phone,o.address,o.status,(o.items||[]).map(i=>i.name).join(" ")].join(" ").toLowerCase())}" style="display:block">
+    <div class="flex flex-wrap items-center justify-between gap-2"><b dir="ltr">${esc(o.code || "کد ثبت نشده")}</b><span class="text-honey font-bold">${fa(o.total || 0)} تومان</span><span class="tag">${esc(o.status || "جدید")}</span></div>
+    <p class="mt-2 text-xs text-cream/80">${esc(o.name || "نام ثبت نشده")} · <span dir="ltr">${esc(o.phone || "بدون شماره")}</span></p><p class="text-xs text-cream/70">${esc(o.address || "آدرسی ثبت نشده")}</p>
+    <p class="mt-1 text-xs text-cream/70">${(o.items || []).map(i=>esc(i.name)+" × "+fa(i.qty || 1)).join("، ") || "جزئیات کالا ثبت نشده"}</p>
+    <select class="field mt-2" data-status="${esc(o.code || "")}">${STATUSES.map(st=>`<option ${st===o.status?"selected":""}>${st}</option>`).join("")}</select>
+  </div>`).join("") : `<p class="py-5 text-center text-sm text-cream/60">هنوز سفارشی ثبت نشده است.</p>`;
+  const ids = [...new Set(messages.map(m=>m.user_id))];
+  const inbox = ids.length ? ids.map(uid => { const thread=messages.filter(m=>m.user_id===uid); return `<section class="glass rounded-xl p-3 mb-3 admin-search-item" data-search="${esc((uid+" "+thread.map(m=>m.message).join(" ")).toLowerCase())}"><div class="mb-2 flex items-center justify-between gap-2"><b class="text-xs" dir="ltr">${esc(uid)}</b><span class="tag">${fa(thread.length)} پیام</span></div><div class="chat-list">${thread.map(m=>`<div class="chat-bubble ${m.sender_role==="admin"?"chat-admin":"chat-user"}">${esc(m.message)}<span class="chat-meta">${m.sender_role==="admin"?"پشتیبان":"مشتری"}${m.created_at?" · "+esc(new Date(m.created_at).toLocaleString("fa-IR",{dateStyle:"short",timeStyle:"short"})):""}</span></div>`).join("")}</div><form class="form" data-form="supportReply"><input type="hidden" name="user_id" value="${esc(uid)}"><textarea class="field" name="message" rows="2" maxlength="2000" required placeholder="پاسخ به این مشتری…"></textarea><button class="btn-gold rounded-xl px-4 py-2.5">ارسال پاسخ</button></form></section>`; }).join("") : `<p class="py-5 text-center text-sm text-cream/60">هنوز پیامی از مشتریان ثبت نشده است.</p>`;
+  const userRows = users.length ? users.map(u=>`<div class="admin-mini admin-search-item" data-search="${esc(((u.full_name||"")+" "+(u.email||"")).toLowerCase())}"><div><b>${esc(u.full_name || "بدون نام")}</b><p class="text-cream/60 mt-1" dir="ltr">${esc(u.email || "بدون ایمیل")}</p></div><span class="text-cream/60 text-[10px]">${u.created_at?esc(new Date(u.created_at).toLocaleDateString("fa-IR")):"—"}</span></div>`).join("") : `<p class="py-5 text-center text-sm text-cream/60">فهرست کاربران دریافت نشد یا هنوز کاربری ثبت‌نام نکرده است.</p>`;
+  const topPages = (stats?.top_pages || []).length ? stats.top_pages.map(p=>`<div class="admin-mini"><span dir="ltr" class="break-all">${esc(p.path)}</span><b class="text-honey whitespace-nowrap">${fa(p.count)} بازدید</b></div>`).join("") : `<p class="text-xs text-cream/60">هنوز آمار صفحه‌ای ثبت نشده است. آمار از زمان فعال‌سازی ثبت بازدید شروع می‌شود.</p>`;
+  const n7 = Number(stats?.visits_7d || 0);
+  showModal(head("🔐 پنل مدیریت") + `
+    <p class="mb-4 text-xs text-cream/70">مدیر واردشده: <span dir="ltr">${esc(OWNER_EMAIL)}</span></p>
+    <div class="admin-tabs"><button class="active" data-admin-tab="overview">📊 داشبورد آمار</button><button data-admin-tab="users">👥 مدیریت کاربران (${fa(users.length)})</button><button data-admin-tab="notifications">🔔 مرکز اعلان‌ها</button><button data-admin-tab="orders">🛠️ سفارش‌ها (${fa(total)})</button><button data-admin-tab="messages">💬 صندوق گفت‌وگوها (${fa(ids.length)})</button><button data-act="exportOrders">📥 دریافت گزارش CSV</button></div>
+    <input class="field mb-3" id="adminSearch" placeholder="جست‌وجوی سفارش، کاربر یا پیام…">
+    <section id="adminOverview">
+      <h4 class="admin-section-title">📊 داشبورد آمار</h4>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div class="admin-stat"><p class="text-xs text-cream/70">کل سفارش‌ها</p><strong class="mt-1 block text-2xl text-honey">${fa(total)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">کل پیام‌های ثبت‌شده</p><strong class="mt-1 block text-2xl text-honey">${fa(messages.length)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">سفارش‌های جدید</p><strong class="mt-1 block text-2xl text-honey">${fa(waiting)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">در حال انجام</p><strong class="mt-1 block text-2xl text-honey">${fa(inProgress)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">تکمیل‌شده</p><strong class="mt-1 block text-2xl text-honey">${fa(completed)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">نرخ تکمیل سفارش‌ها</p><strong class="mt-1 block text-2xl text-honey">${fa(completion)}٪</strong></div>
+      </div>
+      <h4 class="admin-section-title">📅 سفارش‌های ثبت‌شده در ۷ روز اخیر</h4><div class="glass rounded-xl px-3 pb-2"><div class="admin-chart">${chart}</div></div>
+      <h4 class="admin-section-title">📈 روند رشد سفارش‌ها</h4><p class="text-xs leading-7 text-cream/70">نمودار هفت‌روزه سفارش‌ها، تعداد سفارش‌های هر روز را نشان می‌دهد.</p>
+      <h4 class="admin-section-title">👥 کاربران و بازدیدها</h4>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div class="admin-stat"><p class="text-xs text-cream/70">کاربران ثبت‌نام‌شده</p><strong class="mt-1 block text-2xl text-honey">${fa(stats?.registered_users ?? users.length)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">کل بازدیدهای ثبت‌شده</p><strong class="mt-1 block text-2xl text-honey">${fa(stats?.total_visits || 0)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">بازدیدکنندگان یکتا (تقریبی)</p><strong class="mt-1 block text-2xl text-honey">${fa(stats?.unique_visitors || 0)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">بازدیدهای ۷ روز اخیر</p><strong class="mt-1 block text-2xl text-honey">${fa(n7)}</strong></div>
+      </div>
+      <h4 class="admin-section-title">📄 صفحات پربازدید</h4>${topPages}
+      <p class="mt-3 text-xs leading-6 text-cream/50">آمار کاربران از حساب‌های ثبت‌شده در Supabase و آمار بازدید از بازدیدهای ثبت‌شده در این سایت محاسبه می‌شود. بازدیدهای پیش از فعال‌سازی ثبت‌کننده قابل بازیابی نیستند؛ شمارش بازدیدکنندگان یکتا بر اساس شناسه مرورگر تقریبی است.</p>
+    </section>
+    <section id="adminUsers" class="hidden"><h4 class="admin-section-title">👥 مدیریت کاربران</h4><p class="mb-3 text-xs text-cream/60">فهرست حساب‌های ثبت‌نام‌شده؛ اطلاعات حساس ورود نمایش داده نمی‌شود.</p><div class="admin-scroll">${userRows}</div></section>
+    <section id="adminNotifications" class="hidden"><h4 class="admin-section-title">🔔 مرکز اعلان‌ها</h4><div class="admin-notice">${waiting ? `🛒 ${fa(waiting)} سفارش در انتظار بررسی است.` : "✅ سفارش جدیدی در انتظار بررسی نیست."}<br>${customerMessages ? `💬 ${fa(customerMessages)} پیام از مشتریان ثبت شده است؛ صندوق گفت‌وگوها را بررسی کن.` : "📭 پیام جدیدی از مشتریان ثبت نشده است."}</div><div class="mt-3 flex flex-wrap gap-2"><button class="admin-action" data-admin-tab="orders">مشاهده سفارش‌ها</button><button class="admin-action" data-admin-tab="messages">مشاهده گفت‌وگوها</button></div></section>
+    <section id="adminOrders" class="hidden"><h4 class="admin-section-title">🛠️ سفارش‌ها (${fa(total)})</h4><div class="admin-scroll">${orderCards}</div></section>
+    <section id="adminMessages" class="hidden"><h4 class="admin-section-title">💬 صندوق گفت‌وگوها (${fa(ids.length)})</h4><div class="admin-scroll">${inbox}</div></section>
+  `);
+  const tabMap = { overview:"adminOverview", users:"adminUsers", notifications:"adminNotifications", orders:"adminOrders", messages:"adminMessages" };
+  document.querySelectorAll("[data-admin-tab]").forEach(tab => tab.addEventListener("click", () => {
+    const target = tab.dataset.adminTab;
+    document.querySelectorAll("[data-admin-tab]").forEach(t=>t.classList.toggle("active",t===tab));
+    Object.values(tabMap).forEach(id=>document.getElementById(id)?.classList.add("hidden"));
+    document.getElementById(tabMap[target])?.classList.remove("hidden");
+  }));
+  document.getElementById("adminSearch")?.addEventListener("input", e => { const q=e.target.value.trim().toLowerCase(); document.querySelectorAll(".admin-search-item").forEach(el=>el.classList.toggle("hidden",!el.dataset.search.includes(q))); });
 }
+function exportOrdersCSV() {
+  if (!isOwner()) return;
+  DB.allOrders().then(orders => {
+    const rows = [["کد سفارش","نام","تلفن","آدرس","مبلغ","وضعیت","تاریخ","اقلام"], ...orders.map(o=>[o.code,o.name,o.phone,o.address,o.total,o.status,o.created_at,(o.items||[]).map(i=>`${i.name} x ${i.qty}`).join(" | ")])];
+    const csv = "\uFEFF" + rows.map(row=>row.map(v=>'"'+String(v ?? "").replace(/"/g,'""')+'"').join(",")).join("\r\n");
+    const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"})); const a=document.createElement("a"); a.href=url; a.download="shire-sara-orders.csv"; a.click(); URL.revokeObjectURL(url);
+  }).catch(err=>toast("دریافت گزارش ناموفق بود: "+(err.message||"خطا")));
+}
+
 document.addEventListener("change", async (e) => {
   const s = e.target.closest("[data-status]"); if (!s || !isOwner()) return;
   try { await DB.setStatus(s.dataset.status, s.value); toast("وضعیت سفارش به‌روز شد ✅"); } catch (err) { console.error(err); toast("خطا در تغییر وضعیت"); }
 });
+
+function chatBubble(m) {
+  const mine = m.sender_role === (isOwner() && m.admin_view ? "admin" : "user");
+  const cls = m.sender_role === "admin" ? "chat-admin" : "chat-user";
+  const when = m.created_at ? new Date(m.created_at).toLocaleString("fa-IR", { dateStyle:"short", timeStyle:"short" }) : "";
+  return `<div class="chat-bubble ${cls}">${esc(m.message)}<span class="chat-meta">${m.sender_role === "admin" ? "پشتیبان" : "شما"}${when ? " · " + esc(when) : ""}</span></div>`;
+}
+async function supportModal() {
+  if (!me) { showModal(head("💬 گفت‌وگو با پشتیبان") + `<p class="mb-4 text-sm leading-7 text-cream/80">برای ارسال و دریافت پاسخ پشتیبانی، ابتدا وارد حساب کاربری شوید یا ثبت‌نام کنید.</p><div class="grid grid-cols-2 gap-2"><button data-act="login" class="btn-gold rounded-xl px-4 py-3">ورود</button><button data-act="register" class="btn-ghost rounded-xl px-4 py-3">ثبت‌نام</button></div>`); return; }
+  showModal(head("💬 گفت‌وگو با پشتیبان") + `<p class="py-6 text-center text-cream/70">در حال دریافت پیام‌ها…</p>`);
+  try {
+    const messages = await DB.myMessages();
+    showModal(head("💬 گفت‌وگو با پشتیبان") + `<p class="mb-3 text-xs leading-6 text-cream/70">پیام خود را بنویسید؛ پاسخ پشتیبان در همین پنجره نمایش داده می‌شود.</p><div class="chat-list" id="customerChatMessages">${messages.length ? messages.map(chatBubble).join("") : `<p class="py-5 text-center text-sm text-cream/60">هنوز پیامی ندارید. چطور می‌توانیم کمک کنیم؟</p>`}</div><form class="form" data-form="supportSend"><textarea class="field" name="message" rows="3" maxlength="2000" required placeholder="پیام شما به پشتیبان…"></textarea><button class="btn-gold rounded-xl px-4 py-3">ارسال پیام</button></form>`);
+    const list = document.getElementById("customerChatMessages"); if (list) list.scrollTop = list.scrollHeight;
+  } catch (err) { console.error(err); showModal(head("💬 گفت‌وگو با پشتیبان") + `<p class="text-sm leading-7 text-cream/70">گفت‌وگو بارگذاری نشد. ابتدا جدول پشتیبانی را با فایل SQL همراه سایت ایجاد کنید.</p><p class="text-xs text-cream/50">${esc(err.message)}</p>`); }
+}
+async function supportAdminModal() {
+  if (!isOwner()) return;
+  showModal(head("💬 مدیریت گفت‌وگوهای پشتیبانی") + `<p class="py-6 text-center text-cream/70">در حال بارگذاری پیام‌ها…</p>`);
+  try {
+    const messages = await DB.allSupportMessages();
+    const ids = [...new Set(messages.map(m => m.user_id))];
+    const content = ids.length ? ids.map(uid => {
+      const thread = messages.filter(m => m.user_id === uid);
+      const last = thread[thread.length - 1];
+      return `<section class="glass rounded-xl p-3 mb-3"><div class="mb-2 flex items-center justify-between gap-2"><b class="text-xs" dir="ltr">${esc(uid)}</b><span class="tag">${thread.length} پیام</span></div><div class="chat-list">${thread.map(m => `<div class="chat-bubble ${m.sender_role === "admin" ? "chat-admin" : "chat-user"}">${esc(m.message)}<span class="chat-meta">${m.sender_role === "admin" ? "پشتیبان" : "مشتری"}${m.created_at ? " · " + esc(new Date(m.created_at).toLocaleString("fa-IR", {dateStyle:"short",timeStyle:"short"})) : ""}</span></div>`).join("")}</div><form class="form" data-form="supportReply"><input type="hidden" name="user_id" value="${esc(uid)}"><textarea class="field" name="message" rows="2" maxlength="2000" required placeholder="پاسخ به این مشتری…"></textarea><button class="btn-gold rounded-xl px-4 py-2.5">ارسال پاسخ</button></form></section>`;
+    }).join("") : `<p class="py-8 text-center text-cream/70">هنوز پیامی از مشتریان ثبت نشده است.</p>`;
+    showModal(head("💬 مدیریت گفت‌وگوهای پشتیبانی") + `<p class="mb-3 text-xs text-cream/70">ایمیل مدیر: <span dir="ltr">${esc(OWNER_EMAIL)}</span></p>${content}`);
+  } catch (err) { console.error(err); showModal(head("💬 مدیریت گفت‌وگوهای پشتیبانی") + `<p class="text-sm leading-7 text-cream/70">دریافت پیام‌ها ناموفق بود. بررسی کنید جدول و سیاست‌های امنیتی پشتیبانی را اجرا کرده باشید.</p><p class="text-xs text-cream/50">${esc(err.message)}</p>`); }
+}
 
 function trackModal(result) {
   showModal(head("📦 پیگیری سفارش") + `
@@ -404,6 +577,9 @@ document.addEventListener("click", async (e) => {
   else if (act === "cart") cartModal();
   else if (act === "panel") panelModal();
   else if (act === "admin") adminModal();
+  else if (act === "support") supportModal();
+  else if (act === "supportAdmin") supportAdminModal();
+  else if (act === "exportOrders") exportOrdersCSV();
   else if (act === "track") trackModal();
   else if (act === "inc") { state.cart[id] = (state.cart[id] || 0) + 1; renderCart(); cartModal(); }
   else if (act === "dec") { state.cart[id] = Math.max(0, (state.cart[id] || 0) - 1); renderCart(); cartModal(); }
@@ -431,6 +607,11 @@ document.addEventListener("submit", async (e) => {
       showModal(head("✅ سفارش ثبت شد") + `<p class="text-sm leading-7">سفارش شما با موفقیت ثبت شد. کد پیگیری خود را نگه دارید:</p><p class="my-4 rounded-xl bg-honey py-3 text-center text-2xl font-extrabold text-grape" dir="ltr">${code}</p><p class="text-xs text-cream/70">با همین کد از دکمه «پیگیری سفارش» وضعیت را ببینید.</p>`);
     } else if (kind === "track") {
       trackModal(await DB.track(v.code));
+    } else if (kind === "supportSend") {
+      await DB.sendMessage(v.message); toast("پیام شما برای پشتیبانی ارسال شد."); await supportModal();
+    } else if (kind === "supportReply") {
+      if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
+      await DB.sendMessage(v.message, v.user_id, "admin"); toast("پاسخ برای مشتری ارسال شد."); await supportAdminModal();
     }
   } catch (err) {
     console.error(err); toast("خطا: " + (err.message || "مشکلی پیش آمد")); btn.disabled = false;
