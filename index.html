@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>شیره‌سرا — شیره انگور و خرمای اصیل</title>
-<meta name="description" content="فروشگاه شیره انگور، شیره خرما و شیره‌های سنتی، با تجربه‌ای سه‌بعدی." />
+<title>شیرین کده پاریس — شیره انگور و خرمای اصیل</title>
+<meta name="description" content="فروشگاه شیرین کده پاریس؛ عرضه شیره انگور، شیره خرما و شیره‌های سنتی با تجربه‌ای سه‌بعدی." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdn.tailwindcss.com"></script>
@@ -70,6 +70,51 @@ tailwind.config = { theme: { extend: {
   .admin-subtitle { color:#f3c76a;font-size:14px;font-weight:800;margin:18px 0 9px; }
   .admin-mini { display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,240,220,.06);border:1px solid rgba(243,199,106,.15);margin-bottom:7px;font-size:12px; }
   .admin-notice { border:1px solid rgba(243,199,106,.25);background:rgba(243,199,106,.08);padding:12px;border-radius:14px;font-size:12px;line-height:1.9; }
+  /* Responsive layout for phones, tablets and desktop */
+  *, *::before, *::after { box-sizing: border-box; }
+  img, canvas, video, svg { max-width: 100%; }
+  body { min-width: 320px; }
+  .modal { width: min(980px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); padding: clamp(12px, 2.5vw, 22px); overscroll-behavior: contain; }
+  .modal-bg { padding: 12px; overflow-y: auto; }
+  .admin-scroll { max-height: min(54vh, 520px); overflow-x: hidden; overflow-y: auto; }
+  .admin-mini, .row-item { min-width: 0; overflow-wrap: anywhere; }
+  .admin-tabs { align-items: center; }
+  .admin-tabs button { white-space: normal; }
+  .support-fab { max-width: calc(100vw - 28px); }
+  @media (max-width: 640px) {
+    nav.fixed { padding: 10px 12px !important; gap: 8px; }
+    .brand-name { max-width: 34vw; font-size: clamp(12px, 3.4vw, 17px); line-height: 1.5; }
+    nav #authArea > div { flex-wrap: wrap; justify-content: flex-end; }
+    nav button { max-width: 42vw; white-space: normal; line-height: 1.45; }
+    nav [data-act="cart"] { padding: 6px 8px; font-size: 10px; }
+    #home { padding-left: 18px; padding-right: 18px; }
+    #heroText h1 { font-size: clamp(2.8rem, 13vw, 4rem); }
+    #heroText > p { overflow-wrap: anywhere; }
+    #menu .glass { padding: 14px; }
+    #menu h2 { font-size: clamp(2rem, 9vw, 3rem); }
+    #menu > div > div:first-child { gap: 10px; flex-wrap: wrap; }
+    #menu [id="cartTotal"] { white-space: nowrap; }
+    .modal-bg { place-items: start center; padding: 8px; }
+    .modal { width: 100%; max-height: calc(100dvh - 16px); border-radius: 16px; padding: 12px; }
+    .m-head h3 { font-size: 17px; }
+    .admin-stat { padding: 10px; min-width: 0; }
+    .admin-stat strong { font-size: 1.25rem; }
+    .admin-chart { gap: 3px; height: 100px; }
+    .admin-bar-wrap { font-size: 9px; min-width: 0; }
+    .admin-tabs { gap: 6px; }
+    .admin-tabs button { padding: 7px 10px; font-size: 11px; }
+    .chat-bubble { max-width: 96%; }
+    .support-fab { left: 10px; bottom: 10px; padding: 10px 13px; font-size: 12px; }
+    .row-item { align-items: flex-start; }
+  }
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .modal { width: min(900px, calc(100vw - 32px)); }
+    nav.fixed { padding-left: 22px !important; padding-right: 22px !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
 </style>
 </head>
 <body>
@@ -80,8 +125,8 @@ tailwind.config = { theme: { extend: {
 <main>
   <!-- NAV -->
   <nav class="fixed inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-4 sm:px-10" style="background:linear-gradient(#1e0a26cc,transparent)">
-    <span class="text-2xl font-extrabold gold-text">شیره‌سرا</span>
-    <div class="hidden gap-10 text-sm sm:flex"><a href="#home">خانه</a><a href="#menu">محصولات</a><a href="#special">پیشنهاد ویژه</a><a href="#why">چرا شیره‌سرا</a></div>
+    <span class="brand-name text-2xl font-extrabold gold-text">شیرین کده پاریس</span>
+    <div class="hidden gap-10 text-sm sm:flex"><a href="#home">خانه</a><a href="#menu">محصولات</a><a href="#special">پیشنهاد ویژه</a><a href="#why">چرا شیرین کده پاریس</a></div>
     <div class="flex items-center gap-2">
       <div id="authArea"></div>
       <button data-act="cart" class="relative rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:px-4 sm:text-sm">سبد خرید <span id="cartCount" class="mr-1 inline-block min-w-[1.4rem] rounded-full bg-honey px-1.5 text-center text-xs font-bold text-grape">۰</span></button>
@@ -108,7 +153,7 @@ tailwind.config = { theme: { extend: {
   <section id="stage" class="relative h-[160vh]">
     <div class="sticky top-0 flex h-[100svh] items-center px-6 sm:px-14">
       <div id="stageText" class="max-w-sm opacity-0">
-        <h2 class="text-5xl font-extrabold leading-[1.2] sm:text-7xl">انگور، خرما<br/><span class="gold-text">و صبر</span></h2>
+        <h2 class="text-5xl font-extrabold leading-[1.2] sm:text-7xl">انگور، خرما</h2>
         <p class="mt-4 text-sm leading-7 text-cream/85">هر شیشه نتیجه ساعت‌ها جوشاندن آرام و بدون عجله است.</p>
       </div>
     </div>
@@ -153,14 +198,14 @@ tailwind.config = { theme: { extend: {
 
   <!-- WHY -->
   <section id="why" class="relative mx-auto max-w-6xl px-4 pb-24 sm:px-8">
-    <h2 class="reveal mb-8 text-center text-4xl font-extrabold gold-text">چرا شیره‌سرا؟</h2>
+    <h2 class="reveal mb-8 text-center text-4xl font-extrabold gold-text">چرا شیرین کده پاریس؟</h2>
     <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
       <div class="reveal glass rounded-2xl p-6 text-center"><div class="text-4xl">🍇</div><h3 class="mt-3 font-bold text-honey">میوه انتخابی</h3><p class="mt-2 text-xs leading-6 text-cream/80">فقط انگور و خرمای رسیده و درجه یک</p></div>
       <div class="reveal glass rounded-2xl p-6 text-center"><div class="text-4xl">🔥</div><h3 class="mt-3 font-bold text-honey">پخت سنتی</h3><p class="mt-2 text-xs leading-6 text-cream/80">جوشاندن آرام روی حرارت ملایم</p></div>
       <div class="reveal glass rounded-2xl p-6 text-center"><div class="text-4xl">📦</div><h3 class="mt-3 font-bold text-honey">بسته‌بندی بهداشتی</h3><p class="mt-2 text-xs leading-6 text-cream/80">شیشه‌های دربسته و مقاوم در حمل</p></div>
       <div class="reveal glass rounded-2xl p-6 text-center"><div class="text-4xl">🚚</div><h3 class="mt-3 font-bold text-honey">ارسال به سراسر کشور</h3><p class="mt-2 text-xs leading-6 text-cream/80">تحویل سریع و مطمئن به درب منزل</p></div>
     </div>
-    <footer class="mt-14 text-center text-xs text-cream/60">© شیره‌سرا — تمام حقوق محفوظ است</footer>
+    <footer class="mt-14 text-center text-xs text-cream/60">© شیرین کده پاریس — تمام حقوق محفوظ است</footer>
   </section>
 </main>
 
@@ -199,7 +244,7 @@ const jarSVG = (c, id) => `
   <path d="M30 56 H90 V128 Q90 138 80 138 H40 Q30 138 30 128 Z" fill="url(#g${id})"/>
   <ellipse cx="60" cy="56" rx="30" ry="4" fill="#f3c76a" opacity=".6"/>
   <rect x="38" y="76" width="44" height="34" rx="4" fill="#fbf0dc" opacity=".92"/>
-  <text x="60" y="97" text-anchor="middle" font-size="10" font-weight="800" fill="#2a0f33" font-family="Vazirmatn, sans-serif">شیره‌سرا</text>
+  <text x="60" y="97" text-anchor="middle" font-size="10" font-weight="800" fill="#2a0f33" font-family="Vazirmatn, sans-serif">شیرین کده پاریس</text>
   <rect x="34" y="40" width="5" height="80" rx="2.5" fill="rgba(255,255,255,.35)"/>
 </svg>`;
 
@@ -665,7 +710,7 @@ const lc = document.createElement("canvas"); lc.width = 512; lc.height = 256;
 { const g = lc.getContext("2d"); g.fillStyle = "#fbf0dc"; g.fillRect(0,0,512,256);
   g.strokeStyle = "#a8741c"; g.lineWidth = 8; g.strokeRect(14,14,484,228);
   g.fillStyle = "#2a0f33"; g.textAlign = "center"; g.direction = "rtl";
-  g.font = "800 92px Vazirmatn, Tahoma, sans-serif"; g.fillText("شیره‌سرا", 256, 126);
+  g.font = "800 92px Vazirmatn, Tahoma, sans-serif"; g.fillText("شیرین کده پاریس", 256, 126);
   g.font = "600 40px Vazirmatn, Tahoma, sans-serif"; g.fillStyle = "#a8431a"; g.fillText("شیره انگور اصیل", 256, 194); }
 const labelTex = new THREE.CanvasTexture(lc); labelTex.colorSpace = THREE.SRGBColorSpace;
 const label = new THREE.Mesh(new THREE.CylinderGeometry(1.015, 1.015, 0.85, 48, 1, true, -Math.PI * .45, Math.PI * .9), new THREE.MeshStandardMaterial({ map: labelTex, roughness: .6, side: THREE.DoubleSide }));
