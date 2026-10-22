@@ -57,6 +57,9 @@ tailwind.config = { theme: { extend: {
   .chat-user { justify-self:start; background:rgba(243,199,106,.16); border:1px solid rgba(243,199,106,.28); }
   .chat-admin { justify-self:end; background:rgba(243,199,106,.95); color:#2a0f33; }
   .chat-meta { display:block; font-size:10px; opacity:.7; margin-top:4px; }
+  .product-photo { height:180px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:12px; }
+  .product-photo img { width:100%; height:100%; object-fit:contain; }
+  .admin-product-thumb { width:76px;height:76px;object-fit:contain;aspect-ratio:1/1;border-radius:10px;background:rgba(255,240,220,.08);border:1px solid rgba(243,199,106,.25); }
   .admin-stat { background:linear-gradient(145deg,rgba(243,199,106,.16),rgba(255,240,220,.04));border:1px solid rgba(243,199,106,.24);border-radius:16px;padding:14px; }
   .admin-section-title { color:#f3c76a;font-weight:800;font-size:17px;margin:22px 0 10px; }
   .admin-tabs { display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px; }
@@ -221,7 +224,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* ---------------- Products ---------------- */
 const fa = (n) => Number(n).toLocaleString("fa-IR");
-const products = [
+let products = [
   { id: 1, cat: "انگور", name: "شیره انگور سنتی", note: "غلیظ و تیره، ۹۰۰ گرم", price: 320000, c: "#4a1a2c" },
   { id: 2, cat: "انگور", name: "شیره انگور سفید", note: "روشن و ملایم، ۹۰۰ گرم", price: 340000, c: "#b9701c" },
   { id: 3, cat: "خرما", name: "شیره خرما", note: "شیرین طبیعی، ۸۰۰ گرم", price: 360000, c: "#5a2e14" },
@@ -258,7 +261,7 @@ function renderGrid() {
   const list = products.filter(p => state.cat === "همه" || p.cat === state.cat);
   grid.innerHTML = list.map(p => `
     <div class="card flex flex-col rounded-2xl p-3">
-      <div class="px-3 pt-2">${jarSVG(p.c, p.id)}</div>
+      <div class="product-photo">${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">` : jarSVG(p.c, p.id)}</div>
       <div class="flex flex-1 flex-col px-1 pt-3">
         <h3 class="text-base font-bold text-honey">${p.name}</h3>
         <p class="mt-1 text-[11px] leading-5 text-cream/70">${p.note}</p>
@@ -374,12 +377,61 @@ const DB = {
     if (sb) { const { data, error } = await sb.from("support_messages").select("id,user_id,sender_role,message,created_at").order("created_at", { ascending: true }).limit(500); if (error) throw error; return data || []; }
     return LS.get("sh_support_messages", []).sort((a,b) => new Date(a.created_at)-new Date(b.created_at));
   },
+  async getProducts() {
+    if (sb) {
+      const { data, error } = await sb.from("product_catalog").select("id,cat,name,note,price,c,image_url,active,sort_order").eq("active", true).order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    }
+    return LS.get("sh_products", products).filter(p => p.active !== false).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  },
+  async getAllProducts() {
+    if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
+    if (sb) { const { data, error } = await sb.from("product_catalog").select("id,cat,name,note,price,c,image_url,active,sort_order").order("sort_order", { ascending: true }); if (error) throw error; return data || []; }
+    return LS.get("sh_products", products).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  },
+  async saveProduct(p) {
+    if (!isOwner()) throw new Error("فقط مدیر فروشگاه می‌تواند محصولات را تغییر دهد.");
+    const row = { id: String(p.id || Date.now()), cat: p.cat, name: p.name, note: p.note || "", price: Number(p.price), c: p.c || "#4a1a2c", image_url: p.image_url || null, active: p.active !== false, sort_order: Number(p.sort_order || 0) };
+    if (!row.name || !Number.isFinite(row.price) || row.price < 0) throw new Error("نام و قیمت معتبر محصول را وارد کنید.");
+    if (sb) { const { error } = await sb.from("product_catalog").upsert(row); if (error) throw error; return row; }
+    const all = LS.get("sh_products", products); const idx = all.findIndex(x=>String(x.id)===row.id); if (idx>=0) all[idx]=row; else all.push(row); LS.set("sh_products", all); return row;
+  },
+  async deleteProduct(id) {
+    if (!isOwner()) throw new Error("فقط مدیر فروشگاه می‌تواند محصولات را حذف کند.");
+    if (sb) { const { error } = await sb.from("product_catalog").delete().eq("id", String(id)); if (error) throw error; return; }
+    LS.set("sh_products", LS.get("sh_products", products).filter(x=>String(x.id)!==String(id)));
+  },
+  async uploadProductImage(file, productId) {
+    if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
+    if (!file || !file.type.startsWith("image/")) throw new Error("یک فایل تصویری معتبر انتخاب کنید.");
+    if (file.size > 10 * 1024 * 1024) throw new Error("حجم تصویر باید کمتر از ۱۰ مگابایت باشد.");
+    if (!sb) throw new Error("برای ذخیره تصویر محصولات برای همه بازدیدکنندگان، ابتدا Supabase را تنظیم کنید.");
+    const image = await new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>resolve(img); img.onerror=()=>reject(new Error("خواندن تصویر ناموفق بود.")); img.src=URL.createObjectURL(file); });
+    const canvas=document.createElement("canvas"); canvas.width=800; canvas.height=800; const ctx=canvas.getContext("2d");
+    const scale=Math.min(800/image.width,800/image.height); const w=Math.round(image.width*scale), h=Math.round(image.height*scale); ctx.clearRect(0,0,800,800); ctx.drawImage(image,(800-w)/2,(800-h)/2,w,h);
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",0.88)); if (!blob) throw new Error("تبدیل تصویر انجام نشد.");
+    const path=`${String(productId || Date.now())}-${Date.now()}.webp`;
+    const { error }=await sb.storage.from("product-images").upload(path,blob,{contentType:"image/webp",upsert:true}); if(error) throw error;
+    const { data }=sb.storage.from("product-images").getPublicUrl(path); return data.publicUrl;
+  },
   async track(code) {
     code = code.trim().toUpperCase();
     if (sb) { const { data } = await sb.rpc("track_order", { p_code: code }); return data && data[0] || null; }
     return LS.get("sh_orders", []).find(o => o.code === code) || null;
   },
 };
+
+async function loadPublicProducts() {
+  try {
+    const rows = await DB.getProducts();
+    if (sb || rows.length) {
+      products = rows.map((p,i)=>({ ...p, id:p.id, price:Number(p.price), c:p.c || "#4a1a2c", sort_order:p.sort_order ?? i }));
+      renderPills(); renderGrid();
+    }
+  } catch (err) { console.warn("دریافت فهرست محصولات انجام نشد:", err.message); }
+}
+loadPublicProducts();
 
 /* ---------------- UI: modal, toast, auth, cart, tracking ---------------- */
 let me = null;
@@ -524,7 +576,7 @@ async function adminModal() {
   const n7 = Number(stats?.visits_7d || 0);
   showModal(head("🔐 پنل مدیریت") + `
     <p class="mb-4 text-xs text-cream/70">مدیر واردشده: <span dir="ltr">${esc(OWNER_EMAIL)}</span></p>
-    <div class="admin-tabs"><button class="active" data-admin-tab="overview">📊 داشبورد آمار</button><button data-admin-tab="users">👥 مدیریت کاربران (${fa(users.length)})</button><button data-admin-tab="notifications">🔔 مرکز اعلان‌ها</button><button data-admin-tab="orders">🛠️ سفارش‌ها (${fa(total)})</button><button data-admin-tab="messages">💬 صندوق گفت‌وگوها (${fa(ids.length)})</button><button data-act="exportOrders">📥 دریافت گزارش CSV</button></div>
+    <div class="admin-tabs"><button class="active" data-admin-tab="overview">📊 داشبورد آمار</button><button data-admin-tab="users">👥 مدیریت کاربران (${fa(users.length)})</button><button data-admin-tab="notifications">🔔 مرکز اعلان‌ها</button><button data-admin-tab="orders">🛠️ سفارش‌ها (${fa(total)})</button><button data-admin-tab="messages">💬 صندوق گفت‌وگوها (${fa(ids.length)})</button><button data-admin-tab="products">🛍️ مدیریت محصولات</button><button data-act="exportOrders">📥 دریافت گزارش CSV</button></div>
     <input class="field mb-3" id="adminSearch" placeholder="جست‌وجوی سفارش، کاربر یا پیام…">
     <section id="adminOverview">
       <h4 class="admin-section-title">📊 داشبورد آمار</h4>
@@ -552,16 +604,42 @@ async function adminModal() {
     <section id="adminNotifications" class="hidden"><h4 class="admin-section-title">🔔 مرکز اعلان‌ها</h4><div class="admin-notice">${waiting ? `🛒 ${fa(waiting)} سفارش در انتظار بررسی است.` : "✅ سفارش جدیدی در انتظار بررسی نیست."}<br>${customerMessages ? `💬 ${fa(customerMessages)} پیام از مشتریان ثبت شده است؛ صندوق گفت‌وگوها را بررسی کن.` : "📭 پیام جدیدی از مشتریان ثبت نشده است."}</div><div class="mt-3 flex flex-wrap gap-2"><button class="admin-action" data-admin-tab="orders">مشاهده سفارش‌ها</button><button class="admin-action" data-admin-tab="messages">مشاهده گفت‌وگوها</button></div></section>
     <section id="adminOrders" class="hidden"><h4 class="admin-section-title">🛠️ سفارش‌ها (${fa(total)})</h4><div class="admin-scroll">${orderCards}</div></section>
     <section id="adminMessages" class="hidden"><h4 class="admin-section-title">💬 صندوق گفت‌وگوها (${fa(ids.length)})</h4><div class="admin-scroll">${inbox}</div></section>
+    <section id="adminProducts" class="hidden"><h4 class="admin-section-title">🛍️ مدیریت محصولات</h4><p class="text-xs leading-7 text-cream/70">نام، دسته‌بندی، توضیحات، قیمت و تصویر محصولات را اضافه یا ویرایش کنید. تصویرها به اندازه استاندارد ۸۰۰×۸۰۰ تبدیل می‌شوند و در کارت محصول بدون کشیدگی نمایش داده می‌شوند.</p><div id="productAdminArea" class="mt-3"><p class="py-5 text-center text-sm text-cream/70">در حال بارگذاری محصولات…</p></div></section>
   `);
-  const tabMap = { overview:"adminOverview", users:"adminUsers", notifications:"adminNotifications", orders:"adminOrders", messages:"adminMessages" };
+  const tabMap = { overview:"adminOverview", users:"adminUsers", notifications:"adminNotifications", orders:"adminOrders", messages:"adminMessages", products:"adminProducts" };
   document.querySelectorAll("[data-admin-tab]").forEach(tab => tab.addEventListener("click", () => {
     const target = tab.dataset.adminTab;
     document.querySelectorAll("[data-admin-tab]").forEach(t=>t.classList.toggle("active",t===tab));
     Object.values(tabMap).forEach(id=>document.getElementById(id)?.classList.add("hidden"));
     document.getElementById(tabMap[target])?.classList.remove("hidden");
+    if (target === "products") renderProductAdmin().catch(err=>{ const el=document.getElementById("productAdminArea"); if(el) el.innerHTML=`<p class="text-sm text-red-200">${esc(err.message || "خطا در دریافت محصولات")}</p>`; });
   }));
   document.getElementById("adminSearch")?.addEventListener("input", e => { const q=e.target.value.trim().toLowerCase(); document.querySelectorAll(".admin-search-item").forEach(el=>el.classList.toggle("hidden",!el.dataset.search.includes(q))); });
 }
+async function renderProductAdmin(editId = null) {
+  if (!isOwner()) return;
+  const area=document.getElementById("productAdminArea"); if(!area) return;
+  const rows=await DB.getAllProducts();
+  const editing=editId===null?null:rows.find(p=>String(p.id)===String(editId));
+  area.innerHTML = `
+    <form class="form glass rounded-xl p-3 mb-4" data-form="productSave" enctype="multipart/form-data">
+      <input type="hidden" name="id" value="${esc(editing?.id || "")}">
+      <h5 class="font-bold text-honey">${editing?"✏️ ویرایش محصول":"➕ افزودن محصول جدید"}</h5>
+      <label class="text-xs text-cream/80">نام محصول<input class="field mt-1" name="name" required maxlength="100" value="${esc(editing?.name || "")}" placeholder="مثلاً شیره انگور سنتی"></label>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><label class="text-xs text-cream/80">دسته‌بندی<select class="field mt-1" name="cat">${["انگور","خرما","سایر"].map(c=>`<option ${editing?.cat===c?"selected":""}>${c}</option>`).join("")}</select></label><label class="text-xs text-cream/80">قیمت (تومان)<input class="field mt-1" name="price" type="number" min="0" step="1000" required value="${esc(editing?.price ?? "")}" placeholder="320000"></label></div>
+      <label class="text-xs text-cream/80">توضیحات کوتاه<input class="field mt-1" name="note" maxlength="180" value="${esc(editing?.note || "")}" placeholder="وزن، ویژگی یا توضیح کوتاه"></label>
+      <label class="text-xs text-cream/80">تصویر محصول (اختیاری)<input class="field mt-1" type="file" name="image" accept="image/png,image/jpeg,image/webp,image/avif"><span class="block mt-1 text-cream/50">تصویر مربع ۸۰۰×۸۰۰ پیکسل می‌شود؛ فایل تا ۱۰ مگابایت. سوژه وسط تصویر قرار می‌گیرد و کشیده نمی‌شود.</span></label>
+      ${editing?.image_url?`<div class="flex items-center gap-3"><img src="${esc(editing.image_url)}" alt="تصویر فعلی" class="admin-product-thumb"><span class="text-xs text-cream/60">تصویر فعلی</span></div>`:""}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><label class="text-xs text-cream/80">رنگ کارت محصول<input class="field mt-1" type="color" name="c" value="${esc(editing?.c || "#4a1a2c")}" style="height:46px;padding:5px"></label><label class="text-xs text-cream/80">ترتیب نمایش<input class="field mt-1" type="number" name="sort_order" min="0" value="${esc(editing?.sort_order ?? rows.length)}"></label></div>
+      <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="active" ${editing?.active===false?"":"checked"}> نمایش محصول در فروشگاه</label>
+      <div class="flex flex-wrap gap-2"><button class="btn-gold rounded-xl px-4 py-2.5" type="submit">💾 ${editing?"ذخیره تغییرات":"افزودن محصول"}</button>${editing?`<button class="admin-action" type="button" data-product-cancel>لغو ویرایش</button>`:""}</div>
+    </form>
+    <h5 class="admin-subtitle">فهرست محصولات (${fa(rows.length)})</h5>
+    <div class="admin-scroll">${rows.length?rows.map(p=>`<div class="admin-mini" style="align-items:center"><div class="flex items-center gap-3 min-w-0"><img class="admin-product-thumb" src="${esc(p.image_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='10' fill='%234a1a2c'/%3E%3Ctext x='40' y='45' font-size='24' text-anchor='middle' fill='%23f3c76a'%3E🍯%3C/text%3E%3C/svg%3E")}" alt="${esc(p.name)}"><div class="min-w-0"><b class="block">${esc(p.name)}</b><span class="text-xs text-cream/60">${esc(p.cat)} · ${fa(p.price)} تومان</span><span class="block text-xs ${p.active===false?"text-red-200":"text-green-200"}">${p.active===false?"مخفی از فروشگاه":"نمایش در فروشگاه"}</span></div></div><div class="flex flex-wrap gap-1"><button class="admin-action" type="button" data-product-edit="${esc(p.id)}">ویرایش</button><button class="admin-action" type="button" data-product-delete="${esc(p.id)}">حذف</button></div></div>`).join(""):`<p class="text-sm text-cream/60 py-4">هنوز محصولی ذخیره نشده است.</p>`}</div>
+  `;
+}
+function renderStoreProducts() { renderPills(); renderGrid(); }
+
 function exportOrdersCSV() {
   if (!isOwner()) return;
   DB.allOrders().then(orders => {
@@ -616,6 +694,11 @@ function trackModal(result) {
 document.addEventListener("click", async (e) => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const act = b.dataset.act, id = b.dataset.id;
+  const editProduct=b.closest("[data-product-edit]");
+  if (editProduct) { renderProductAdmin(editProduct.dataset.productEdit).catch(err=>toast("خطا: "+err.message)); return; }
+  const deleteProduct=b.closest("[data-product-delete]");
+  if (deleteProduct) { if(!isOwner()) return; if(!confirm("این محصول حذف شود؟")) return; try { await DB.deleteProduct(deleteProduct.dataset.productDelete); const rows=await DB.getAllProducts(); products=rows.filter(p=>p.active!==false); renderStoreProducts(); await renderProductAdmin(); toast("محصول حذف شد."); } catch(err) { toast("حذف ناموفق بود: "+(err.message||"خطا")); } return; }
+  if (b.hasAttribute("data-product-cancel")) { renderProductAdmin().catch(err=>toast(err.message)); return; }
   if (act === "close") closeModal();
   else if (act === "login") authModal("login");
   else if (act === "register") authModal("register");
@@ -654,6 +737,16 @@ document.addEventListener("submit", async (e) => {
       trackModal(await DB.track(v.code));
     } else if (kind === "supportSend") {
       await DB.sendMessage(v.message); toast("پیام شما برای پشتیبانی ارسال شد."); await supportModal();
+    } else if (kind === "productSave") {
+      if (!isOwner()) throw new Error("فقط مدیر فروشگاه اجازه تغییر محصولات را دارد.");
+      const file=f.querySelector('input[name="image"]')?.files?.[0];
+      const id=(v.id || String(Date.now()));
+      const existing=(await DB.getAllProducts()).find(p=>String(p.id)===String(id));
+      let image_url=existing?.image_url || null;
+      if(file) { btn.textContent="در حال آماده‌سازی تصویر…"; image_url=await DB.uploadProductImage(file,id); }
+      const row=await DB.saveProduct({id,cat:v.cat,name:v.name.trim(),note:v.note.trim(),price:v.price,c:v.c,image_url,active:f.querySelector('[name="active"]').checked,sort_order:v.sort_order});
+      const all=await DB.getAllProducts(); products=all.filter(p=>p.active!==false).map((p,i)=>({...p,price:Number(p.price),c:p.c||"#4a1a2c",sort_order:p.sort_order??i}));
+      renderStoreProducts(); await renderProductAdmin(); toast(existing?"محصول ویرایش شد و ذخیره شد.":"محصول جدید اضافه شد.");
     } else if (kind === "supportReply") {
       if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
       await DB.sendMessage(v.message, v.user_id, "admin"); toast("پاسخ برای مشتری ارسال شد."); await supportAdminModal();
