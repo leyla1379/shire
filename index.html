@@ -459,9 +459,9 @@ async track(code) {
 
   return LS.get("sh_orders", []).find(
     o => String(o.code || "").trim().toUpperCase() === code
-  ) || null;
-},
-
+    ) || null;
+  }
+};
 
 async function loadPublicProducts() {
   try {
