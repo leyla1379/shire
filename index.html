@@ -988,7 +988,8 @@ document.addEventListener("submit", async (e) => {
         toast("ثبت‌نام انجام شد؛ ایمیلت را بررسی کن 📩");
       } else {
         closeModal(); await refreshUser(); toast("حساب شما ساخته شد؛ خوش آمدید 🎉");
-      }    } else if (kind === "login") {
+      }
+    } else if (kind === "login") {
       await DB.signIn(v.email.trim(), v.password); closeModal(); await refreshUser(); toast("خوش آمدید 👋");
     } else if (kind === "profile") {
       await DB.saveName(v.full_name.trim()); await refreshUser(); toast("اطلاعات ذخیره شد ✅");
