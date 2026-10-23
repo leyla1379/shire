@@ -200,17 +200,17 @@ tailwind.config = { theme: { extend: {
   <section id="special" class="relative mx-auto max-w-6xl px-4 pb-16 sm:px-8">
     <div class="reveal grid items-center gap-8 rounded-3xl p-6 sm:p-12 md:grid-cols-[1.3fr_1fr]" style="background:linear-gradient(135deg,#e0a030,#a8541c)">
       <div class="text-grape">
-        <p class="text-sm font-bold">پیشنهاد ویژه این هفته</p>
-        <h2 class="mt-1 text-5xl font-extrabold leading-tight sm:text-7xl">شیره انگور<br/>ملایر</h2>
-        <p class="mt-4 max-w-md text-sm font-semibold leading-7">غلیظ، براق و خوش‌عطر؛ از انگورهای رسیده باغات ملایر. مناسب صبحانه، شیره‌ارده و شیرینی‌های سنتی. یک بسته ۹۰۰ گرمی با تخفیف ویژه.</p>
+        <p id="weeklyOfferLabel" class="text-sm font-bold">پیشنهاد ویژه این هفته</p>
+        <h2 id="weeklyOfferTitle" class="mt-1 text-5xl font-extrabold leading-tight sm:text-7xl">شیره انگور<br/>ملایر</h2>
+        <p id="weeklyOfferDescription" class="mt-4 max-w-md text-sm font-semibold leading-7">غلیظ، براق و خوش‌عطر؛ از انگورهای رسیده باغات ملایر. مناسب صبحانه، شیره‌ارده و شیرینی‌های سنتی. یک بسته ۹۰۰ گرمی با تخفیف ویژه.</p>
         <div class="mt-6 grid grid-cols-3 gap-3">
           <div><b class="text-2xl">۱۰۰٪</b><p class="text-xs opacity-80">طبیعی</p></div>
           <div><b class="text-2xl">بدون</b><p class="text-xs opacity-80">شکر و افزودنی</p></div>
-          <div><b class="text-2xl">۲۰٪</b><p class="text-xs opacity-80">تخفیف</p></div>
+          <div><b id="weeklyOfferDiscount" class="text-2xl">۲۰٪</b><p class="text-xs opacity-80">تخفیف</p></div>
         </div>
         <div class="mt-6 flex items-center gap-4">
-          <span class="text-4xl font-extrabold">۳۸۴٬۰۰۰ <small class="text-base">تومان</small></span>
-          <span class="text-lg line-through opacity-60">۴۸۰٬۰۰۰</span>
+          <span id="weeklyOfferPrice" class="text-4xl font-extrabold">۳۸۴٬۰۰۰ <small class="text-base">تومان</small></span>
+          <span id="weeklyOfferOldPrice" class="text-lg line-through opacity-60">۴۸۰٬۰۰۰</span>
         </div>
         <button data-add="special" class="mt-5 rounded-full bg-grape px-7 py-3 font-bold text-honey transition hover:scale-105">افزودن به سبد</button>
       </div>
@@ -220,12 +220,12 @@ tailwind.config = { theme: { extend: {
 
   <!-- WHY -->
   <section id="why" class="relative mx-auto max-w-6xl px-4 pb-24 sm:px-8">
-    <h2 class="reveal mb-8 text-center text-4xl font-extrabold gold-text">چرا شیرین کده پاریس؟</h2>
+    <h2 id="whyHeading" class="reveal mb-8 text-center text-4xl font-extrabold gold-text">چرا شیرین کده پاریس؟</h2>
     <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-      <div class="reveal glass rounded-2xl p-6 text-center"><div class="text-4xl">🍇</div><h3 class="mt-3 font-bold text-honey">میوه انتخابی</h3><p class="mt-2 text-xs leading-6 text-cream/80">فقط انگور و خرمای رسیده و درجه یک</p></div>
-      <div class="reveal glass rounded-2xl p-6 text-center"><div class="text-4xl">🔥</div><h3 class="mt-3 font-bold text-honey">پخت سنتی</h3><p class="mt-2 text-xs leading-6 text-cream/80">جوشاندن آرام روی حرارت ملایم</p></div>
-      <div class="reveal glass rounded-2xl p-6 text-center"><div class="text-4xl">📦</div><h3 class="mt-3 font-bold text-honey">بسته‌بندی بهداشتی</h3><p class="mt-2 text-xs leading-6 text-cream/80">شیشه‌های دربسته و مقاوم در حمل</p></div>
-      <div class="reveal glass rounded-2xl p-6 text-center"><div class="text-4xl">🚚</div><h3 class="mt-3 font-bold text-honey">ارسال به سراسر کشور</h3><p class="mt-2 text-xs leading-6 text-cream/80">تحویل سریع و مطمئن به درب منزل</p></div>
+      <div class="reveal glass rounded-2xl p-6 text-center" data-why-card="0"><div class="text-4xl" data-why-emoji>🍇</div><h3 class="mt-3 font-bold text-honey" data-why-title>میوه انتخابی</h3><p class="mt-2 text-xs leading-6 text-cream/80" data-why-description>فقط انگور و خرمای رسیده و درجه یک</p></div>
+      <div class="reveal glass rounded-2xl p-6 text-center" data-why-card="1"><div class="text-4xl" data-why-emoji>🔥</div><h3 class="mt-3 font-bold text-honey" data-why-title>پخت سنتی</h3><p class="mt-2 text-xs leading-6 text-cream/80" data-why-description>جوشاندن آرام روی حرارت ملایم</p></div>
+      <div class="reveal glass rounded-2xl p-6 text-center" data-why-card="2"><div class="text-4xl" data-why-emoji>📦</div><h3 class="mt-3 font-bold text-honey" data-why-title>بسته‌بندی بهداشتی</h3><p class="mt-2 text-xs leading-6 text-cream/80" data-why-description>شیشه‌های دربسته و مقاوم در حمل</p></div>
+      <div class="reveal glass rounded-2xl p-6 text-center" data-why-card="3"><div class="text-4xl" data-why-emoji>🚚</div><h3 class="mt-3 font-bold text-honey" data-why-title>ارسال به سراسر کشور</h3><p class="mt-2 text-xs leading-6 text-cream/80" data-why-description>تحویل سریع و مطمئن به درب منزل</p></div>
     </div>
     <footer class="mt-14 text-center text-xs text-cream/60">© شیرین کده پاریس — تمام حقوق محفوظ است</footer>
   </section>
@@ -271,6 +271,59 @@ const jarSVG = (c, id) => `
 </svg>`;
 
 const state = { cat: "همه", cart: {} };
+const defaultSiteContent = {
+  weekly_offer: { label: "پیشنهاد ویژه این هفته", title: "شیره انگور\nملایر", description: "غلیظ، براق و خوش‌عطر؛ از انگورهای رسیده باغات ملایر. مناسب صبحانه، شیره‌ارده و شیرینی‌های سنتی. یک بسته ۹۰۰ گرمی با تخفیف ویژه.", price: 384000, oldPrice: 480000, discount: 20 },
+  why: [
+    { emoji: "🍇", title: "میوه انتخابی", description: "فقط انگور و خرمای رسیده و درجه یک" },
+    { emoji: "🔥", title: "پخت سنتی", description: "جوشاندن آرام روی حرارت ملایم" },
+    { emoji: "📦", title: "بسته‌بندی بهداشتی", description: "شیشه‌های دربسته و مقاوم در حمل" },
+    { emoji: "🚚", title: "ارسال به سراسر کشور", description: "تحویل سریع و مطمئن به درب منزل" }
+  ]
+};
+let siteContent = JSON.parse(JSON.stringify(defaultSiteContent));
+const normalizeSiteContent = (raw) => {
+  const offer = raw?.weekly_offer || {};
+  return {
+    weekly_offer: {
+      label: String(offer.label ?? defaultSiteContent.weekly_offer.label).slice(0, 80),
+      title: String(offer.title ?? defaultSiteContent.weekly_offer.title).slice(0, 120),
+      description: String(offer.description ?? defaultSiteContent.weekly_offer.description).slice(0, 500),
+      price: Math.max(0, Number(offer.price ?? defaultSiteContent.weekly_offer.price) || 0),
+      oldPrice: Math.max(0, Number(offer.oldPrice ?? defaultSiteContent.weekly_offer.oldPrice) || 0),
+      discount: Math.min(100, Math.max(0, Number(offer.discount ?? defaultSiteContent.weekly_offer.discount) || 0))
+    },
+    why: defaultSiteContent.why.map((fallback, i) => {
+      const card = Array.isArray(raw?.why) ? raw.why[i] || {} : {};
+      return { emoji: String(card.emoji ?? fallback.emoji).slice(0, 8), title: String(card.title ?? fallback.title).slice(0, 80), description: String(card.description ?? fallback.description).slice(0, 220) };
+    })
+  };
+};
+function applySiteContent() {
+  siteContent = normalizeSiteContent(siteContent);
+  const o = siteContent.weekly_offer;
+  const label = document.getElementById("weeklyOfferLabel");
+  const title = document.getElementById("weeklyOfferTitle");
+  const description = document.getElementById("weeklyOfferDescription");
+  const price = document.getElementById("weeklyOfferPrice");
+  const oldPrice = document.getElementById("weeklyOfferOldPrice");
+  const discount = document.getElementById("weeklyOfferDiscount");
+  if (label) label.textContent = o.label;
+  if (title) title.innerHTML = esc(o.title).replace(/\\n/g, "<br>");
+  if (description) description.textContent = o.description;
+  if (price) price.innerHTML = esc(fa(o.price)) + ' <small class="text-base">تومان</small>';
+  if (oldPrice) oldPrice.textContent = fa(o.oldPrice);
+  if (discount) discount.textContent = fa(o.discount) + "٪";
+  const heading = document.getElementById("whyHeading");
+  if (heading) heading.textContent = siteContent.why_heading || "چرا شیرین کده پاریس؟";
+  document.querySelectorAll("[data-why-card]").forEach(el => {
+    const card = siteContent.why[Number(el.dataset.whyCard)];
+    if (!card) return;
+    el.querySelector("[data-why-emoji]").textContent = card.emoji;
+    el.querySelector("[data-why-title]").textContent = card.title;
+    el.querySelector("[data-why-description]").textContent = card.description;
+  });
+  renderCart();
+}
 const pills = document.getElementById("pills"), grid = document.getElementById("grid");
 
 function renderPills() {
@@ -295,7 +348,7 @@ function renderGrid() {
 function renderCart() {
   let n = 0, total = 0;
   for (const [id, q] of Object.entries(state.cart)) {
-    const p = id === "special" ? { price: 384000 } : products.find(x => x.id == id);
+    const p = id === "special" ? { price: siteContent.weekly_offer.price } : products.find(x => x.id == id);
     n += q; total += p.price * q;
   }
   document.getElementById("cartCount").textContent = fa(n);
@@ -333,6 +386,27 @@ const pub = (u) => ({ id: u.id, email: u.email, full_name: u.full_name, username
 const fromSb = (u) => u && ({ id: u.id, email: u.email, ...(u.user_metadata || {}) });
 
 const DB = {
+  async getSiteContent() {
+    if (sb) {
+      const { data, error } = await sb.from("site_settings").select("value").eq("key", "site_content").maybeSingle();
+      if (error) throw error;
+      return data?.value || null;
+    }
+    return LS.get("sh_site_content", null);
+  },
+  async saveSiteContent(value) {
+    if (!isOwner()) throw new Error("فقط مالک فروشگاه اجازه تغییر محتوای سایت را دارد.");
+    const clean = normalizeSiteContent(value);
+    if (sb) {
+      const { error } = await sb.from("site_settings").upsert({ key: "site_content", value: clean, updated_at: new Date().toISOString() }, { onConflict: "key" });
+      if (error) throw error;
+    } else {
+      LS.set("sh_site_content", clean);
+    }
+    siteContent = clean;
+    applySiteContent();
+    return clean;
+  },
   async user() {
     if (sb) { const { data } = await sb.auth.getSession(); return fromSb(data.session?.user); }
     const id = LS.get("sh_session", null); const u = LS.get("sh_users", []).find(x => x.id === id); return u ? pub(u) : null;
@@ -511,9 +585,16 @@ function renderAuth() {
       : `<button data-act="panel" class="rounded-full bg-honey px-3 py-1.5 text-xs font-bold text-grape sm:text-sm">👤 ${esc((me.full_name || me.username || "حساب من").split(" ")[0])}</button>`)
     : `<div class="flex gap-1.5"><button data-act="login" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm">ورود</button><button data-act="register" class="btn-gold rounded-full px-3 py-1.5 text-xs sm:text-sm">ثبت‌نام</button></div>`;
 }
+async function loadSiteContent() {
+  try {
+    const saved = await DB.getSiteContent();
+    if (saved) { siteContent = normalizeSiteContent(saved); applySiteContent(); }
+  } catch (err) { console.warn("محتوای قابل ویرایش بارگذاری نشد؛ محتوای پیش‌فرض نمایش داده می‌شود.", err.message); }
+}
 async function refreshUser() { me = await DB.user(); renderAuth(); }
 if (sb) sb.auth.onAuthStateChange(() => refreshUser());
 refreshUser();
+loadSiteContent();
 
 /* ---------------- Privacy-conscious visit analytics ---------------- */
 function getVisitorId() {
@@ -559,7 +640,7 @@ function smsCodeModal() {
 }
 
 /* cart helpers */
-const itemInfo = (id) => id === "special" ? { name: "شیره انگور ملایر (ویژه)", price: 384000 } : products.find(p => p.id == id);
+const itemInfo = (id) => id === "special" ? { name: siteContent.weekly_offer.title.replace(/\n/g, " ").trim() + " (ویژه)", price: siteContent.weekly_offer.price } : products.find(p => p.id == id);
 const cartLines = () => Object.entries(state.cart).filter(([, q]) => q > 0).map(([id, q]) => ({ id, q, ...itemInfo(id) }));
 const cartTotal = () => cartLines().reduce((s, l) => s + l.price * l.q, 0);
 
@@ -656,7 +737,7 @@ async function adminModal(initialTab = "overview") {
   const n7 = Number(stats?.visits_7d || 0);
   showModal(head("🔐 پنل مدیریت") + `
     <p class="mb-4 text-xs text-cream/70">مدیر واردشده: <span dir="ltr">${esc(OWNER_EMAIL)}</span></p>
-    <div class="admin-tabs"><button class="active" data-admin-tab="overview">📊 داشبورد آمار</button><button data-admin-tab="users">👥 مدیریت کاربران (${fa(users.length)})</button><button data-admin-tab="notifications">🔔 مرکز اعلان‌ها</button><button data-admin-tab="orders">🛠️ سفارش‌ها (${fa(total)})</button><button data-admin-tab="messages">💬 صندوق گفت‌وگوها (${fa(ids.length)})</button><button data-admin-tab="products">🛍️ مدیریت محصولات</button><button data-act="exportOrders">📥 دریافت گزارش CSV</button></div>
+    <div class="admin-tabs"><button class="active" data-admin-tab="overview">📊 داشبورد آمار</button><button data-admin-tab="users">👥 مدیریت کاربران (${fa(users.length)})</button><button data-admin-tab="notifications">🔔 مرکز اعلان‌ها</button><button data-admin-tab="orders">🛠️ سفارش‌ها (${fa(total)})</button><button data-admin-tab="messages">💬 صندوق گفت‌وگوها (${fa(ids.length)})</button><button data-admin-tab="products">🛍️ مدیریت محصولات</button><button data-admin-tab="content">📝 محتوای صفحه</button><button data-act="exportOrders">📥 دریافت گزارش CSV</button></div>
     <input class="field mb-3" id="adminSearch" placeholder="جست‌وجوی سفارش، کاربر یا پیام…">
     <section id="adminOverview">
       <h4 class="admin-section-title">📊 داشبورد آمار</h4>
@@ -685,17 +766,57 @@ async function adminModal(initialTab = "overview") {
     <section id="adminOrders" class="hidden"><h4 class="admin-section-title">🛠️ سفارش‌ها (${fa(total)})</h4><div class="admin-scroll">${orderCards}</div></section>
     <section id="adminMessages" class="hidden"><h4 class="admin-section-title">💬 صندوق گفت‌وگوها (${fa(ids.length)})</h4><div class="admin-scroll">${inbox}</div></section>
     <section id="adminProducts" class="hidden"><h4 class="admin-section-title">🛍️ مدیریت محصولات</h4><p class="text-xs leading-7 text-cream/70">نام، دسته‌بندی، توضیحات، قیمت و تصویر محصولات را اضافه یا ویرایش کنید. تصویرها به اندازه استاندارد ۸۰۰×۸۰۰ تبدیل می‌شوند و در کارت محصول بدون کشیدگی نمایش داده می‌شوند.</p><div id="productAdminArea" class="mt-3"><p class="py-5 text-center text-sm text-cream/70">در حال بارگذاری محصولات…</p></div></section>
+    <section id="adminContent" class="hidden"><h4 class="admin-section-title">📝 ویرایش محتوای صفحه</h4><p class="text-xs leading-7 text-cream/70">این تغییرات در پایگاه داده ذخیره می‌شوند و پس از بارگذاری دوباره برای همه بازدیدکنندگان نمایش داده خواهند شد.</p><div id="contentAdminArea" class="mt-3"><p class="py-5 text-center text-sm text-cream/70">در حال بارگذاری محتوا…</p></div></section>
   `);
-  const tabMap = { overview:"adminOverview", users:"adminUsers", notifications:"adminNotifications", orders:"adminOrders", messages:"adminMessages", products:"adminProducts" };
+  const tabMap = { overview:"adminOverview", users:"adminUsers", notifications:"adminNotifications", orders:"adminOrders", messages:"adminMessages", products:"adminProducts", content:"adminContent" };
   document.querySelectorAll("[data-admin-tab]").forEach(tab => tab.addEventListener("click", () => {
     const target = tab.dataset.adminTab;
     document.querySelectorAll("[data-admin-tab]").forEach(t=>t.classList.toggle("active",t===tab));
     Object.values(tabMap).forEach(id=>document.getElementById(id)?.classList.add("hidden"));
     document.getElementById(tabMap[target])?.classList.remove("hidden");
     if (target === "products") renderProductAdmin().catch(err=>{ const el=document.getElementById("productAdminArea"); if(el) el.innerHTML=`<p class="text-sm text-red-200">${esc(err.message || "خطا در دریافت محصولات")}</p>`; });
+    if (target === "content") renderContentAdmin().catch(err=>{ const el=document.getElementById("contentAdminArea"); if(el) el.innerHTML=`<p class="text-sm text-red-200">${esc(err.message || "خطا در دریافت محتوا")}</p>`; });
   }));
   document.getElementById("adminSearch")?.addEventListener("input", e => { const q=e.target.value.trim().toLowerCase(); document.querySelectorAll(".admin-search-item").forEach(el=>el.classList.toggle("hidden",!el.dataset.search.includes(q))); });
   if (initialTab && initialTab !== "overview") document.querySelector(`[data-admin-tab="${initialTab}"]`)?.click();
+}
+async function renderContentAdmin() {
+  if (!isOwner()) return;
+  const area = document.getElementById("contentAdminArea");
+  if (!area) return;
+  try {
+    const saved = await DB.getSiteContent();
+    if (saved) siteContent = normalizeSiteContent(saved);
+  } catch (err) {
+    throw new Error("خواندن تنظیمات ناموفق بود. جدول site_settings و دسترسی آن را بررسی کن: " + (err.message || ""));
+  }
+  const o = siteContent.weekly_offer;
+  area.innerHTML = `
+    <form class="form glass rounded-xl p-4 mb-4" data-form="siteContentSave">
+      <h5 class="font-bold text-honey">⭐ پیشنهاد ویژه این هفته</h5>
+      <label class="text-xs text-cream/80">برچسب پیشنهاد<input class="field mt-1" name="offer_label" maxlength="80" required value="${esc(o.label)}"></label>
+      <label class="text-xs text-cream/80">عنوان محصول (برای رفتن به خط بعد از \n استفاده کن)<textarea class="field mt-1" name="offer_title" rows="2" maxlength="120" required>${esc(o.title)}</textarea></label>
+      <label class="text-xs text-cream/80">توضیحات<textarea class="field mt-1" name="offer_description" rows="3" maxlength="500" required>${esc(o.description)}</textarea></label>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <label class="text-xs text-cream/80">قیمت تخفیف‌خورده (تومان)<input class="field mt-1" name="offer_price" type="number" min="0" step="1000" required value="${o.price}"></label>
+        <label class="text-xs text-cream/80">قیمت قبلی (تومان)<input class="field mt-1" name="offer_old_price" type="number" min="0" step="1000" required value="${o.oldPrice}"></label>
+        <label class="text-xs text-cream/80">درصد تخفیف<input class="field mt-1" name="offer_discount" type="number" min="0" max="100" required value="${o.discount}"></label>
+      </div>
+      <h5 class="font-bold text-honey mt-4">💎 چرا شیرین کده پاریس؟</h5>
+      <label class="text-xs text-cream/80">عنوان این بخش<input class="field mt-1" name="why_heading" maxlength="100" required value="${esc(siteContent.why_heading || "چرا شیرین کده پاریس؟")}"></label>
+      ${siteContent.why.map((card, i) => `
+        <div class="rounded-xl border border-honey/20 p-3 mt-3">
+          <h6 class="text-sm font-bold text-honey mb-2">کارت ${fa(i+1)}</h6>
+          <div class="grid grid-cols-1 sm:grid-cols-[90px_1fr] gap-2">
+            <label class="text-xs text-cream/80">ایموجی<input class="field mt-1" name="why_${i}_emoji" maxlength="8" value="${esc(card.emoji)}"></label>
+            <label class="text-xs text-cream/80">عنوان<input class="field mt-1" name="why_${i}_title" maxlength="80" required value="${esc(card.title)}"></label>
+          </div>
+          <label class="text-xs text-cream/80">توضیحات<input class="field mt-1" name="why_${i}_description" maxlength="220" required value="${esc(card.description)}"></label>
+        </div>`).join("")}
+      <button class="btn-gold rounded-xl px-4 py-3 mt-3 w-full">💾 ذخیره و انتشار برای همه</button>
+    </form>
+    <p class="text-xs text-cream/50 leading-6">برای ذخیره سراسری، جدول Supabase باید با فایل site-content-setup.sql ساخته شده باشد. اگر جدول آماده نباشد، خطای پایگاه داده نمایش داده می‌شود.</p>
+  `;
 }
 async function renderProductAdmin(editId = null) {
   if (!isOwner()) return;
@@ -884,6 +1005,28 @@ document.addEventListener("submit", async (e) => {
       trackModal(await DB.track(v.code));
     } else if (kind === "supportSend") {
       await DB.sendMessage(v.message); toast("پیام شما برای پشتیبانی ارسال شد."); await supportModal();
+    } else if (kind === "siteContentSave") {
+      if (!isOwner()) throw new Error("فقط مالک فروشگاه اجازه تغییر محتوا را دارد.");
+      const why = defaultSiteContent.why.map((fallback, i) => ({
+        emoji: String(v[`why_${i}_emoji`] || fallback.emoji).trim(),
+        title: String(v[`why_${i}_title`] || "").trim(),
+        description: String(v[`why_${i}_description`] || "").trim()
+      }));
+      const content = normalizeSiteContent({
+        weekly_offer: {
+          label: String(v.offer_label || "").trim(),
+          title: String(v.offer_title || "").trim(),
+          description: String(v.offer_description || "").trim(),
+          price: v.offer_price,
+          oldPrice: v.offer_old_price,
+          discount: v.offer_discount
+        },
+        why_heading: String(v.why_heading || "").trim(),
+        why
+      });
+      await DB.saveSiteContent(content);
+      toast("محتوا ذخیره شد و برای بازدیدکنندگان منتشر شد ✅");
+      await renderContentAdmin();
     } else if (kind === "productSave") {
       if (!isOwner()) throw new Error("فقط مدیر فروشگاه اجازه تغییر محصولات را دارد.");
       const file=f.querySelector('input[name="image"]')?.files?.[0];
