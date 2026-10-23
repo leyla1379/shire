@@ -440,8 +440,8 @@ const DB = {
     const path=`${String(productId || Date.now())}-${Date.now()}.webp`;
     const { error }=await sb.storage.from("product-images").upload(path,blob,{contentType:"image/webp",upsert:true}); if(error) throw error;
     const { data }=sb.storage.from("product-images").getPublicUrl(path); return data.publicUrl;
-  },
- async track(code) {
+ },
+async track(code) {
   code = String(code || "").trim().toUpperCase();
 
   if (sb) {
