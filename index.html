@@ -318,17 +318,21 @@ const DB = {
     if (sb) { const { data } = await sb.auth.getSession(); return fromSb(data.session?.user); }
     const id = LS.get("sh_session", null); const u = LS.get("sh_users", []).find(x => x.id === id); return u ? pub(u) : null;
   },
-  async signUp({ full_name, username, phone, email, password }) {
-    if (sb) {
-      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name, username, phone } } });
-      if (error) throw error; return { confirmed: !!data.session };
-    }
-    email = email.toLowerCase();
-    const users = LS.get("sh_users", []);
-    if (users.some(u => u.email === email)) throw new Error("این ایمیل قبلاً ثبت شده است");
-    if (users.some(u => u.username === username)) throw new Error("این نام کاربری قبلاً گرفته شده است");
-    const u = { id: "u" + Date.now(), full_name, username, phone, email, pass: await hash(password), created_at: new Date().toISOString() };
-    users.push(u); LS.set("sh_users", users); LS.set("sh_session", u.id); return { confirmed: true };
+  async startSmsRegistration({ full_name, username, phone, email }) {
+    if (!sb) throw new Error("اتصال امن Supabase فعال نیست؛ ثبت‌نام پیامکی در دسترس نیست.");
+    const { data, error } = await sb.functions.invoke("sms-register", { body: { action: "send", full_name, username, phone, email } });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    return data;
+  },
+  async verifySmsRegistration({ full_name, username, phone, email, password, code }) {
+    if (!sb) throw new Error("اتصال امن Supabase فعال نیست؛ ثبت‌نام پیامکی در دسترس نیست.");
+    const { data, error } = await sb.functions.invoke("sms-register", { body: { action: "verify", full_name, username, phone, email, password, code } });
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+    const { error: loginError } = await sb.auth.signInWithPassword({ email, password });
+    if (loginError) throw new Error("حساب تأیید و ساخته شد، اما ورود خودکار انجام نشد؛ از فرم ورود استفاده کنید.");
+    return { confirmed: true };
   },
   async signIn(email, password) {
     if (sb) { const { error } = await sb.auth.signInWithPassword({ email, password }); if (error) throw error; return; }
@@ -358,6 +362,28 @@ const DB = {
   async setStatus(code, status) {
     if (sb) { const { error } = await sb.from("orders").update({ status }).eq("code", code); if (error) throw error; return; }
     const all = LS.get("sh_orders", []); const o = all.find(x => x.code === code); if (o) { o.status = status; LS.set("sh_orders", all); }
+  },
+  async setPostalTracking(code, postalTrackingCode) {
+    const clean = String(postalTrackingCode || "").trim();
+    if (clean.length > 100) throw new Error("کد رهگیری نباید بیشتر از ۱۰۰ نویسه باشد.");
+    if (sb) {
+      const { error } = await sb.from("orders").update({ postal_tracking_code: clean || null }).eq("code", code);
+      if (error) throw error;
+      return;
+    }
+    const all = LS.get("sh_orders", []);
+    const o = all.find(x => x.code === code);
+    if (!o) throw new Error("سفارش پیدا نشد.");
+    o.postal_tracking_code = clean;
+    LS.set("sh_orders", all);
+  },
+  async deleteOrder(code) {
+    if (sb) {
+      const { error } = await sb.from("orders").delete().eq("code", code);
+      if (error) throw error;
+      return;
+    }
+    LS.set("sh_orders", LS.get("sh_orders", []).filter(o => o.code !== code));
   },
   async myMessages() {
     if (!me) throw new Error("برای گفت‌وگو ابتدا وارد حساب کاربری شوید.");
@@ -473,16 +499,29 @@ async function recordSiteVisit() {
 recordSiteVisit();
 addEventListener("hashchange", recordSiteVisit);
 
+let pendingSmsRegistration = null;
 function authModal(mode) {
   const reg = mode === "register";
-  showModal(head(reg ? "📝 ثبت‌نام" : "👤 ورود") + `
+  showModal(head(reg ? "📝 ثبت‌نام با کد پیامکی" : "👤 ورود") + `
     <form class="form" data-form="${reg ? "register" : "login"}">
-      ${reg ? `<input class="field" name="full_name" required placeholder="نام و نام خانوادگی"><input class="field" name="username" required placeholder="نام کاربری"><input class="field" name="phone" type="tel" placeholder="شماره تماس (اختیاری)" dir="ltr" style="text-align:right">` : ""}
-      <input class="field" name="email" type="email" required placeholder="ایمیل" dir="ltr" style="text-align:right">
-      <input class="field" name="password" type="password" required minlength="6" placeholder="رمز عبور (حداقل ۶ کاراکتر)" dir="ltr" style="text-align:right">
-      <button class="btn-gold rounded-xl px-4 py-3">${reg ? "ثبت‌نام" : "ورود"}</button>
+      ${reg ? `<input class="field" name="full_name" required maxlength="100" placeholder="نام و نام خانوادگی"><input class="field" name="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_.-]+" placeholder="نام کاربری (حروف انگلیسی و عدد)" dir="ltr" style="text-align:right"><input class="field" name="phone" type="tel" required inputmode="tel" autocomplete="tel" placeholder="شماره موبایل ایران، مثال 09123456789" dir="ltr" style="text-align:right"><p class="text-xs leading-6 text-cream/70">کد تأیید به شماره موبایل شما پیامک می‌شود؛ ورود همچنان با ایمیل و رمز عبور خواهد بود.</p>` : ""}
+      <input class="field" name="email" type="email" required autocomplete="email" placeholder="ایمیل" dir="ltr" style="text-align:right">
+      <input class="field" name="password" type="password" required minlength="6" autocomplete="${reg ? "new-password" : "current-password"}" placeholder="رمز عبور (حداقل ۶ کاراکتر)" dir="ltr" style="text-align:right">
+      <button class="btn-gold rounded-xl px-4 py-3">${reg ? "ارسال کد تأیید" : "ورود"}</button>
     </form>
     <p class="mt-4 text-center text-sm text-cream/80">${reg ? "حساب داری؟" : "حساب نداری؟"} <button data-act="${reg ? "login" : "register"}" class="font-bold text-honey underline">${reg ? "ورود" : "ثبت‌نام"}</button></p>`);
+}
+function smsCodeModal() {
+  if (!pendingSmsRegistration) return authModal("register");
+  const p = pendingSmsRegistration;
+  showModal(head("📲 تأیید شماره موبایل") + `
+    <p class="mb-3 text-sm leading-7 text-cream/80">کد ۶ رقمی به شماره <b dir="ltr">${esc(p.phone)}</b> ارسال شد. کد را در این قسمت وارد کن.</p>
+    <form class="form" data-form="verifySmsRegistration">
+      <input class="field text-center text-xl tracking-[.35em]" name="code" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9۰-۹]{6}" minlength="6" maxlength="6" placeholder="کد ۶ رقمی" dir="ltr">
+      <button class="btn-gold rounded-xl px-4 py-3">تأیید کد و ساخت حساب</button>
+    </form>
+    <div class="mt-3 flex justify-between gap-3 text-sm"><button data-act="resendSmsCode" class="font-bold text-honey underline">ارسال دوباره کد</button><button data-act="cancelSmsRegistration" class="text-cream/70 underline">لغو</button></div>
+    <p class="mt-3 text-xs leading-6 text-cream/60">کد تا ۵ دقیقه معتبر است و برای امنیت، تعداد تلاش‌ها محدود است.</p>`);
 }
 
 /* cart helpers */
@@ -524,7 +563,7 @@ async function panelModal() {
     <button data-act="logout" class="btn-ghost mt-3 w-full rounded-xl px-4 py-2.5">خروج از حساب</button>`);
 }
 
-async function adminModal() {
+async function adminModal(initialTab = "overview") {
   if (!isOwner()) return;
   showModal(head("🔐 پنل مدیریت") + `<p class="py-6 text-center text-cream/70">در حال دریافت آمار، کاربران و سفارش‌ها…</p>`);
   let orders = [], messages = [], users = [], stats = null;
@@ -563,10 +602,17 @@ async function adminModal() {
   const dayCounts = days.map(d => orders.filter(o => { const od = new Date(o.created_at || 0); return od >= d && od < new Date(d.getTime()+86400000); }).length);
   const maxDay = Math.max(1, ...dayCounts);
   const chart = days.map((d,i) => `<div class="admin-bar-wrap"><b>${fa(dayCounts[i])}</b><div class="admin-bar" style="height:${Math.max(4, dayCounts[i]/maxDay*64)}px"></div><span>${d.toLocaleDateString("fa-IR",{day:"numeric",month:"short"})}</span></div>`).join("");
-  const orderCards = orders.length ? orders.map(o => `<div class="row-item admin-search-item" data-search="${esc([o.code,o.name,o.phone,o.address,o.status,(o.items||[]).map(i=>i.name).join(" ")].join(" ").toLowerCase())}" style="display:block">
+  const orderCards = orders.length ? orders.map(o => `<div class="row-item admin-search-item" data-search="${esc([o.code,o.name,o.phone,o.address,o.status,o.postal_tracking_code,(o.items||[]).map(i=>i.name).join(" ")].join(" ").toLowerCase())}" style="display:block">
     <div class="flex flex-wrap items-center justify-between gap-2"><b dir="ltr">${esc(o.code || "کد ثبت نشده")}</b><span class="text-honey font-bold">${fa(o.total || 0)} تومان</span><span class="tag">${esc(o.status || "جدید")}</span></div>
     <p class="mt-2 text-xs text-cream/80">${esc(o.name || "نام ثبت نشده")} · <span dir="ltr">${esc(o.phone || "بدون شماره")}</span></p><p class="text-xs text-cream/70">${esc(o.address || "آدرسی ثبت نشده")}</p>
     <p class="mt-1 text-xs text-cream/70">${(o.items || []).map(i=>esc(i.name)+" × "+fa(i.qty || 1)).join("، ") || "جزئیات کالا ثبت نشده"}</p>
+    <label class="mt-3 block text-xs text-cream/80">کد رهگیری پستی
+      <input class="field mt-1" data-tracking-input="${esc(o.code || "")}" maxlength="100" dir="ltr" value="${esc(o.postal_tracking_code || "")}" placeholder="کد رهگیری مرسوله">
+    </label>
+    <div class="mt-2 flex flex-wrap gap-2">
+      <button type="button" class="admin-action" data-act="saveTracking" data-code="${esc(o.code || "")}">💾 ذخیره کد رهگیری</button>
+      <button type="button" class="admin-action" data-act="deleteOrder" data-code="${esc(o.code || "")}" style="border-color:#ef4444;color:#fecaca">🗑️ حذف سفارش</button>
+    </div>
     <select class="field mt-2" data-status="${esc(o.code || "")}">${STATUSES.map(st=>`<option ${st===o.status?"selected":""}>${st}</option>`).join("")}</select>
   </div>`).join("") : `<p class="py-5 text-center text-sm text-cream/60">هنوز سفارشی ثبت نشده است.</p>`;
   const ids = [...new Set(messages.map(m=>m.user_id))];
@@ -615,6 +661,7 @@ async function adminModal() {
     if (target === "products") renderProductAdmin().catch(err=>{ const el=document.getElementById("productAdminArea"); if(el) el.innerHTML=`<p class="text-sm text-red-200">${esc(err.message || "خطا در دریافت محصولات")}</p>`; });
   }));
   document.getElementById("adminSearch")?.addEventListener("input", e => { const q=e.target.value.trim().toLowerCase(); document.querySelectorAll(".admin-search-item").forEach(el=>el.classList.toggle("hidden",!el.dataset.search.includes(q))); });
+  if (initialTab && initialTab !== "overview") document.querySelector(`[data-admin-tab="${initialTab}"]`)?.click();
 }
 async function renderProductAdmin(editId = null) {
   if (!isOwner()) return;
@@ -643,7 +690,7 @@ function renderStoreProducts() { renderPills(); renderGrid(); }
 function exportOrdersCSV() {
   if (!isOwner()) return;
   DB.allOrders().then(orders => {
-    const rows = [["کد سفارش","نام","تلفن","آدرس","مبلغ","وضعیت","تاریخ","اقلام"], ...orders.map(o=>[o.code,o.name,o.phone,o.address,o.total,o.status,o.created_at,(o.items||[]).map(i=>`${i.name} x ${i.qty}`).join(" | ")])];
+    const rows = [["کد سفارش","نام","تلفن","آدرس","مبلغ","وضعیت","کد رهگیری پستی","تاریخ","اقلام"], ...orders.map(o=>[o.code,o.name,o.phone,o.address,o.total,o.status,o.postal_tracking_code,o.created_at,(o.items||[]).map(i=>`${i.name} x ${i.qty}`).join(" | ")])];
     const csv = "\uFEFF" + rows.map(row=>row.map(v=>'"'+String(v ?? "").replace(/"/g,'""')+'"').join(",")).join("\r\n");
     const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"})); const a=document.createElement("a"); a.href=url; a.download="shire-sara-orders.csv"; a.click(); URL.revokeObjectURL(url);
   }).catch(err=>toast("دریافت گزارش ناموفق بود: "+(err.message||"خطا")));
@@ -688,7 +735,7 @@ function trackModal(result) {
   showModal(head("📦 پیگیری سفارش") + `
     <p class="mb-3 text-sm text-cream/75">کد پیگیری را که بعد از ثبت سفارش گرفته‌اید وارد کنید.</p>
     <form class="form" data-form="track"><input class="field" name="code" required placeholder="مثلاً SH-AB12CD34" dir="ltr" style="text-align:right"><button class="btn-gold rounded-xl px-4 py-2.5">پیگیری</button></form>
-    <div class="mt-4">${result === undefined ? "" : result ? `<div class="row-item"><span dir="ltr">${esc(result.code)}</span><span class="tag">${esc(result.status)}</span><span>${fa(result.total)} تومان</span></div>` : `<p class="text-sm text-cream/70">سفارشی با این کد پیدا نشد.</p>`}</div>`);
+    <div class="mt-4">${result === undefined ? "" : result ? `<div class="row-item" style="display:block"><div class="flex flex-wrap items-center justify-between gap-2"><span dir="ltr">${esc(result.code)}</span><span class="tag">${esc(result.status)}</span><span>${fa(result.total)} تومان</span></div>${result.postal_tracking_code ? `<p class="mt-2 text-sm">کد رهگیری پستی: <b dir="ltr">${esc(result.postal_tracking_code)}</b></p>` : ""}</div>` : `<p class="text-sm text-cream/70">سفارشی با این کد پیدا نشد.</p>`}</div>`);
 }
 
 document.addEventListener("click", async (e) => {
@@ -701,13 +748,50 @@ document.addEventListener("click", async (e) => {
   if (b.hasAttribute("data-product-cancel")) { renderProductAdmin().catch(err=>toast(err.message)); return; }
   if (act === "close") closeModal();
   else if (act === "login") authModal("login");
-  else if (act === "register") authModal("register");
+  else if (act === "register") { pendingSmsRegistration = null; authModal("register"); }
+  else if (act === "resendSmsCode") {
+    if (!pendingSmsRegistration) return authModal("register");
+    try { b.disabled = true; await DB.startSmsRegistration(pendingSmsRegistration); toast("اگر زمان محدودیت ارسال گذشته باشد، کد جدید ارسال می‌شود."); }
+    catch (err) { toast(err.message || "ارسال دوباره کد ناموفق بود."); }
+    finally { b.disabled = false; }
+  }
+  else if (act === "cancelSmsRegistration") { pendingSmsRegistration = null; authModal("register"); }
   else if (act === "cart") cartModal();
   else if (act === "panel") panelModal();
   else if (act === "admin") adminModal();
   else if (act === "support") supportModal();
   else if (act === "supportAdmin") supportAdminModal();
   else if (act === "exportOrders") exportOrdersCSV();
+  else if (act === "saveTracking") {
+    if (!isOwner()) return;
+    const code = b.dataset.code || "";
+    const input = document.querySelector(`[data-tracking-input="${CSS.escape(code)}"]`);
+    if (!input) return toast("فیلد کد رهگیری پیدا نشد.");
+    try {
+      b.disabled = true;
+      await DB.setPostalTracking(code, input.value);
+      toast("کد رهگیری پستی ذخیره شد ✅");
+      await adminModal("orders");
+    } catch (err) {
+      console.error(err);
+      toast("ذخیره کد رهگیری ناموفق بود: " + (err.message || "خطا"));
+    } finally { b.disabled = false; }
+  }
+  else if (act === "deleteOrder") {
+    if (!isOwner()) return;
+    const code = b.dataset.code || "";
+    if (!code) return toast("کد سفارش نامعتبر است.");
+    if (!confirm(`آیا از حذف دائمی سفارش ${code} مطمئن هستید؟ این کار قابل بازگشت نیست.`)) return;
+    try {
+      b.disabled = true;
+      await DB.deleteOrder(code);
+      toast("سفارش حذف شد.");
+      await adminModal("orders");
+    } catch (err) {
+      console.error(err);
+      toast("حذف سفارش ناموفق بود: " + (err.message || "خطا"));
+    } finally { b.disabled = false; }
+  }
   else if (act === "track") trackModal();
   else if (act === "inc") { state.cart[id] = (state.cart[id] || 0) + 1; renderCart(); cartModal(); }
   else if (act === "dec") { state.cart[id] = Math.max(0, (state.cart[id] || 0) - 1); renderCart(); cartModal(); }
@@ -721,9 +805,15 @@ document.addEventListener("submit", async (e) => {
   try {
     const kind = f.dataset.form;
     if (kind === "register") {
-      const r = await DB.signUp({ full_name: v.full_name.trim(), username: v.username.trim(), phone: (v.phone || "").trim(), email: v.email.trim(), password: v.password });
-      closeModal(); await refreshUser();
-      toast(r.confirmed ? "ثبت‌نام با موفقیت انجام شد 🎉" : "ثبت‌نام انجام شد؛ ایمیل خود را برای تأیید بررسی کنید 📧");
+      const phone = v.phone.replace(/[\s()-]/g, "").trim();
+      pendingSmsRegistration = { full_name: v.full_name.trim(), username: v.username.trim(), phone, email: v.email.trim().toLowerCase(), password: v.password };
+      await DB.startSmsRegistration({ full_name: pendingSmsRegistration.full_name, username: pendingSmsRegistration.username, phone, email: pendingSmsRegistration.email });
+      smsCodeModal(); toast("کد تأیید ارسال شد 📲");
+    } else if (kind === "verifySmsRegistration") {
+      if (!pendingSmsRegistration) throw new Error("اطلاعات ثبت‌نام پیدا نشد؛ لطفاً دوباره ثبت‌نام کن.");
+      const code = v.code.replace(/[۰-۹]/g, d => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)));
+      await DB.verifySmsRegistration({ ...pendingSmsRegistration, code });
+      pendingSmsRegistration = null; closeModal(); await refreshUser(); toast("شماره تأیید شد و حساب شما ساخته شد 🎉");
     } else if (kind === "login") {
       await DB.signIn(v.email.trim(), v.password); closeModal(); await refreshUser(); toast("خوش آمدید 👋");
     } else if (kind === "profile") {
