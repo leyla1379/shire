@@ -57,8 +57,43 @@ tailwind.config = { theme: { extend: {
   .chat-user { justify-self:start; background:rgba(243,199,106,.16); border:1px solid rgba(243,199,106,.28); }
   .chat-admin { justify-self:end; background:rgba(243,199,106,.95); color:#2a0f33; }
   .chat-meta { display:block; font-size:10px; opacity:.7; margin-top:4px; }
-  .product-photo { height:180px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:12px; }
-  .product-photo img { width:100%; height:100%; object-fit:contain; }
+  /* کارت‌های حرفه‌ای محصولات؛ فقط ظاهر، بدون تغییر منطق سفارش */
+  #grid .card {
+    position: relative;
+    overflow: hidden;
+    padding: 16px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(255,240,220,.10), rgba(255,240,220,.035));
+    border: 1px solid rgba(243,199,106,.28);
+    box-shadow: 0 10px 28px rgba(0,0,0,.12);
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  #grid .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(243,199,106,.72);
+    box-shadow: 0 16px 34px rgba(0,0,0,.22);
+  }
+  .product-photo {
+    height: 220px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    border-radius:16px;
+    border:1px solid rgba(243,199,106,.18);
+    background: radial-gradient(ellipse at center, rgba(243,199,106,.13), rgba(75,29,82,.16) 68%, rgba(30,10,38,.25));
+  }
+  .product-photo img {
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    padding:10px;
+    transition: transform .3s ease;
+  }
+  #grid .card:hover .product-photo img { transform: scale(1.035); }
+  #grid .card h3 { font-size: 1.1rem; line-height: 1.8; }
+  #grid .card p { font-size: .8rem; line-height: 1.9; color: rgba(251,240,220,.78); }
+  #grid .card [data-add] { min-height: 38px; padding-inline: 18px; font-weight: 700; }
   .admin-product-thumb { width:76px;height:76px;object-fit:contain;aspect-ratio:1/1;border-radius:10px;background:rgba(255,240,220,.08);border:1px solid rgba(243,199,106,.25); }
   .admin-stat { background:linear-gradient(145deg,rgba(243,199,106,.16),rgba(255,240,220,.04));border:1px solid rgba(243,199,106,.24);border-radius:16px;padding:14px; }
   .admin-section-title { color:#f3c76a;font-weight:800;font-size:17px;margin:22px 0 10px; }
