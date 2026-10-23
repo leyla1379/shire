@@ -286,12 +286,13 @@ const normalizeSiteContent = (raw) => {
   return {
     weekly_offer: {
       label: String(offer.label ?? defaultSiteContent.weekly_offer.label).slice(0, 80),
-      title: String(offer.title ?? defaultSiteContent.weekly_offer.title).slice(0, 120),
+      title: String(offer.title ?? defaultSiteContent.weekly_offer.title).replace(/\r?\n/g, "\\n").slice(0, 120),
       description: String(offer.description ?? defaultSiteContent.weekly_offer.description).slice(0, 500),
       price: Math.max(0, Number(offer.price ?? defaultSiteContent.weekly_offer.price) || 0),
       oldPrice: Math.max(0, Number(offer.oldPrice ?? defaultSiteContent.weekly_offer.oldPrice) || 0),
       discount: Math.min(100, Math.max(0, Number(offer.discount ?? defaultSiteContent.weekly_offer.discount) || 0))
     },
+    why_heading: String(raw?.why_heading ?? "چرا شیرین کده پاریس؟").slice(0, 100),
     why: defaultSiteContent.why.map((fallback, i) => {
       const card = Array.isArray(raw?.why) ? raw.why[i] || {} : {};
       return { emoji: String(card.emoji ?? fallback.emoji).slice(0, 8), title: String(card.title ?? fallback.title).slice(0, 80), description: String(card.description ?? fallback.description).slice(0, 220) };
