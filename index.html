@@ -418,15 +418,16 @@ const DB = {
     if (sb) { const { data } = await sb.auth.getSession(); return fromSb(data.session?.user); }
     const id = LS.get("sh_session", null); const u = LS.get("sh_users", []).find(x => x.id === id); return u ? pub(u) : null;
   },
-  async signUp({ full_name, username, email, password }) {
+  async signUp({ full_name, username, phone, email, password }) {
     const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = String(phone || "").trim();
     if (sb) {
       const { data, error } = await sb.auth.signUp({
         email: cleanEmail,
         password,
         options: {
           emailRedirectTo: window.location.origin + window.location.pathname,
-          data: { full_name: full_name.trim(), username: username.trim() }
+          data: { full_name: full_name.trim(), username: username.trim(), phone: cleanPhone }
         }
       });
       if (error) throw error;
@@ -434,7 +435,7 @@ const DB = {
     }
     const users = LS.get("sh_users", []);
     if (users.some(u => u.email === cleanEmail)) throw new Error("با این ایمیل قبلاً حساب ساخته شده است.");
-    const user = { id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), email: cleanEmail, full_name: full_name.trim(), username: username.trim(), pass: await hash(password), created_at: new Date().toISOString() };
+    const user = { id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), email: cleanEmail, full_name: full_name.trim(), username: username.trim(), phone: cleanPhone, pass: await hash(password), created_at: new Date().toISOString() };
     users.push(user); LS.set("sh_users", users); LS.set("sh_session", user.id);
     return { session: true, needsEmailConfirmation: false };
   },
@@ -629,7 +630,7 @@ function authModal(mode) {
   const reg = mode === "register";
   showModal(head(reg ? "📝 ثبت‌نام با ایمیل" : "👤 ورود") + `
     <form class="form" data-form="${reg ? "register" : "login"}">
-      ${reg ? `<input class="field" name="full_name" required maxlength="100" autocomplete="name" placeholder="نام و نام خانوادگی"><input class="field" name="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_.-]+" placeholder="نام کاربری (حروف انگلیسی و عدد)" dir="ltr" style="text-align:right"><p class="text-xs leading-6 text-cream/70">برای ساخت حساب، ایمیل معتبر و رمز عبور وارد کن. در صورت فعال بودن تأیید ایمیل، لینک فعال‌سازی برایت فرستاده می‌شود.</p>` : ""}
+      ${reg ? `<input class="field" name="full_name" required maxlength="100" autocomplete="name" placeholder="نام و نام خانوادگی"><input class="field" name="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_.-]+" placeholder="نام کاربری (حروف انگلیسی و عدد)" dir="ltr" style="text-align:right"><input class="field" name="phone" type="tel" required maxlength="20" pattern="[+0-9() \\-]{7,20}" autocomplete="tel" placeholder="شماره تلفن همراه (فقط جهت تماس)" dir="ltr" style="text-align:right"><p class="text-xs leading-6 text-cream/70">ثبت‌نام و ورود فقط با ایمیل و رمز عبور انجام می‌شود؛ شماره تلفن فقط برای اطلاعات تماس است و کد پیامکی ارسال نمی‌شود. در صورت فعال بودن تأیید ایمیل، لینک فعال‌سازی برایت فرستاده می‌شود.</p>` : ""}
       <input class="field" name="email" type="email" required autocomplete="email" placeholder="ایمیل" dir="ltr" style="text-align:right">
       <input class="field" name="password" type="password" required minlength="6" autocomplete="${reg ? "new-password" : "current-password"}" placeholder="رمز عبور (حداقل ۶ کاراکتر)" dir="ltr" style="text-align:right">
       <button class="btn-gold rounded-xl px-4 py-3">${reg ? "ساخت حساب با ایمیل" : "ورود"}</button>
@@ -668,6 +669,7 @@ async function panelModal() {
       <input class="field" name="full_name" required value="${esc(me.full_name || "")}">
       <p class="text-sm text-cream/80">نام کاربری: <b>${esc(me.username || "—")}</b></p>
       <p class="text-sm text-cream/80" dir="rtl">ایمیل: <b dir="ltr">${esc(me.email)}</b></p>
+      <p class="text-sm text-cream/80" dir="rtl">شماره تماس: <b dir="ltr">${esc(me.phone || "ثبت نشده")}</b></p>
       <button class="btn-gold rounded-xl px-4 py-2.5">ذخیره تغییرات</button>
     </form>
     <h4 class="mt-5 mb-2 font-bold text-honey">سفارش‌های من</h4>
@@ -1004,7 +1006,7 @@ document.addEventListener("submit", async (e) => {
   try {
     const kind = f.dataset.form;
     if (kind === "register") {
-      const result = await DB.signUp({ full_name: v.full_name, username: v.username, email: v.email, password: v.password });
+      const result = await DB.signUp({ full_name: v.full_name, username: v.username, phone: v.phone, email: v.email, password: v.password });
       if (result.needsEmailConfirmation) {
         showModal(head("📩 ایمیل فعال‌سازی ارسال شد") + `<p class="text-sm leading-7 text-cream/80">حساب شما ثبت شد. صندوق ورودی ایمیل <b dir="ltr">${esc(v.email.trim())}</b> را بررسی کن و روی لینک تأیید بزن؛ سپس با همین ایمیل و رمز عبور وارد شو. اگر ایمیل را نمی‌بینی، پوشه هرزنامه را هم بررسی کن.</p><button data-act="login" class="btn-gold mt-4 w-full rounded-xl px-4 py-3">رفتن به ورود</button>`);
         toast("ثبت‌نام انجام شد؛ ایمیلت را بررسی کن 📩");
