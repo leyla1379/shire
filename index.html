@@ -548,15 +548,16 @@ const DB = {
  },
 async track(code) {
   code = String(code || "").trim().toUpperCase();
+  if (!code) return null;
 
   if (sb) {
-    const { data, error } = await sb.rpc("track_order", {
+    const { data, error } = await sb.rpc("track_order_details", {
       p_code: code
     });
 
     if (error) {
       console.error("خطای پیگیری سفارش:", error);
-      throw new Error("دریافت اطلاعات سفارش ناموفق بود. دوباره تلاش کنید.");
+      throw new Error("دریافت اطلاعات سفارش ناموفق بود. اگر این مشکل ادامه داشت، مدیر فروشگاه باید تنظیمات SQL پیگیری سفارش را در Supabase اجرا کند.");
     }
 
     return Array.isArray(data) ? (data[0] || null) : (data || null);
@@ -564,7 +565,7 @@ async track(code) {
 
   return LS.get("sh_orders", []).find(
     o => String(o.code || "").trim().toUpperCase() === code
-    ) || null;
+  ) || null;
   }
 };
 
