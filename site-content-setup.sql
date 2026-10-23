@@ -38,3 +38,28 @@ create policy "Store owner can update site content"
 
 grant select on public.site_settings to anon, authenticated;
 grant insert, update on public.site_settings to authenticated;
+
+-- پیگیری سفارش برای مشتری: خروجی محدود شامل کد رهگیری پستی
+-- این بخش را در Supabase Dashboard > SQL Editor اجرا کنید.
+create or replace function public.track_order_details(p_code text)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'code', o.code,
+    'status', o.status,
+    'total', o.total,
+    'created_at', o.created_at,
+    'items', o.items,
+    'postal_tracking_code', o.postal_tracking_code
+  )
+  from public.orders as o
+  where upper(trim(o.code::text)) = upper(trim(p_code))
+  limit 1;
+$$;
+
+revoke all on function public.track_order_details(text) from public;
+grant execute on function public.track_order_details(text) to anon, authenticated;
