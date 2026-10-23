@@ -212,7 +212,7 @@ tailwind.config = { theme: { extend: {
           <span id="weeklyOfferPrice" class="text-4xl font-extrabold">۳۸۴٬۰۰۰ <small class="text-base">تومان</small></span>
           <span id="weeklyOfferOldPrice" class="text-lg line-through opacity-60">۴۸۰٬۰۰۰</span>
         </div>
-        <button data-add="special" class="mt-5 rounded-full bg-grape px-7 py-3 font-bold text-honey transition hover:scale-105">افزودن به سبد</button>
+        <button data-discount-code="shire" class="mt-5 rounded-full bg-grape px-7 py-3 font-bold text-honey transition hover:scale-105">🎟️ کد تخفیف</button>
       </div>
       <div class="flex justify-center"><div id="specialJar" class="w-52 sm:w-64"></div></div>
     </div>
@@ -356,6 +356,12 @@ function renderCart() {
   document.getElementById("cartTotal").textContent = fa(total);
 }
 document.addEventListener("click", (e) => {
+  const discount = e.target.closest("[data-discount-code]");
+  if (discount) {
+    showModal(head("🎟️ کد تخفیف پیشنهاد ویژه") + `<div class="py-6 text-center"><p class="text-sm text-cream/80 mb-3">کد تخفیف خود را هنگام سفارش وارد کنید</p><div class="text-3xl font-extrabold tracking-widest text-honey" dir="ltr">shire</div><button data-act="copyDiscountCode" class="btn-gold rounded-xl px-5 py-3 mt-5">کپی کد تخفیف</button></div>`);
+    modal.dataset.view = "discount-code";
+    return;
+  }
   const cat = e.target.closest("[data-cat]");
   if (cat) { state.cat = cat.dataset.cat; renderPills(); renderGrid(); return; }
   const add = e.target.closest("[data-add]");
@@ -926,6 +932,14 @@ document.addEventListener("click", async (e) => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const act = b.dataset.act, id = b.dataset.id;
   if (act === "close") closeModal();
+  else if (act === "copyDiscountCode") {
+    try {
+      await navigator.clipboard.writeText("shire");
+      toast("کد تخفیف shire کپی شد.");
+    } catch {
+      toast("کد تخفیف: shire");
+    }
+  }
   else if (act === "login") authModal("login");
   else if (act === "register") { pendingSmsRegistration = null; authModal("register"); }
   else if (act === "resendSmsCode") {
