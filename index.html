@@ -172,6 +172,59 @@ tailwind.config = { theme: { extend: {
     padding-right: 32px;
   }
 }
+
+  /* ارتقای بصری لوکس و سه‌بعدی؛ فقط CSS، بدون تغییر منطق سایت */
+  #grid .card {
+    transform-style: preserve-3d;
+    background:
+      radial-gradient(ellipse at 8% 0%, rgba(243,199,106,.13), transparent 48%),
+      linear-gradient(145deg, rgba(255,240,220,.115), rgba(255,240,220,.035) 58%, rgba(24,7,31,.22));
+    box-shadow: 0 14px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  #grid .card:hover {
+    transform: translateY(-5px) perspective(900px) rotateX(.6deg);
+    box-shadow: 0 22px 42px rgba(0,0,0,.3), 0 0 0 1px rgba(243,199,106,.08), inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .product-photo {
+    position: relative;
+    box-shadow: inset 0 2px 12px rgba(0,0,0,.2), 0 8px 18px rgba(0,0,0,.12);
+    background:
+      radial-gradient(ellipse at 50% 35%, rgba(255,241,201,.17), transparent 44%),
+      radial-gradient(ellipse at center, rgba(243,199,106,.12), rgba(75,29,82,.18) 68%, rgba(30,10,38,.3));
+  }
+  .product-photo img {
+    filter: drop-shadow(0 9px 9px rgba(0,0,0,.22));
+  }
+  #grid .card [data-add] {
+    border-radius: 999px;
+    box-shadow: 0 5px 14px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.22);
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+  }
+  #grid .card [data-add]:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    box-shadow: 0 9px 20px rgba(0,0,0,.24), 0 0 16px rgba(243,199,106,.12);
+  }
+  .btn-gold {
+    box-shadow: 0 9px 24px -9px rgba(224,160,48,.85), inset 0 1px 0 rgba(255,255,255,.28);
+  }
+  .glass {
+    box-shadow: 0 12px 30px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  @media (max-width: 640px) {
+    #grid .card { border-radius: 19px; }
+    .product-photo { height: 200px; }
+    #grid .card:hover { transform: translateY(-2px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #grid .card, .product-photo img, #grid .card [data-add], .btn-gold {
+      transition: none !important;
+    }
+    #grid .card:hover, #grid .card [data-add]:hover, .btn-gold:hover {
+      transform: none !important;
+    }
+  }
+
 </style>
 </head>
 <body>
