@@ -673,7 +673,7 @@ async function panelModal() {
       <button class="btn-gold rounded-xl px-4 py-2.5">ذخیره تغییرات</button>
     </form>
     <h4 class="mt-5 mb-2 font-bold text-honey">سفارش‌های من</h4>
-    ${orders.length ? orders.map(o => `<div class="row-item"><span dir="ltr">${esc(o.code)}</span><span class="tag">${esc(o.status)}</span><span>${fa(o.total)}</span></div>`).join("") : `<p class="text-sm text-cream/60">هنوز سفارشی ثبت نکرده‌اید.</p>`}
+    ${orders.length ? orders.map(o => `<div class="row-item"><div class="min-w-0"><b dir="ltr">${esc(o.code)}</b><p class="mt-1 text-xs text-cream/70">${esc(o.status || "وضعیت نامشخص")} · ${fa(o.total)} تومان</p></div><button type="button" class="admin-action shrink-0" data-act="trackOrderCode" data-code="${esc(o.code)}">پیگیری</button></div>`).join("") : `<p class="text-sm text-cream/60">هنوز سفارشی ثبت نکرده‌اید.</p>`}
     ${isOwner() ? `<button data-act="admin" class="btn-gold mt-4 w-full rounded-xl px-4 py-2.5">🛠 مدیریت سفارش‌ها</button><button data-act="supportAdmin" class="btn-ghost mt-2 w-full rounded-xl px-4 py-2.5">💬 مدیریت گفت‌وگوهای پشتیبانی</button>` : ""}
     <button data-act="logout" class="btn-ghost mt-3 w-full rounded-xl px-4 py-2.5">خروج از حساب</button>`);
 }
@@ -1016,6 +1016,12 @@ document.addEventListener("click", async (e) => {
     } finally { b.disabled = false; }
   }
   else if (act === "track") trackModal();
+  else if (act === "trackOrderCode") {
+    const code = String(b.dataset.code || "").trim();
+    if (!code) return toast("کد سفارش نامعتبر است.");
+    try { trackModal(await DB.track(code)); }
+    catch (err) { console.error(err); toast("پیگیری سفارش ناموفق بود: " + (err.message || "خطا")); }
+  }
   else if (act === "inc") { state.cart[id] = (state.cart[id] || 0) + 1; renderCart(); cartModal(); }
   else if (act === "dec") { state.cart[id] = Math.max(0, (state.cart[id] || 0) - 1); renderCart(); cartModal(); }
   else if (act === "logout") { await DB.signOut(); await refreshUser(); closeModal(); toast("از حساب خارج شدید"); }
