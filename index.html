@@ -57,40 +57,8 @@ tailwind.config = { theme: { extend: {
   .chat-user { justify-self:start; background:rgba(243,199,106,.16); border:1px solid rgba(243,199,106,.28); }
   .chat-admin { justify-self:end; background:rgba(243,199,106,.95); color:#2a0f33; }
   .chat-meta { display:block; font-size:10px; opacity:.7; margin-top:4px; }
-  .product-card { display:flex; align-items:stretch; gap:18px; padding:16px; border-radius:22px; background:linear-gradient(115deg,rgba(255,240,220,.095),rgba(255,240,220,.035)); border:1px solid rgba(243,199,106,.22); box-shadow:0 10px 28px rgba(0,0,0,.12); transition:transform .28s,border-color .28s,box-shadow .28s; }
-  .product-card:hover { transform:translateY(-3px); border-color:rgba(243,199,106,.65); box-shadow:0 16px 34px rgba(0,0,0,.2); }
-  .product-photo { width:150px; min-width:150px; height:164px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:17px; background:radial-gradient(ellipse at 50% 40%,rgba(243,199,106,.16),rgba(255,240,220,.025) 70%); border:1px solid rgba(243,199,106,.15); padding:8px; }
+  .product-photo { height:180px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:12px; }
   .product-photo img { width:100%; height:100%; object-fit:contain; }
-  .product-card-content { display:flex; flex:1; min-width:0; flex-direction:column; }
-  .product-category { display:inline-flex; align-items:center; gap:5px; width:max-content; max-width:100%; border:1px solid rgba(243,199,106,.28); border-radius:999px; padding:3px 10px; color:#f3c76a; background:rgba(243,199,106,.08); font-size:11px; }
-  .product-price { display:inline-flex; align-items:baseline; gap:5px; border-radius:12px; background:rgba(243,199,106,.1); padding:8px 12px; color:#fff1c9; }
-  @media (max-width:640px) {
-    .product-card { gap:11px; padding:10px; border-radius:17px; }
-    .product-photo { width:100px; min-width:100px; height:125px; border-radius:13px; padding:5px; }
-    .product-card-content { padding-top:2px; }
-    .product-price { padding:7px 9px; }
-  }
-  .store-product-card { display:flex; align-items:stretch; gap:20px; padding:18px; border-radius:20px; background:linear-gradient(110deg,rgba(255,240,220,.09),rgba(255,240,220,.035)); border:1px solid rgba(243,199,106,.22); transition:transform .25s,border-color .25s,box-shadow .25s; }
-  .store-product-card:hover { transform:translateY(-3px); border-color:rgba(243,199,106,.65); box-shadow:0 14px 36px rgba(0,0,0,.16); }
-  .store-product-photo { flex:0 0 190px; width:190px; min-height:190px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:16px; background:radial-gradient(circle,rgba(243,199,106,.13),rgba(255,240,220,.025) 70%); border:1px solid rgba(243,199,106,.13); }
-  .store-product-photo img { width:100%; height:190px; object-fit:contain; object-position:center; padding:8px; }
-  .store-product-details { display:flex; flex:1; min-width:0; flex-direction:column; justify-content:center; }
-  .store-product-name { color:#f3c76a; font-size:clamp(17px,2vw,22px); font-weight:800; line-height:1.7; }
-  .store-product-note { color:rgba(251,240,220,.72); font-size:13px; line-height:1.9; }
-  .store-product-category { display:inline-flex; align-items:center; width:max-content; max-width:100%; border:1px solid rgba(243,199,106,.3); background:rgba(243,199,106,.1); color:#f3c76a; padding:4px 11px; border-radius:999px; font-size:11px; }
-  .store-product-bottom { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:18px; padding-top:14px; border-top:1px solid rgba(243,199,106,.16); }
-  .store-product-price { font-size:20px; font-weight:800; color:#fff0c5; }
-  .store-product-add { padding:10px 20px; border-radius:999px; font-size:13px; white-space:nowrap; }
-  @media (max-width: 540px) {
-    .store-product-card { gap:12px; padding:12px; border-radius:16px; }
-    .store-product-photo { flex-basis:105px; width:105px; min-height:130px; border-radius:12px; }
-    .store-product-photo img { height:130px; padding:4px; }
-    .store-product-name { font-size:15px; line-height:1.6; }
-    .store-product-note { font-size:11px; line-height:1.7; }
-    .store-product-bottom { gap:8px; margin-top:10px; padding-top:10px; }
-    .store-product-price { font-size:15px; }
-    .store-product-add { padding:8px 12px; font-size:11px; }
-  }
   .admin-product-thumb { width:76px;height:76px;object-fit:contain;aspect-ratio:1/1;border-radius:10px;background:rgba(255,240,220,.08);border:1px solid rgba(243,199,106,.25); }
   .admin-stat { background:linear-gradient(145deg,rgba(243,199,106,.16),rgba(255,240,220,.04));border:1px solid rgba(243,199,106,.24);border-radius:16px;padding:14px; }
   .admin-section-title { color:#f3c76a;font-weight:800;font-size:17px;margin:22px 0 10px; }
@@ -365,19 +333,18 @@ function renderPills() {
 function renderGrid() {
   const list = products.filter(p => state.cat === "همه" || p.cat === state.cat);
   grid.innerHTML = list.map(p => `
-    <article class="product-card">
-      <div class="product-photo">${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy" width="800" height="800">` : jarSVG(p.c, p.id)}</div>
-      <div class="product-card-content">
-        <span class="product-category"><span aria-hidden="true">✦</span> شیره ${esc(p.cat)}</span>
-        <h3 class="mt-2 text-lg font-extrabold leading-7 text-honey">${esc(p.name)}</h3>
-        <p class="mt-1 text-xs leading-6 text-cream/70">${esc(p.note)}</p>
-        <div class="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4">
-          <span class="product-price"><strong class="text-base">${fa(p.price)}</strong><small class="text-[10px] opacity-75">تومان</small></span>
-          <button data-add="${p.id}" aria-label="افزودن ${esc(p.name)} به سبد خرید" class="btn-gold inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-xs"><span aria-hidden="true">＋</span> افزودن به سبد</button>
+    <div class="card flex flex-col rounded-2xl p-3">
+      <div class="product-photo">${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">` : jarSVG(p.c, p.id)}</div>
+      <div class="flex flex-1 flex-col px-1 pt-3">
+        <h3 class="text-base font-bold text-honey">${p.name}</h3>
+        <p class="mt-1 text-[11px] leading-5 text-cream/70">${p.note}</p>
+        <div class="mt-auto flex items-center justify-between pt-3">
+          <span class="text-sm font-bold">${fa(p.price)} <small class="text-[10px] font-normal opacity-70">تومان</small></span>
+          <button data-add="${p.id}" class="btn-gold rounded-full px-3 py-1 text-[11px]">افزودن</button>
         </div>
       </div>
-    </article>`).join("");
-  gsap.from("#grid .product-card", { opacity: 0, y: 24, duration: .45, stagger: .06, ease: "power3.out" });
+    </div>`).join("");
+  gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
 }
 function renderCart() {
   let n = 0, total = 0;
