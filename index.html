@@ -709,6 +709,9 @@ async function adminModal(initialTab = "overview") {
   const inProgress = orders.filter(o => ["در حال آماده‌سازی", "ارسال شد"].includes(o.status)).length;
   const completed = orders.filter(o => ["تحویل داده شد", "تمام‌شده", "تمام شده"].includes(o.status)).length;
   const total = orders.length;
+  const activeOrders = orders.filter(o => !["لغو شد", "لغوشده", "لغو شده"].includes(String(o.status || "").trim()));
+  const orderValue = activeOrders.reduce((sum, o) => sum + Math.max(0, Number(o.total) || 0), 0);
+  const averageOrderValue = activeOrders.length ? Math.round(orderValue / activeOrders.length) : 0;
   const completion = total ? Math.round(completed * 100 / total) : 0;
   const customerMessages = messages.filter(m => m.sender_role !== "admin").length;
   const days = Array.from({length:7}, (_, i) => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - (6-i)); return d; });
@@ -735,7 +738,7 @@ async function adminModal(initialTab = "overview") {
   const n7 = Number(stats?.visits_7d || 0);
   showModal(head("🔐 پنل مدیریت") + `
     <p class="mb-4 text-xs text-cream/70">مدیر واردشده: <span dir="ltr">${esc(OWNER_EMAIL)}</span></p>
-    <div class="admin-tabs"><button class="active" data-admin-tab="overview">📊 داشبورد آمار</button><button data-admin-tab="users">👥 مدیریت کاربران (${fa(users.length)})</button><button data-admin-tab="notifications">🔔 مرکز اعلان‌ها</button><button data-admin-tab="orders">🛠️ سفارش‌ها (${fa(total)})</button><button data-admin-tab="messages">💬 صندوق گفت‌وگوها (${fa(ids.length)})</button><button data-admin-tab="products">🛍️ مدیریت محصولات</button><button data-admin-tab="content">📝 محتوای صفحه</button><button data-act="exportOrders">📥 دریافت گزارش CSV</button></div>
+    <div class="admin-tabs"><button class="active" data-admin-tab="overview">📊 داشبورد آمار</button><button data-admin-tab="users">👥 مدیریت کاربران (${fa(users.length)})</button><button data-admin-tab="notifications">🔔 مرکز اعلان‌ها</button><button data-admin-tab="orders">🛠️ سفارش‌ها (${fa(total)})</button><button data-admin-tab="messages">💬 صندوق گفت‌وگوها (${fa(ids.length)})</button><button data-admin-tab="products">🛍️ مدیریت محصولات</button><button data-admin-tab="content">📝 محتوای صفحه</button><button data-act="exportOrders">📥 دریافت گزارش CSV</button><button data-act="refreshAdmin" data-tab="${initialTab}" class="admin-action">🔄 بروزرسانی داده‌ها</button></div>
     <input class="field mb-3" id="adminSearch" placeholder="جست‌وجوی سفارش، کاربر یا پیام…">
     <section id="adminOverview">
       <h4 class="admin-section-title">📊 داشبورد آمار</h4>
@@ -746,7 +749,10 @@ async function adminModal(initialTab = "overview") {
         <div class="admin-stat"><p class="text-xs text-cream/70">در حال انجام</p><strong class="mt-1 block text-2xl text-honey">${fa(inProgress)}</strong></div>
         <div class="admin-stat"><p class="text-xs text-cream/70">تکمیل‌شده</p><strong class="mt-1 block text-2xl text-honey">${fa(completed)}</strong></div>
         <div class="admin-stat"><p class="text-xs text-cream/70">نرخ تکمیل سفارش‌ها</p><strong class="mt-1 block text-2xl text-honey">${fa(completion)}٪</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">ارزش سفارش‌های غیرلغوشده</p><strong class="mt-1 block text-xl text-honey">${fa(orderValue)} تومان</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">میانگین هر سفارش فعال</p><strong class="mt-1 block text-xl text-honey">${fa(averageOrderValue)} تومان</strong></div>
       </div>
+      <p class="mt-2 text-xs text-cream/50">این مبالغ بر اساس مبلغ سفارش‌های ثبت‌شده محاسبه شده‌اند و به معنی پرداخت قطعی نیستند.</p>
       <h4 class="admin-section-title">📅 سفارش‌های ثبت‌شده در ۷ روز اخیر</h4><div class="glass rounded-xl px-3 pb-2"><div class="admin-chart">${chart}</div></div>
       <h4 class="admin-section-title">📈 روند رشد سفارش‌ها</h4><p class="text-xs leading-7 text-cream/70">نمودار هفت‌روزه سفارش‌ها، تعداد سفارش‌های هر روز را نشان می‌دهد.</p>
       <h4 class="admin-section-title">👥 کاربران و بازدیدها</h4>
@@ -761,7 +767,11 @@ async function adminModal(initialTab = "overview") {
     </section>
     <section id="adminUsers" class="hidden"><h4 class="admin-section-title">👥 مدیریت کاربران</h4><p class="mb-3 text-xs text-cream/60">فهرست حساب‌های ثبت‌نام‌شده؛ اطلاعات حساس ورود نمایش داده نمی‌شود.</p><div class="admin-scroll">${userRows}</div></section>
     <section id="adminNotifications" class="hidden"><h4 class="admin-section-title">🔔 مرکز اعلان‌ها</h4><div class="admin-notice">${waiting ? `🛒 ${fa(waiting)} سفارش در انتظار بررسی است.` : "✅ سفارش جدیدی در انتظار بررسی نیست."}<br>${customerMessages ? `💬 ${fa(customerMessages)} پیام از مشتریان ثبت شده است؛ صندوق گفت‌وگوها را بررسی کن.` : "📭 پیام جدیدی از مشتریان ثبت نشده است."}</div><div class="mt-3 flex flex-wrap gap-2"><button class="admin-action" data-admin-tab="orders">مشاهده سفارش‌ها</button><button class="admin-action" data-admin-tab="messages">مشاهده گفت‌وگوها</button></div></section>
-    <section id="adminOrders" class="hidden"><h4 class="admin-section-title">🛠️ سفارش‌ها (${fa(total)})</h4><div class="admin-scroll">${orderCards}</div></section>
+    <section id="adminOrders" class="hidden"><h4 class="admin-section-title">🛠️ سفارش‌ها (${fa(total)})</h4>
+      <label class="block text-xs text-cream/70 mb-3">فیلتر وضعیت سفارش
+        <select class="field mt-1" id="adminOrderStatusFilter"><option value="">همه وضعیت‌ها</option>${STATUSES.map(st=>`<option value="${esc(st)}">${esc(st)}</option>`).join("")}</select>
+      </label>
+      <div class="admin-scroll">${orderCards}</div></section>
     <section id="adminMessages" class="hidden"><h4 class="admin-section-title">💬 صندوق گفت‌وگوها (${fa(ids.length)})</h4><div class="admin-scroll">${inbox}</div></section>
     <section id="adminProducts" class="hidden"><h4 class="admin-section-title">🛍️ مدیریت محصولات</h4><p class="text-xs leading-7 text-cream/70">نام، دسته‌بندی، توضیحات، قیمت و تصویر محصولات را اضافه یا ویرایش کنید. تصویرها به اندازه استاندارد ۸۰۰×۸۰۰ تبدیل می‌شوند و در کارت محصول بدون کشیدگی نمایش داده می‌شوند.</p><div id="productAdminArea" class="mt-3"><p class="py-5 text-center text-sm text-cream/70">در حال بارگذاری محصولات…</p></div></section>
     <section id="adminContent" class="hidden"><h4 class="admin-section-title">📝 ویرایش محتوای صفحه</h4><p class="text-xs leading-7 text-cream/70">این تغییرات در پایگاه داده ذخیره می‌شوند و پس از بارگذاری دوباره برای همه بازدیدکنندگان نمایش داده خواهند شد.</p><div id="contentAdminArea" class="mt-3"><p class="py-5 text-center text-sm text-cream/70">در حال بارگذاری محتوا…</p></div></section>
@@ -775,7 +785,18 @@ async function adminModal(initialTab = "overview") {
     if (target === "products") renderProductAdmin().catch(err=>{ const el=document.getElementById("productAdminArea"); if(el) el.innerHTML=`<p class="text-sm text-red-200">${esc(err.message || "خطا در دریافت محصولات")}</p>`; });
     if (target === "content") renderContentAdmin().catch(err=>{ const el=document.getElementById("contentAdminArea"); if(el) el.innerHTML=`<p class="text-sm text-red-200">${esc(err.message || "خطا در دریافت محتوا")}</p>`; });
   }));
-  document.getElementById("adminSearch")?.addEventListener("input", e => { const q=e.target.value.trim().toLowerCase(); document.querySelectorAll(".admin-search-item").forEach(el=>el.classList.toggle("hidden",!el.dataset.search.includes(q))); });
+  const applyAdminFilters = () => {
+    const q = (document.getElementById("adminSearch")?.value || "").trim().toLowerCase();
+    const status = document.getElementById("adminOrderStatusFilter")?.value || "";
+    document.querySelectorAll(".admin-search-item").forEach(el => {
+      const matchesText = (el.dataset.search || "").includes(q);
+      const statusSelect = el.querySelector("[data-status]");
+      const matchesStatus = !statusSelect || !status || statusSelect.value === status;
+      el.classList.toggle("hidden", !(matchesText && matchesStatus));
+    });
+  };
+  document.getElementById("adminSearch")?.addEventListener("input", applyAdminFilters);
+  document.getElementById("adminOrderStatusFilter")?.addEventListener("change", applyAdminFilters);
   if (initialTab && initialTab !== "overview") document.querySelector(`[data-admin-tab="${initialTab}"]`)?.click();
 }
 async function renderContentAdmin() {
@@ -936,6 +957,7 @@ document.addEventListener("click", async (e) => {
   else if (act === "cart") cartModal();
   else if (act === "panel") panelModal();
   else if (act === "admin") adminModal();
+  else if (act === "refreshAdmin") { if (!isOwner()) return; await adminModal(b.dataset.tab || "overview"); toast("اطلاعات پنل به‌روزرسانی شد."); }
   else if (act === "support") supportModal();
   else if (act === "supportAdmin") supportAdminModal();
   else if (act === "exportOrders") exportOrdersCSV();
