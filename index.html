@@ -739,13 +739,36 @@ function trackModal(result) {
 }
 
 document.addEventListener("click", async (e) => {
+  // دکمه‌های مدیریت محصول data-act ندارند؛ باید قبل از جست‌وجوی data-act بررسی شوند.
+  const editProduct = e.target.closest("[data-product-edit]");
+  if (editProduct) {
+    e.preventDefault();
+    if (!isOwner()) { toast("برای ویرایش محصولات با حساب مالک وارد شوید."); return; }
+    renderProductAdmin(editProduct.dataset.productEdit).catch(err => toast("ویرایش باز نشد: " + (err.message || "خطا")));
+    return;
+  }
+  const deleteProduct = e.target.closest("[data-product-delete]");
+  if (deleteProduct) {
+    e.preventDefault();
+    if (!isOwner()) { toast("برای حذف محصولات با حساب مالک وارد شوید."); return; }
+    if (!confirm("این محصول حذف شود؟")) return;
+    try {
+      await DB.deleteProduct(deleteProduct.dataset.productDelete);
+      const rows = await DB.getAllProducts();
+      products = rows.filter(p => p.active !== false).map((p, i) => ({...p, price:Number(p.price), c:p.c || "#4a1a2c", sort_order:p.sort_order ?? i}));
+      renderStoreProducts();
+      await renderProductAdmin();
+      toast("محصول حذف شد.");
+    } catch (err) { console.error(err); toast("حذف ناموفق بود: " + (err.message || "خطا")); }
+    return;
+  }
+  if (e.target.closest("[data-product-cancel]")) {
+    e.preventDefault();
+    renderProductAdmin().catch(err => toast("خطا: " + (err.message || "خطا")));
+    return;
+  }
   const b = e.target.closest("[data-act]"); if (!b) return;
   const act = b.dataset.act, id = b.dataset.id;
-  const editProduct=b.closest("[data-product-edit]");
-  if (editProduct) { renderProductAdmin(editProduct.dataset.productEdit).catch(err=>toast("خطا: "+err.message)); return; }
-  const deleteProduct=b.closest("[data-product-delete]");
-  if (deleteProduct) { if(!isOwner()) return; if(!confirm("این محصول حذف شود؟")) return; try { await DB.deleteProduct(deleteProduct.dataset.productDelete); const rows=await DB.getAllProducts(); products=rows.filter(p=>p.active!==false); renderStoreProducts(); await renderProductAdmin(); toast("محصول حذف شد."); } catch(err) { toast("حذف ناموفق بود: "+(err.message||"خطا")); } return; }
-  if (b.hasAttribute("data-product-cancel")) { renderProductAdmin().catch(err=>toast(err.message)); return; }
   if (act === "close") closeModal();
   else if (act === "login") authModal("login");
   else if (act === "register") { pendingSmsRegistration = null; authModal("register"); }
