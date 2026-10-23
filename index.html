@@ -441,12 +441,27 @@ const DB = {
     const { error }=await sb.storage.from("product-images").upload(path,blob,{contentType:"image/webp",upsert:true}); if(error) throw error;
     const { data }=sb.storage.from("product-images").getPublicUrl(path); return data.publicUrl;
   },
-  async track(code) {
-    code = code.trim().toUpperCase();
-    if (sb) { const { data } = await sb.rpc("track_order", { p_code: code }); return data && data[0] || null; }
-    return LS.get("sh_orders", []).find(o => o.code === code) || null;
-  },
-};
+ async track(code) {
+  code = String(code || "").trim().toUpperCase();
+
+  if (sb) {
+    const { data, error } = await sb.rpc("track_order", {
+      p_code: code
+    });
+
+    if (error) {
+      console.error("خطای پیگیری سفارش:", error);
+      throw new Error("دریافت اطلاعات سفارش ناموفق بود. دوباره تلاش کنید.");
+    }
+
+    return Array.isArray(data) ? (data[0] || null) : (data || null);
+  }
+
+  return LS.get("sh_orders", []).find(
+    o => String(o.code || "").trim().toUpperCase() === code
+  ) || null;
+},
+
 
 async function loadPublicProducts() {
   try {
