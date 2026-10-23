@@ -908,10 +908,32 @@ async function supportAdminModal() {
 }
 
 function trackModal(result) {
+  const status = String(result?.status || "").trim();
+  const stages = ["در انتظار تأیید", "در حال آماده‌سازی", "ارسال شد", "تحویل داده شد"];
+  const cancelled = ["لغو شد", "لغوشده", "لغو شده"].includes(status);
+  const currentStage = stages.indexOf(status);
+  const dateText = result?.created_at
+    ? new Date(result.created_at).toLocaleString("fa-IR", { dateStyle: "medium", timeStyle: "short" })
+    : "";
+  const progress = result ? (cancelled
+    ? `<div class="mt-4 rounded-xl border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">این سفارش لغو شده است. برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.</div>`
+    : `<div class="mt-5"><h4 class="mb-3 font-bold text-honey">مراحل سفارش</h4><ol class="grid gap-2 sm:grid-cols-2">${stages.map((stage, i) => {
+      const reached = currentStage >= 0 && i <= currentStage;
+      const active = i === currentStage;
+      return `<li class="flex items-center gap-3 rounded-xl border p-3 ${reached ? "border-honey/50 bg-honey/10" : "border-white/10 bg-white/5"}"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${reached ? "bg-honey text-grape" : "bg-white/10 text-cream/60"}">${reached ? "✓" : i + 1}</span><span class="text-sm ${active ? "font-extrabold text-honey" : reached ? "text-cream" : "text-cream/55"}">${stage}</span>${active ? '<span class="mr-auto tag">وضعیت فعلی</span>' : ""}</li>`;
+    }).join("")}</ol></div>`);
   showModal(head("📦 پیگیری سفارش") + `
-    <p class="mb-3 text-sm text-cream/75">کد پیگیری را که بعد از ثبت سفارش گرفته‌اید وارد کنید.</p>
-    <form class="form" data-form="track"><input class="field" name="code" required placeholder="مثلاً SH-AB12CD34" dir="ltr" style="text-align:right"><button class="btn-gold rounded-xl px-4 py-2.5">پیگیری</button></form>
-    <div class="mt-4">${result === undefined ? "" : result ? `<div class="row-item" style="display:block"><div class="flex flex-wrap items-center justify-between gap-2"><span dir="ltr">${esc(result.code)}</span><span class="tag">${esc(result.status)}</span><span>${fa(result.total)} تومان</span></div>${result.postal_tracking_code ? `<p class="mt-2 text-sm">کد رهگیری پستی: <b dir="ltr">${esc(result.postal_tracking_code)}</b></p>` : ""}</div>` : `<p class="text-sm text-cream/70">سفارشی با این کد پیدا نشد.</p>`}</div>`);
+    <p class="mb-3 text-sm text-cream/75">کد پیگیری را که پس از ثبت سفارش دریافت کرده‌اید وارد کنید.</p>
+    <form class="form" data-form="track"><input class="field" name="code" required placeholder="مثلاً SH-AB12CD34" dir="ltr" style="text-align:right" autocomplete="off" maxlength="40"><button class="btn-gold rounded-xl px-4 py-2.5">پیگیری سفارش</button></form>
+    <div class="mt-4">${result === undefined ? "" : result ? `
+      <div class="rounded-2xl border border-honey/25 bg-white/5 p-4">
+        <div class="flex flex-wrap items-center justify-between gap-2"><span class="text-xs text-cream/60">کد سفارش</span><b dir="ltr">${esc(result.code)}</b></div>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-2"><span class="tag">${esc(status || "وضعیت نامشخص")}</span><b class="text-honey">${fa(result.total)} تومان</b></div>
+        ${dateText ? `<p class="mt-3 text-xs text-cream/60">زمان ثبت: ${esc(dateText)}</p>` : ""}
+        ${Array.isArray(result.items) && result.items.length ? `<div class="mt-4 border-t border-white/10 pt-3"><h4 class="mb-2 text-sm font-bold text-honey">اقلام سفارش</h4>${result.items.map(item => `<div class="flex justify-between gap-3 py-1 text-sm"><span>${esc(item.name || "محصول")} × ${fa(item.qty || 1)}</span><span class="whitespace-nowrap">${fa((Number(item.price) || 0) * (Number(item.qty) || 1))} تومان</span></div>`).join("")}</div>` : ""}
+        ${result.postal_tracking_code ? `<div class="mt-4 rounded-xl border border-honey/20 p-3"><p class="text-xs text-cream/70">کد رهگیری پستی</p><b class="mt-1 block text-lg text-honey" dir="ltr">${esc(result.postal_tracking_code)}</b><p class="mt-2 text-xs text-cream/60">برای رهگیری مرسوله، این کد را در سامانه رسمی شرکت حمل‌ونقل وارد کنید.</p></div>` : ""}
+        ${progress}
+      </div>` : `<p class="rounded-xl border border-red-400/20 bg-red-400/5 p-3 text-sm text-cream/80">سفارشی با این کد پیدا نشد. کد را دقیق بررسی کنید یا با پشتیبانی تماس بگیرید.</p>`}</div>`);
 }
 
 document.addEventListener("click", async (e) => {
