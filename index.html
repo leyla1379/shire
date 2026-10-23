@@ -303,6 +303,43 @@ tailwind.config = { theme: { extend: {
     #grid .card:hover, #grid .card [data-add]:hover, #grid .card:hover .product-photo img { transform: none !important; }
   }
 
+
+  /* Live product cards — safe visual-only enhancement */
+  #grid .card {
+    animation: shire-product-arrive .42s ease both;
+    will-change: transform;
+  }
+  #grid .card:nth-child(2n) { animation-delay: 45ms; }
+  #grid .card:nth-child(3n) { animation-delay: 80ms; }
+  #grid .card .product-photo {
+    position: relative;
+    isolation: isolate;
+    transition: border-color .28s ease, box-shadow .28s ease, background-color .28s ease;
+  }
+  #grid .card .product-photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.10) 48%, transparent 68%);
+    transform: translateX(120%);
+    transition: transform .65s ease;
+  }
+  #grid .card:hover .product-photo::after { transform: translateX(-120%); }
+  #grid .card:hover .product-photo {
+    border-color: rgba(243,199,106,.48);
+    box-shadow: inset 0 0 24px rgba(243,199,106,.07);
+  }
+  @keyframes shire-product-arrive {
+    from { opacity: .72; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #grid .card { animation: none; }
+    #grid .card, #grid .card .product-photo, #grid .card .product-photo::after,
+    #grid .card .product-photo img { transition: none !important; }
+  }
+
 </style>
 </head>
 <body>
