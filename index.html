@@ -334,13 +334,13 @@ function renderGrid() {
   const list = products.filter(p => state.cat === "همه" || p.cat === state.cat);
   grid.innerHTML = list.map(p => `
     <div class="card flex flex-col rounded-2xl p-3">
-      <div class="product-photo relative"><button type="button" data-favorite="${esc(p.id)}" title="افزودن به علاقه‌مندی‌ها" aria-label="افزودن ${esc(p.name)} به علاقه‌مندی‌ها" class="absolute top-2 left-2 z-10 rounded-full border border-honey/40 bg-grape/90 px-3 py-1.5 text-lg text-honey">♡</button>${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">` : jarSVG(p.c, p.id)}</div>
+      <div class="product-photo">${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">` : jarSVG(p.c, p.id)}</div>
       <div class="flex flex-1 flex-col px-1 pt-3">
-        <h3 class="text-base font-bold text-honey">${esc(p.name)}</h3>
-        <p class="mt-1 text-[11px] leading-5 text-cream/70">${esc(p.note || "")}</p>
+        <h3 class="text-base font-bold text-honey">${p.name}</h3>
+        <p class="mt-1 text-[11px] leading-5 text-cream/70">${p.note}</p>
         <div class="mt-auto flex items-center justify-between pt-3">
           <span class="text-sm font-bold">${fa(p.price)} <small class="text-[10px] font-normal opacity-70">تومان</small></span>
-          <button data-add="${esc(p.id)}" class="btn-gold rounded-full px-3 py-1 text-[11px]">افزودن</button>
+          <button data-add="${p.id}" class="btn-gold rounded-full px-3 py-1 text-[11px]">افزودن</button>
         </div>
       </div>
     </div>`).join("");
@@ -355,33 +355,7 @@ function renderCart() {
   document.getElementById("cartCount").textContent = fa(n);
   document.getElementById("cartTotal").textContent = fa(total);
 }
-document.addEventListener("click", async (e) => {
-  const fav = e.target.closest("[data-favorite]");
-  if (fav) {
-    e.preventDefault();
-    if (!me) return authModal("login");
-    const product = products.find(p => String(p.id) === String(fav.dataset.favorite));
-    if (!product) return toast("محصول پیدا نشد.");
-    try {
-      fav.disabled = true;
-      const added = await DB.toggleFavorite(product);
-      toast(added ? "به علاقه‌مندی‌ها اضافه شد 💛" : "از علاقه‌مندی‌ها حذف شد");
-      if (modalBg.classList.contains("show") && modal.innerHTML.includes("پنل کاربری")) await panelModal("favorites");
-    } catch (err) { console.error(err); toast("ذخیره علاقه‌مندی ناموفق بود: " + (err.message || "خطا")); }
-    finally { fav.disabled = false; }
-    return;
-  }
-  const accountSection = e.target.closest("[data-account-section]");
-  if (accountSection) { e.preventDefault(); await panelModal(accountSection.dataset.accountSection); return; }
-  const removeFav = e.target.closest("[data-act='removeFavorite']");
-  if (removeFav) {
-    try { await DB.removeFavorite(removeFav.dataset.favoriteId); toast("از علاقه‌مندی‌ها حذف شد."); await panelModal("favorites"); }
-    catch (err) { console.error(err); toast("حذف علاقه‌مندی ناموفق بود: " + (err.message || "خطا")); }
-    return;
-  }
-  const openSupport = e.target.closest("[data-act='openCustomerSupport']");
-  if (openSupport) { await supportModal(); return; }
-
+document.addEventListener("click", (e) => {
   const discount = e.target.closest("[data-discount-code]");
   if (discount) {
     showModal(head("🎟️ کد تخفیف پیشنهاد ویژه") + `<div class="py-6 text-center"><p class="text-sm text-cream/80 mb-3">کد تخفیف خود را هنگام سفارش وارد کنید</p><div class="text-3xl font-extrabold tracking-widest text-honey" dir="ltr">shire</div><button data-act="copyDiscountCode" class="btn-gold rounded-xl px-5 py-3 mt-5">کپی کد تخفیف</button></div>`);
@@ -543,46 +517,6 @@ const DB = {
     if (sb) { const { data, error } = await sb.from("support_messages").select("id,user_id,sender_role,message,created_at").order("created_at", { ascending: true }).limit(500); if (error) throw error; return data || []; }
     return LS.get("sh_support_messages", []).sort((a,b) => new Date(a.created_at)-new Date(b.created_at));
   },
-  async myFavorites(uid) {
-    if (!uid) return [];
-    if (sb) {
-      const { data, error } = await sb.from("customer_favorites").select("product_id,created_at").eq("user_id", uid).order("created_at", { ascending: false });
-      if (error) throw error;
-      return data || [];
-    }
-    return LS.get("sh_favorites", []).filter(x => x.user_id === uid);
-  },
-  async toggleFavorite(product) {
-    if (!me) throw new Error("برای ذخیره علاقه‌مندی‌ها ابتدا وارد حساب شوید.");
-    const productId = String(product.id);
-    if (sb) {
-      const { data, error } = await sb.from("customer_favorites").select("product_id").eq("user_id", me.id).eq("product_id", productId).maybeSingle();
-      if (error) throw error;
-      if (data) {
-        const { error: delError } = await sb.from("customer_favorites").delete().eq("user_id", me.id).eq("product_id", productId);
-        if (delError) throw delError;
-        return false;
-      }
-      const { error: addError } = await sb.from("customer_favorites").insert({ user_id: me.id, product_id: productId });
-      if (addError) throw addError;
-      return true;
-    }
-    const all = LS.get("sh_favorites", []);
-    const idx = all.findIndex(x => x.user_id === me.id && String(x.product_id) === productId);
-    if (idx >= 0) { all.splice(idx, 1); LS.set("sh_favorites", all); return false; }
-    all.unshift({ user_id: me.id, product_id: productId, created_at: new Date().toISOString() });
-    LS.set("sh_favorites", all);
-    return true;
-  },
-  async removeFavorite(productId) {
-    if (!me) throw new Error("ابتدا وارد حساب شوید.");
-    if (sb) {
-      const { error } = await sb.from("customer_favorites").delete().eq("user_id", me.id).eq("product_id", String(productId));
-      if (error) throw error;
-      return;
-    }
-    LS.set("sh_favorites", LS.get("sh_favorites", []).filter(x => !(x.user_id === me.id && String(x.product_id) === String(productId))));
-  },
   async getProducts() {
     if (sb) {
       const { data, error } = await sb.from("product_catalog").select("id,cat,name,note,price,c,image_url,active,sort_order").eq("active", true).order("sort_order", { ascending: true });
@@ -735,56 +669,33 @@ function cartModal() {
   modal.dataset.view = "cart";
 }
 
-async function panelModal(section = "dashboard") {
+async function panelModal() {
   if (!me) return authModal("login");
-  showModal(head("👤 پنل کاربری") + `<p class="py-6 text-center text-cream/70">در حال بارگذاری پنل شما…</p>`);
-  let orders = [], favorites = [], ordersError = "", favoritesError = "";
-  try { orders = await DB.myOrders(me.id); } catch (err) { console.error(err); ordersError = err.message || "خطای دریافت سفارش‌ها"; }
-  try { favorites = await DB.myFavorites(me.id); } catch (err) { console.warn("فهرست علاقه‌مندی‌ها:", err); favoritesError = err.message || "خطای دریافت علاقه‌مندی‌ها"; }
-  const delivered = orders.filter(o => /تحویل|تکمیل|موفق/i.test(o.status || "")).length;
-  const spent = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
-  const points = Math.floor(spent / 10000);
-  const latest = orders[0];
-  const nav = `<div class="admin-tabs">
-    <button class="${section==="dashboard"?"active":""}" data-account-section="dashboard">🏠 داشبورد</button>
-    <button class="${section==="orders"?"active":""}" data-account-section="orders">📦 سفارش‌ها</button>
-    <button class="${section==="favorites"?"active":""}" data-account-section="favorites">💛 علاقه‌مندی‌ها (${fa(favorites.length)})</button>
-    <button class="${section==="club"?"active":""}" data-account-section="club">🎁 باشگاه مشتریان</button>
-    <button class="${section==="support"?"active":""}" data-account-section="support">💬 پشتیبانی</button>
-  </div>`;
-  const orderRows = ordersError ? `<p class="text-sm leading-7 text-red-200">سفارش‌ها بارگذاری نشدند. تنظیمات دسترسی جدول سفارش‌ها در Supabase را بررسی کنید.<span class="block text-xs opacity-80">${esc(ordersError)}</span></p>` : orders.length ? orders.map(o => `<div class="row-item" style="display:block">
+  showModal(head("👤 پنل کاربری") + `<p class="py-6 text-center text-cream/70">در حال بارگذاری…</p>`);
+  let orders = [];
+  let ordersError = "";
+  try { orders = await DB.myOrders(me.id); }
+  catch (err) {
+    console.error("دریافت سفارش‌های حساب کاربری ناموفق بود:", err);
+    ordersError = err.message || "خطای نامشخص";
+  }
+  showModal(head("👤 پنل کاربری") + `
+    <form class="form" data-form="profile">
+      <label class="text-xs text-cream/70">نام و نام خانوادگی</label>
+      <input class="field" name="full_name" required value="${esc(me.full_name || "")}">
+      <p class="text-sm text-cream/80">نام کاربری: <b>${esc(me.username || "—")}</b></p>
+      <p class="text-sm text-cream/80" dir="rtl">ایمیل: <b dir="ltr">${esc(me.email)}</b></p>
+      <p class="text-sm text-cream/80" dir="rtl">شماره تماس: <b dir="ltr">${esc(me.phone || "ثبت نشده")}</b></p>
+      <button class="btn-gold rounded-xl px-4 py-2.5">ذخیره تغییرات</button>
+    </form>
+    <h4 class="mt-5 mb-2 font-bold text-honey">سفارش‌های من</h4>
+    ${ordersError ? `<p class="text-sm leading-7 text-red-200">سفارش‌ها بارگذاری نشدند. تنظیمات دسترسی جدول سفارش‌ها در Supabase را اجرا کنید.<span class="block mt-1 text-xs opacity-80">${esc(ordersError)}</span></p>` : orders.length ? orders.map(o => `<div class="row-item" style="display:block">
       <div class="flex flex-wrap items-center justify-between gap-2"><b dir="ltr">${esc(o.code)}</b><span class="tag">${esc(o.status || "وضعیت نامشخص")}</span><b class="text-honey">${fa(o.total)} تومان</b></div>
       <p class="mt-2 text-xs text-cream/80">${(o.items || []).map(i => esc(i.name) + " × " + fa(i.qty || 1)).join("، ") || "جزئیات کالا ثبت نشده"}</p>
-      <div class="mt-2 text-xs text-cream/70">${o.created_at ? "تاریخ ثبت: " + esc(new Date(o.created_at).toLocaleDateString("fa-IR")) : ""}</div>
       ${o.postal_tracking_code ? `<p class="mt-2 text-sm">کد رهگیری پستی: <b dir="ltr" class="text-honey">${esc(o.postal_tracking_code)}</b></p>` : `<p class="mt-2 text-xs text-cream/60">کد رهگیری پستی هنوز توسط فروشگاه ثبت نشده است.</p>`}
       <button type="button" class="admin-action mt-2" data-act="trackOrderCode" data-code="${esc(o.code)}">مشاهده جزئیات و پیگیری</button>
-    </div>`).join("") : `<p class="text-sm text-cream/60">هنوز سفارشی ثبت نکرده‌اید.</p>`;
-  const favoriteRows = favoritesError ? `<p class="text-sm text-cream/70">فهرست علاقه‌مندی‌ها دریافت نشد. تنظیمات SQL را بررسی کنید. ${esc(favoritesError)}</p>` : favorites.length ? favorites.map(f => {
-    const p = products.find(x => String(x.id) === String(f.product_id));
-    return `<div class="row-item"><span>${esc(p?.name || ("محصول " + f.product_id))}</span><button class="admin-action" data-act="removeFavorite" data-favorite-id="${esc(f.product_id)}">حذف</button>${p ? `<button class="admin-action mr-2" data-add="${esc(p.id)}">افزودن به سبد</button>` : ""}</div>`;
-  }).join("") : `<p class="text-sm text-cream/60">هنوز محصولی به علاقه‌مندی‌ها اضافه نکرده‌اید. از قلب کنار محصولات استفاده کنید.</p>`;
-  let content = "";
-  if (section === "dashboard") content = `
-    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
-      <div class="admin-stat"><p class="text-xs text-cream/70">کل سفارش‌ها</p><strong class="mt-1 block text-2xl text-honey">${fa(orders.length)}</strong></div>
-      <div class="admin-stat"><p class="text-xs text-cream/70">خرید تکمیل‌شده</p><strong class="mt-1 block text-2xl text-honey">${fa(delivered)}</strong></div>
-      <div class="admin-stat"><p class="text-xs text-cream/70">امتیاز باشگاه</p><strong class="mt-1 block text-2xl text-honey">${fa(points)}</strong></div>
-    </div>
-    <h4 class="admin-section-title">آخرین سفارش</h4>
-    ${latest ? `<div class="row-item"><span>سفارش <b dir="ltr">${esc(latest.code)}</b><small class="block text-cream/60 mt-1">${esc(latest.status || "وضعیت نامشخص")}</small></span><b class="text-honey">${fa(latest.total)} تومان</b><button class="admin-action" data-act="trackOrderCode" data-code="${esc(latest.code)}">پیگیری</button></div>` : `<p class="text-sm text-cream/60">سفارشی برای نمایش وجود ندارد.</p>`}
-    <div class="grid grid-cols-2 gap-2 mt-4"><button class="btn-gold rounded-xl px-3 py-3" data-account-section="orders">📦 سفارش‌های من</button><button class="btn-ghost rounded-xl px-3 py-3" data-account-section="support">💬 پیام به پشتیبانی</button><button class="btn-ghost rounded-xl px-3 py-3" data-account-section="favorites">💛 علاقه‌مندی‌ها</button><button class="btn-ghost rounded-xl px-3 py-3" data-account-section="club">🎁 باشگاه مشتریان</button></div>`;
-  else if (section === "orders") content = `<h4 class="admin-section-title">📦 سفارش‌های من</h4>${orderRows}`;
-  else if (section === "favorites") content = `<h4 class="admin-section-title">💛 محصولات موردعلاقه</h4><p class="text-xs text-cream/70 mb-3">برای افزودن محصول، قلب کنار کارت محصول را لمس کنید.</p>${favoriteRows}`;
-  else if (section === "club") content = `
-    <div class="admin-stat"><p class="text-xs text-cream/70">امتیاز فعلی شما</p><strong class="mt-1 block text-3xl text-honey">${fa(points)} امتیاز</strong><p class="mt-2 text-xs text-cream/70">هر ۱۰٬۰۰۰ تومان از مجموع سفارش‌های ثبت‌شده، یک امتیاز محاسبه می‌کند.</p></div>
-    <div class="grid grid-cols-2 gap-2 mt-3"><div class="row-item"><span class="text-xs">مجموع سفارش‌ها</span><b>${fa(orders.length)}</b></div><div class="row-item"><span class="text-xs">مجموع خرید</span><b>${fa(spent)} تومان</b></div></div>
-    <p class="mt-3 text-xs leading-6 text-cream/60">این نسخه امتیاز را از سفارش‌های حساب شما محاسبه می‌کند؛ امتیاز فعلاً به تخفیف خودکار تبدیل نمی‌شود. سفارش‌های مهمان یا سفارش‌هایی که به حساب شما متصل نیستند در محاسبه نمی‌آیند.</p>`;
-  else if (section === "support") content = `<h4 class="admin-section-title">💬 پشتیبانی مشتریان</h4><p class="text-sm leading-7 text-cream/75 mb-3">از گفت‌وگوی پشتیبانی برای پرسیدن سؤال درباره سفارش یا محصولات استفاده کنید.</p><button data-act="openCustomerSupport" class="btn-gold w-full rounded-xl px-4 py-3">باز کردن گفت‌وگو با پشتیبان</button>`;
-  showModal(head("👤 پنل کاربری") + `
-    <div class="mb-4"><p class="text-sm text-cream/80">سلام، <b class="text-honey">${esc(me.full_name || me.username || "دوست عزیز")}</b></p><p class="mt-1 text-xs text-cream/60" dir="ltr">${esc(me.email || "")}</p></div>
-    ${nav}<section class="glass rounded-xl p-3 mb-4">${content}</section>
-    <details class="glass rounded-xl p-3"><summary class="cursor-pointer font-bold text-honey">⚙️ اطلاعات حساب کاربری</summary><form class="form mt-3" data-form="profile"><label class="text-xs text-cream/70">نام و نام خانوادگی</label><input class="field" name="full_name" required maxlength="100" value="${esc(me.full_name || "")}"><p class="text-xs text-cream/70">نام کاربری: <b>${esc(me.username || "—")}</b></p><p class="text-xs text-cream/70">شماره تماس: <b dir="ltr">${esc(me.phone || "ثبت نشده")}</b></p><button class="btn-gold rounded-xl px-4 py-2.5">ذخیره نام</button></form></details>
-    ${isOwner() ? `<button data-act="admin" class="btn-gold mt-4 w-full rounded-xl px-4 py-2.5">🛠 مدیریت فروشگاه</button>` : ""}
+    </div>`).join("") : `<p class="text-sm text-cream/60">هنوز سفارشی ثبت نکرده‌اید. اگر سفارش را بدون ورود به حساب ثبت کرده‌اید، از بخش «پیگیری سفارش» و کد سفارش استفاده کنید.</p>`}
+    ${isOwner() ? `<button data-act="admin" class="btn-gold mt-4 w-full rounded-xl px-4 py-2.5">🛠 مدیریت سفارش‌ها</button><button data-act="supportAdmin" class="btn-ghost mt-2 w-full rounded-xl px-4 py-2.5">💬 مدیریت گفت‌وگوهای پشتیبانی</button>` : ""}
     <button data-act="logout" class="btn-ghost mt-3 w-full rounded-xl px-4 py-2.5">خروج از حساب</button>`);
 }
 
