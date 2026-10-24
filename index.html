@@ -901,14 +901,29 @@ function authModal(mode) {
 const itemInfo = (id) => id === "special" ? { name: siteContent.weekly_offer.title.replace(/\n/g, " ").trim() + " (ویژه)", price: siteContent.weekly_offer.price } : products.find(p => p.id == id);
 const cartLines = () => Object.entries(state.cart).filter(([, q]) => q > 0).map(([id, q]) => ({ id, q, ...itemInfo(id) }));
 const cartTotal = () => cartLines().reduce((s, l) => s + l.price * l.q, 0);
+const discountRate = 0.10;
+const discountAmount = () => state.discountCodeApplied === "shire" ? Math.round(cartTotal() * discountRate) : 0;
+const finalCartTotal = () => Math.max(0, cartTotal() - discountAmount());
 
 function cartModal() {
   const lines = cartLines();
   modal.dataset.view = "cart";
   if (!lines.length) { showModal(head("🛒 سبد خرید") + `<p class="py-8 text-center text-cream/70">سبد خرید شما خالی است.</p>`); modal.dataset.view = "cart"; return; }
+  const subtotal = cartTotal(), saving = discountAmount(), finalTotal = finalCartTotal();
   showModal(head("🛒 سبد خرید") +
-    lines.map(l => `<div class="row-item"><span class="font-semibold">${esc(l.name)}</span><span class="qty flex items-center gap-2"><button data-act="dec" data-id="${l.id}">−</button><b>${fa(l.q)}</b><button data-act="inc" data-id="${l.id}">+</button></span><span class="text-honey">${fa(l.price * l.q)}</span></div>`).join("") +
-    `<div class="my-3 flex justify-between text-lg font-bold"><span>جمع کل</span><span class="text-honey">${fa(cartTotal())} تومان</span></div>
+    lines.map(l => `<div class="row-item"><span class="font-semibold">${esc(l.name)}</span><span class="qty flex items-center gap-2"><button type="button" data-act="dec" data-id="${l.id}">−</button><b>${fa(l.q)}</b><button type="button" data-act="inc" data-id="${l.id}">+</button></span><span class="text-honey">${fa(l.price * l.q)}</span></div>`).join("") +
+    `<div class="my-3 rounded-xl border border-amber-300/20 bg-white/5 p-3">
+      <label class="mb-2 block text-sm font-bold text-honey" for="cartDiscountCode">🎟️ کد تخفیف</label>
+      <div class="flex gap-2">
+        <input class="field" id="cartDiscountCode" name="discountCode" autocomplete="off" placeholder="کد تخفیف را وارد کنید" value="${state.discountCodeApplied === "shire" ? "shire" : ""}" dir="ltr" style="text-align:left">
+        <button type="button" data-act="applyDiscount" class="btn-gold shrink-0 rounded-xl px-4 py-2">اعمال</button>
+      </div>
+      <p class="mt-2 text-xs text-cream/65">کد shire شامل ۱۰٪ تخفیف است.</p>
+      ${saving ? `<p class="mt-2 text-sm text-green-200">تخفیف ۱۰٪ اعمال شد: ${fa(saving)} تومان</p>` : ""}
+    </div>
+    <div class="my-2 flex justify-between text-sm"><span>جمع کالاها</span><span>${fa(subtotal)} تومان</span></div>
+    ${saving ? `<div class="my-2 flex justify-between text-sm text-green-200"><span>مبلغ تخفیف</span><span>− ${fa(saving)} تومان</span></div>` : ""}
+    <div class="my-3 flex justify-between text-lg font-extrabold"><span>مبلغ نهایی</span><span class="text-honey">${fa(finalTotal)} تومان</span></div>
     <form class="form" data-form="checkout">
       <input class="field" name="name" required placeholder="نام و نام خانوادگی" value="${esc(me?.full_name || "")}">
       <input class="field" name="phone" type="tel" required placeholder="شماره تماس" value="${esc(me?.phone || "")}" dir="ltr" style="text-align:right">
@@ -1231,6 +1246,19 @@ document.addEventListener("click", async (e) => {
   else if (act === "login") authModal("login");
   else if (act === "register") authModal("register");
   else if (act === "cart") cartModal();
+  else if (act === "applyDiscount") {
+    const input = document.getElementById("cartDiscountCode");
+    const entered = String(input?.value || "").trim().toLowerCase();
+    if (entered !== "shire") {
+      state.discountCodeApplied = "";
+      toast("کد تخفیف معتبر نیست.");
+      cartModal();
+    } else {
+      state.discountCodeApplied = "shire";
+      toast("تخفیف ۱۰٪ با موفقیت اعمال شد.");
+      cartModal();
+    }
+  }
   else if (act === "panel") panelModal();
   else if (act === "admin") adminModal();
   else if (act === "refreshAdmin") { if (!isOwner()) return; await adminModal(b.dataset.tab || "overview"); toast("اطلاعات پنل به‌روزرسانی شد."); }
@@ -1299,9 +1327,12 @@ document.addEventListener("submit", async (e) => {
       await DB.saveName(v.full_name.trim()); await refreshUser(); toast("اطلاعات ذخیره شد ✅");
     } else if (kind === "checkout") {
       const lines = cartLines(); if (!lines.length) return;
-      const code = await DB.createOrder({ user_id: me?.id, name: v.name.trim(), phone: v.phone.trim(), address: v.address.trim(), total: cartTotal(), items: lines.map(l => ({ name: l.name, qty: l.q, price: l.price })) });
-      state.cart = {}; renderCart();
-      showModal(head("✅ سفارش ثبت شد") + `<p class="text-sm leading-7">سفارش شما با موفقیت ثبت شد. کد پیگیری خود را نگه دارید:</p><p class="my-4 rounded-xl bg-honey py-3 text-center text-2xl font-extrabold text-grape" dir="ltr">${code}</p><p class="text-xs text-cream/70">با همین کد از دکمه «پیگیری سفارش» وضعیت را ببینید.</p>`);
+      const subtotal = cartTotal(), saving = discountAmount(), finalTotal = finalCartTotal();
+      const orderItems = lines.map(l => ({ name: l.name, qty: l.q, price: l.price }));
+      if (saving > 0) orderItems.push({ name: "تخفیف کد shire (۱۰٪)", qty: 1, price: -saving });
+      const code = await DB.createOrder({ user_id: me?.id, name: v.name.trim(), phone: v.phone.trim(), address: v.address.trim(), total: finalTotal, items: orderItems });
+      state.cart = {}; state.discountCodeApplied = ""; renderCart();
+      showModal(head("✅ سفارش ثبت شد") + `<p class="text-sm leading-7">سفارش شما با موفقیت ثبت شد.</p><div class="my-3 rounded-xl bg-white/5 p-3 text-sm"><p>جمع کالاها: ${fa(subtotal)} تومان</p><p class="mt-1 text-green-200">مبلغ تخفیف: ${fa(saving)} تومان</p><p class="mt-1 font-bold text-honey">مبلغ نهایی: ${fa(finalTotal)} تومان</p></div><p class="text-sm leading-7">کد پیگیری خود را نگه دارید:</p><p class="my-4 rounded-xl bg-honey py-3 text-center text-2xl font-extrabold text-grape" dir="ltr">${code}</p><p class="text-xs text-cream/70">با همین کد از دکمه «پیگیری سفارش» وضعیت را ببینید.</p>`);
     } else if (kind === "track") {
       trackModal(await DB.track(v.code));
     } else if (kind === "supportSend") {
