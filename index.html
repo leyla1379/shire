@@ -340,6 +340,34 @@ tailwind.config = { theme: { extend: {
     #grid .card .product-photo img { transition: none !important; }
   }
 
+
+  /* ویترین لوکس شیره‌ها — فقط ظاهر؛ داده و منطق فروشگاه حفظ می‌شود */
+  nav.fixed { background:linear-gradient(180deg,rgba(20,4,16,.97),rgba(30,8,28,.86)) !important; border-bottom:1px solid rgba(243,199,106,.32); box-shadow:0 8px 30px rgba(0,0,0,.2); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+  .brand-name { letter-spacing:-.04em; text-shadow:0 0 22px rgba(243,199,106,.2); }
+  #home { min-height:min(860px,100svh); padding-top:110px; padding-bottom:80px; background:radial-gradient(ellipse at 72% 44%,rgba(166,81,35,.19),transparent 38%),radial-gradient(ellipse at 14% 58%,rgba(243,199,106,.08),transparent 42%); }
+  #heroText { position:relative; z-index:4; max-width:560px; padding:clamp(24px,4vw,48px); border:1px solid rgba(243,199,106,.22); border-radius:28px; background:linear-gradient(135deg,rgba(28,7,25,.82),rgba(54,15,48,.38)); box-shadow:0 24px 70px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.05); backdrop-filter:blur(8px); }
+  #heroText > p:first-child { display:inline-flex; border:1px solid rgba(243,199,106,.32); border-radius:999px; padding:7px 13px; background:rgba(243,199,106,.08); letter-spacing:.01em; }
+  #heroText h1 { text-shadow:0 8px 30px rgba(0,0,0,.28); }
+  #heroText > p:nth-of-type(2) { line-height:1.5; }
+  #heroText > p:nth-of-type(3) { max-width:440px; }
+  #stage { border-top:1px solid rgba(243,199,106,.14); border-bottom:1px solid rgba(243,199,106,.14); background:linear-gradient(90deg,rgba(18,4,17,.38),rgba(243,199,106,.035),rgba(18,4,17,.38)); }
+  #stageText { padding:28px; border:1px solid rgba(243,199,106,.24); border-radius:24px; background:rgba(26,6,24,.58); backdrop-filter:blur(10px); }
+  #menu > .glass { border-color:rgba(243,199,106,.3); background:linear-gradient(145deg,rgba(48,13,43,.84),rgba(23,6,23,.9)); box-shadow:0 26px 70px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.045); }
+  #menu h2, #whyHeading { letter-spacing:-.035em; }
+  #pills { padding-bottom:16px; border-bottom:1px solid rgba(243,199,106,.16); }
+  #pills .pill { padding:9px 18px; border-radius:999px; }
+  #grid { display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px !important; }
+  #grid .card { min-width:0; padding:12px; border-radius:22px; background:radial-gradient(ellipse at 50% 0%,rgba(243,199,106,.1),transparent 55%),linear-gradient(160deg,rgba(255,240,220,.075),rgba(24,7,31,.38)); box-shadow:0 18px 42px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.055); }
+  #grid .product-photo { height:clamp(150px,17vw,230px); border-radius:16px; background:radial-gradient(ellipse at 50% 72%,rgba(243,199,106,.18),transparent 52%),linear-gradient(145deg,rgba(90,32,64,.28),rgba(15,4,19,.45)); border-color:rgba(243,199,106,.25); }
+  #grid .product-photo img { padding:8px; }
+  #grid .card h3 { margin-top:2px; color:#f6d887; }
+  #grid .card [data-add] { min-height:42px; border:1px solid rgba(255,239,190,.42); box-shadow:0 7px 18px rgba(224,160,48,.17); }
+  #special > .reveal { border:1px solid rgba(255,228,165,.45); box-shadow:0 24px 65px rgba(0,0,0,.24); overflow:hidden; }
+  #why [data-why-card] { border-color:rgba(243,199,106,.25); background:linear-gradient(145deg,rgba(255,240,220,.085),rgba(255,240,220,.025)); transition:transform .25s ease,border-color .25s ease,background .25s ease; }
+  #why [data-why-card]:hover { transform:translateY(-4px); border-color:rgba(243,199,106,.58); background:linear-gradient(145deg,rgba(243,199,106,.12),rgba(255,240,220,.035)); }
+  @media (max-width:1024px) { #grid { grid-template-columns:repeat(2,minmax(0,1fr)); } #heroText { max-width:min(540px,90vw); } }
+  @media (max-width:640px) { nav.fixed { background:rgba(20,4,16,.96) !important; } #home { min-height:92svh; padding-top:110px; padding-bottom:70px; } #heroText { width:100%; padding:22px 18px; border-radius:22px; } #heroText h1 { font-size:clamp(2.7rem,12vw,4rem); } #heroText > p:nth-of-type(2) { font-size:clamp(1.25rem,6vw,1.8rem); } #grid { grid-template-columns:minmax(0,1fr); gap:14px !important; } #grid .card { padding:13px; } #grid .product-photo { height:230px; } #menu h2 { font-size:clamp(2rem,9vw,3rem); } }
+
 </style>
 </head>
 <body>
