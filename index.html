@@ -638,7 +638,7 @@ document.addEventListener("click", (e) => {
 });
 renderPills(); renderGrid(); renderCart();
 document.getElementById("specialJar").innerHTML = jarSVG("#2e1030", "sp");
-refreshWeeklyOfferDiscount();
+
 
 /* ---------------- Database (Supabase, with local fallback) ---------------- */
 // برای فعال‌سازی پایگاه داده واقعی، آدرس و کلید پروژه Supabase را اینجا بگذار (راهنما: supabase-setup.sql)
@@ -871,6 +871,7 @@ async track(code) {
   ) || null;
   }
 };
+refreshWeeklyOfferDiscount();
 
 async function loadPublicProducts() {
   try {
