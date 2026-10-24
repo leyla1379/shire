@@ -606,7 +606,7 @@ async function refreshWeeklyOfferDiscount() {
   const button=document.getElementById("weeklyOfferCodeButton");
   if(!button) return;
   try {
-    const [discounts, productRows]=await Promise.all([DB.getPublicProductDiscounts(), DB.getAllProducts()]);
+    const [discounts, productRows]=await Promise.all([DB.getPublicProductDiscounts(), DB.getProducts()]);
     // Match the two grape-molasses products flexibly; each discount row has one product_id.
     const normalizeName=v=>String(v||"").replace(/[ي]/g,"ی").replace(/[ك]/g,"ک").replace(/[\u200c\s]/g,"").toLowerCase();
     const offerProducts=productRows.filter(p=>{
