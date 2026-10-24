@@ -849,9 +849,9 @@ const DB = {
     LS.set("sh_product_discounts", LS.get("sh_product_discounts", []).filter(x=>String(x.product_id)!==String(productId)));
   },
   async getActiveDiscountByCode(code) {
-    const clean=String(code||"").trim().toUpperCase(); if(!clean)return null;
-    if(sb){const {data,error}=await sb.from("product_discounts").select("product_id,code,discount_type,discount_value,active").eq("code",clean).eq("active",true).limit(1);if(error)throw error;return data?.[0]||null;}
-    return LS.get("sh_product_discounts",[]).find(x=>x.active!==false&&String(x.code).toUpperCase()===clean)||null;
+    const clean=String(code||"").trim().toUpperCase(); if(!clean)return [];
+    if(sb){const {data,error}=await sb.from("product_discounts").select("product_id,code,discount_type,discount_value,active").eq("code",clean).eq("active",true);if(error)throw error;return data||[];}
+    return LS.get("sh_product_discounts",[]).filter(x=>x.active!==false&&String(x.code).trim().toUpperCase()===clean);
   },
   async deleteProduct(id) {
     if (!isOwner()) throw new Error("فقط مدیر فروشگاه می‌تواند محصولات را حذف کند.");
@@ -1394,11 +1394,11 @@ document.addEventListener("click", async (e) => {
     const input=document.getElementById("cartDiscountCode"); const entered=String(input?.value||"").trim().toUpperCase();
     if(!entered){state.productDiscountApplied=null;toast("کد تخفیف را وارد کنید.");cartModal();return;}
     try {
-      const d=await DB.getActiveDiscountByCode(entered);
-      if(!d){state.productDiscountApplied=null;toast("کد تخفیف معتبر یا فعال نیست.");cartModal();return;}
-      const eligibleIds=String(d.product_id||"").split(",").map(x=>x.trim());
+      const discounts=await DB.getActiveDiscountByCode(entered);
+      if(!discounts.length){state.productDiscountApplied=null;toast("کد تخفیف معتبر یا فعال نیست.");cartModal();return;}
+      const eligibleIds=discounts.map(d=>String(d.product_id));
       if(!cartLines().some(l=>eligibleIds.includes(String(l.id))&&l.id!=="special")){state.productDiscountApplied=null;toast("این کد برای محصولات انتخاب‌شده است؛ حداقل یکی از آن‌ها را به سبد اضافه کنید.");cartModal();return;}
-      state.productDiscountApplied=d;toast("کد تخفیف محصول اعمال شد.");cartModal();
+      state.productDiscountApplied=discounts[0];state.productDiscountApplied.product_ids=eligibleIds;toast("کد تخفیف محصول اعمال شد.");cartModal();
     } catch(err){console.error(err);toast("اعتبارسنجی کد ناموفق بود: "+(err.message||"خطا"));}
   }
   else if (act === "panel") panelModal();
