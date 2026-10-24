@@ -701,7 +701,7 @@ const DB = {
   },
   async createOrder(o) {
     const code = "SH-" + Math.random().toString(36).slice(2, 10).toUpperCase();
-    const row = { code, user_id: o.user_id || null, name: o.name, phone: o.phone, address: o.address, items: o.items, total: o.total, status: "در انتظار تأیید" };
+    const row = { code, user_id:o.user_id||null, name:o.name, phone:o.phone, address:o.address, items:o.items, subtotal:o.subtotal??o.total, discount_total:o.discount_total||0, discount_details:o.discount_details||[], total:o.total, status:"در انتظار تأیید", payment_provider:null, payment_status:"unpaid" };
     if (sb) { const { error } = await sb.from("orders").insert(row); if (error) throw error; return code; }
     const all = LS.get("sh_orders", []); all.unshift({ ...row, created_at: new Date().toISOString() }); LS.set("sh_orders", all); return code;
   },
@@ -1368,9 +1368,9 @@ document.addEventListener("submit", async (e) => {
       const lines = cartLines(); if (!lines.length) return;
       const subtotal = cartTotal(), saving = discountAmount(), finalTotal = finalCartTotal();
       const orderItems = lines.map(l => ({ name: l.name, qty: l.q, price: l.price }));
-      if (saving > 0) orderItems.push({ name: "تخفیف کد shire (۱۰٪)", qty: 1, price: -saving });
-      const code = await DB.createOrder({ user_id: me?.id, name: v.name.trim(), phone: v.phone.trim(), address: v.address.trim(), total: finalTotal, items: orderItems });
-      state.cart = {}; state.discountCodeApplied = ""; renderCart();
+      if (saving > 0) orderItems.push({ name:"تخفیف محصول: "+cartDiscountLines().map(d=>d.code+" ("+d.product_name+")").join(", "), qty:1, price:-saving });
+      const code = await DB.createOrder({ user_id:me?.id, name:v.name.trim(), phone:v.phone.trim(), address:v.address.trim(), subtotal, discount_total:saving, discount_details:cartDiscountLines(), total:finalTotal, items:orderItems });
+      state.cart = {}; state.productDiscountApplied = null; renderCart();
       showModal(head("✅ سفارش ثبت شد") + `<p class="text-sm leading-7">سفارش شما با موفقیت ثبت شد.</p><div class="my-3 rounded-xl bg-white/5 p-3 text-sm"><p>جمع کالاها: ${fa(subtotal)} تومان</p><p class="mt-1 text-green-200">مبلغ تخفیف: ${fa(saving)} تومان</p><p class="mt-1 font-bold text-honey">مبلغ نهایی: ${fa(finalTotal)} تومان</p></div><p class="text-sm leading-7">کد پیگیری خود را نگه دارید:</p><p class="my-4 rounded-xl bg-honey py-3 text-center text-2xl font-extrabold text-grape" dir="ltr">${code}</p><p class="text-xs text-cream/70">با همین کد از دکمه «پیگیری سفارش» وضعیت را ببینید.</p>`);
     } else if (kind === "track") {
       trackModal(await DB.track(v.code));
