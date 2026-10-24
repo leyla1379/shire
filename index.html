@@ -973,7 +973,36 @@ function cartModal() {
     <form class="form" data-form="checkout">
       <input class="field" name="name" required placeholder="نام و نام خانوادگی" value="${esc(me?.full_name || "")}">
       <input class="field" name="phone" type="tel" required placeholder="شماره تماس" value="${esc(me?.phone || "")}" dir="ltr" style="text-align:right">
-      <textarea class="field" name="address" required rows="3" placeholder="آدرس کامل"></textarea>
+      <div class="rounded-2xl border border-honey/20 bg-white/5 p-3 sm:p-4">
+        <p class="mb-3 text-sm font-bold text-honey">📍 نشانی تحویل سفارش</p>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label class="block text-xs text-cream/80">استان
+            <select class="field mt-1" name="province" required>
+              <option value="">انتخاب استان</option>
+              <option>آذربایجان شرقی</option><option>آذربایجان غربی</option><option>اردبیل</option><option>اصفهان</option><option>البرز</option><option>ایلام</option><option>بوشهر</option><option>تهران</option><option>چهارمحال و بختیاری</option><option>خراسان جنوبی</option><option>خراسان رضوی</option><option>خراسان شمالی</option><option>خوزستان</option><option>زنجان</option><option>سمنان</option><option>سیستان و بلوچستان</option><option>فارس</option><option>قزوین</option><option>قم</option><option>کردستان</option><option>کرمان</option><option>کرمانشاه</option><option>کهگیلویه و بویراحمد</option><option>گلستان</option><option>گیلان</option><option>لرستان</option><option>مازندران</option><option>مرکزی</option><option>هرمزگان</option><option>همدان</option><option>یزد</option>
+            </select>
+          </label>
+          <label class="block text-xs text-cream/80">شهرستان
+            <input class="field mt-1" name="county" required list="iran-counties" placeholder="نام شهرستان را وارد کنید">
+            <datalist id="iran-counties">
+              <option value="تهران"><option value="اسلامشهر"><option value="شهریار"><option value="ری"><option value="قدس"><option value="کرج"><option value="فردیس"><option value="نظرآباد"><option value="اصفهان"><option value="کاشان"><option value="شیراز"><option value="مشهد"><option value="نیشابور"><option value="تبریز"><option value="مراغه"><option value="ارومیه"><option value="اردبیل"><option value="رشت"><option value="لاهیجان"><option value="ساری"><option value="آمل"><option value="بابل"><option value="گرگان"><option value="اهواز"><option value="دزفول"><option value="آبادان"><option value="بندرعباس"><option value="یزد"><option value="کرمان"><option value="همدان"><option value="قم"><option value="قزوین"><option value="زنجان"><option value="سنندج"><option value="کرمانشاه"><option value="خرم‌آباد"><option value="بوشهر"><option value="زاهدان"><option value="بیرجند"><option value="بجنورد"><option value="سمنان"><option value="ایلام"><option value="یاسوج"><option value="شهرکرد"><option value="زابل"><option value="کیش"><option value="قشم">
+            </datalist>
+          </label>
+          <label class="block text-xs text-cream/80">کد پستی ۱۰ رقمی
+            <input class="field mt-1" name="postal_code" required inputmode="numeric" pattern="[0-9۰-۹]{10}" maxlength="10" placeholder="مثلاً 1234567890" dir="ltr" style="text-align:right">
+          </label>
+          <label class="block text-xs text-cream/80">پلاک
+            <input class="field mt-1" name="plate" required maxlength="20" placeholder="شماره پلاک">
+          </label>
+          <label class="block text-xs text-cream/80 sm:col-span-2">طبقه / واحد <span class="text-cream/50">(در صورت نیاز)</span>
+            <input class="field mt-1" name="floor" maxlength="40" placeholder="مثلاً طبقه ۲، واحد ۵">
+          </label>
+        </div>
+        <label class="mt-3 block text-xs text-cream/80">آدرس دقیق، خیابان و کوچه
+          <textarea class="field mt-1" name="street_address" required rows="3" maxlength="600" placeholder="نام خیابان، کوچه، نام ساختمان و نشانه‌های لازم برای تحویل"></textarea>
+        </label>
+        <p class="mt-2 text-xs leading-6 text-cream/55">لطفاً نشانی را دقیق وارد کنید تا سفارش بدون مشکل به دستتان برسد.</p>
+      </div>
       <button class="btn-gold rounded-xl px-4 py-3">ثبت سفارش</button>
     </form>`);
   modal.dataset.view = "cart";
@@ -1419,7 +1448,17 @@ document.addEventListener("submit", async (e) => {
       const subtotal = cartTotal(), saving = discountAmount(), finalTotal = finalCartTotal();
       const orderItems = lines.map(l => ({ name: l.name, qty: l.q, price: l.price }));
       if (saving > 0) orderItems.push({ name:"تخفیف محصول: "+cartDiscountLines().map(d=>d.code+" ("+d.product_name+")").join(", "), qty:1, price:-saving });
-      const code = await DB.createOrder({ user_id:me?.id, name:v.name.trim(), phone:v.phone.trim(), address:v.address.trim(), subtotal, discount_total:saving, discount_details:cartDiscountLines(), total:finalTotal, items:orderItems });
+      const postalCode = String(v.postal_code || "").replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).trim();
+      if (!/^\d{10}$/.test(postalCode)) { toast("کد پستی باید دقیقاً ۱۰ رقم باشد."); return; }
+      const fullAddress = [
+        "استان: " + v.province.trim(),
+        "شهرستان: " + v.county.trim(),
+        "کد پستی: " + postalCode,
+        "پلاک: " + v.plate.trim(),
+        "طبقه/واحد: " + (v.floor.trim() || "ثبت نشده"),
+        "نشانی: " + v.street_address.trim()
+      ].join("، ");
+      const code = await DB.createOrder({ user_id:me?.id, name:v.name.trim(), phone:v.phone.trim(), address:fullAddress, subtotal, discount_total:saving, discount_details:cartDiscountLines(), total:finalTotal, items:orderItems });
       state.cart = {}; state.productDiscountApplied = null; renderCart();
       showModal(head("✅ سفارش ثبت شد") + `<p class="text-sm leading-7">سفارش شما با موفقیت ثبت شد.</p><div class="my-3 rounded-xl bg-white/5 p-3 text-sm"><p>جمع کالاها: ${fa(subtotal)} تومان</p><p class="mt-1 text-green-200">مبلغ تخفیف: ${fa(saving)} تومان</p><p class="mt-1 font-bold text-honey">مبلغ نهایی: ${fa(finalTotal)} تومان</p></div><p class="text-sm leading-7">کد پیگیری خود را نگه دارید:</p><p class="my-4 rounded-xl bg-honey py-3 text-center text-2xl font-extrabold text-grape" dir="ltr">${code}</p><p class="text-xs text-cream/70">با همین کد از دکمه «پیگیری سفارش» وضعیت را ببینید.</p>`);
     } else if (kind === "track") {
