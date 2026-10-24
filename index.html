@@ -815,7 +815,8 @@ const DB = {
   },
   async saveProductDiscount(d) {
     if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
-    const selected=Array.isArray(d.product_ids)?d.product_ids.map(String).filter(Boolean):String(d.product_id||"").split(",").map(x=>x.trim()).filter(Boolean);
+    const submitted=Array.isArray(d.product_ids)?d.product_ids.map(String).filter(Boolean):[];
+    const selected=submitted.length?submitted:String(d.product_id||"").split(",").map(x=>x.trim()).filter(Boolean);
     const productIds=[...new Set(selected)];
     const row={product_id:productIds.join(","),code:String(d.code||"").trim().toUpperCase(),discount_type:d.discount_type==="fixed"?"fixed":"percent",discount_value:Number(d.discount_value),active:d.active!==false,updated_at:new Date().toISOString()};
     if(!productIds.length || !/^[A-Z0-9_-]{3,32}$/.test(row.code)) throw new Error("حداقل یک محصول را انتخاب کنید و کد معتبر وارد کنید.");
