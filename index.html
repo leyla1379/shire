@@ -386,6 +386,60 @@ tailwind.config = { theme: { extend: {
   @media (max-width:1024px) { #grid { grid-template-columns:minmax(0,1fr) !important; } #heroText { max-width:min(540px,90vw); } #grid .product-photo { height:clamp(260px,48vw,390px); } }
   @media (max-width:640px) { nav.fixed { background:rgba(20,4,16,.96) !important; } #home { min-height:92svh; padding-top:110px; padding-bottom:70px; } #heroText { width:100%; padding:22px 18px; border-radius:22px; } #heroText h1 { font-size:clamp(2.7rem,12vw,4rem); } #heroText > p:nth-of-type(2) { font-size:clamp(1.25rem,6vw,1.8rem); } #grid { grid-template-columns:minmax(0,1fr) !important; gap:18px !important; } #grid .card { padding:14px; } #grid .product-photo { height:clamp(260px,78vw,340px); } #menu h2 { font-size:clamp(2rem,9vw,3rem); } }
 
+
+  /* بازگردانی امن انیمیشن‌ها: محتوا حتی در صورت خطای GSAP هم پنهان نمی‌ماند */
+  .reveal { opacity: 1; transform: none; }
+  #why [data-why-card] {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    transform: perspective(900px) translateY(0) rotateX(0);
+    transform-style: preserve-3d;
+    box-shadow: 0 14px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.08);
+    transition: transform .38s cubic-bezier(.2,.8,.2,1), border-color .38s ease, box-shadow .38s ease, background .38s ease;
+    animation: why-card-enter .7s both;
+  }
+  #why [data-why-card]:nth-child(2) { animation-delay: .08s; }
+  #why [data-why-card]:nth-child(3) { animation-delay: .16s; }
+  #why [data-why-card]:nth-child(4) { animation-delay: .24s; }
+  #why [data-why-card]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .65;
+    background: radial-gradient(circle at 50% 0%, rgba(243,199,106,.18), transparent 65%);
+    transition: opacity .35s ease;
+  }
+  #why [data-why-card] [data-why-emoji] {
+    display: inline-block;
+    filter: drop-shadow(0 7px 8px rgba(0,0,0,.25));
+    transform: translateZ(22px);
+    transition: transform .38s cubic-bezier(.2,.8,.2,1), filter .38s ease;
+  }
+  #why [data-why-card]:hover {
+    transform: perspective(900px) translateY(-8px) rotateX(2deg);
+    border-color: rgba(243,199,106,.65);
+    box-shadow: 0 25px 48px rgba(0,0,0,.3), 0 0 22px rgba(243,199,106,.08), inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  #why [data-why-card]:hover::before { opacity: 1; }
+  #why [data-why-card]:hover [data-why-emoji] {
+    transform: translateZ(32px) scale(1.12) rotate(-4deg);
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,.32));
+  }
+  #whyHeading { text-shadow: 0 8px 28px rgba(0,0,0,.2), 0 0 24px rgba(243,199,106,.12); }
+  #special .reveal { opacity: 1; transform: none; }
+  @keyframes why-card-enter {
+    from { opacity: 0; transform: perspective(900px) translateY(18px) rotateX(2deg); }
+    to { opacity: 1; transform: perspective(900px) translateY(0) rotateX(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #why [data-why-card] { animation: none; transition: none; }
+    #why [data-why-card]:hover { transform: none; }
+    #why [data-why-card]:hover [data-why-emoji] { transform: none; }
+  }
+
 </style>
 </head>
 <body>
