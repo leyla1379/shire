@@ -356,17 +356,35 @@ tailwind.config = { theme: { extend: {
   #menu h2, #whyHeading { letter-spacing:-.035em; }
   #pills { padding-bottom:16px; border-bottom:1px solid rgba(243,199,106,.16); }
   #pills .pill { padding:9px 18px; border-radius:999px; }
-  #grid { display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px !important; }
-  #grid .card { min-width:0; padding:12px; border-radius:22px; background:radial-gradient(ellipse at 50% 0%,rgba(243,199,106,.1),transparent 55%),linear-gradient(160deg,rgba(255,240,220,.075),rgba(24,7,31,.38)); box-shadow:0 18px 42px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.055); }
-  #grid .product-photo { height:clamp(150px,17vw,230px); border-radius:16px; background:radial-gradient(ellipse at 50% 72%,rgba(243,199,106,.18),transparent 52%),linear-gradient(145deg,rgba(90,32,64,.28),rgba(15,4,19,.45)); border-color:rgba(243,199,106,.25); }
-  #grid .product-photo img { padding:8px; }
-  #grid .card h3 { margin-top:2px; color:#f6d887; }
-  #grid .card [data-add] { min-height:42px; border:1px solid rgba(255,239,190,.42); box-shadow:0 7px 18px rgba(224,160,48,.17); }
+  /* نمایش یک‌به‌یک محصولات در همه اندازه‌ها + عمق سه‌بعدی واضح‌تر */
+  #grid { display:grid !important; grid-template-columns:minmax(0,1fr) !important; gap:24px !important; perspective:1400px; }
+  #grid .card {
+    width:100%; min-width:0; display:grid; grid-template-columns:minmax(0,1fr); gap:12px;
+    padding:clamp(14px,2.5vw,28px); border-radius:26px; overflow:hidden;
+    background:radial-gradient(ellipse at 50% 0%,rgba(243,199,106,.17),transparent 58%),linear-gradient(145deg,rgba(255,240,220,.105),rgba(24,7,31,.48));
+    border:1px solid rgba(243,199,106,.38);
+    box-shadow:0 24px 55px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.09),inset 0 -2px rgba(0,0,0,.15);
+    transform-style:preserve-3d; transition:transform .35s ease,box-shadow .35s ease,border-color .35s ease;
+  }
+  #grid .card:hover { transform:translateY(-5px) perspective(1000px) rotateX(1deg); box-shadow:0 32px 68px rgba(0,0,0,.38),0 0 24px rgba(243,199,106,.07),inset 0 1px rgba(255,255,255,.12); border-color:rgba(243,199,106,.72); }
+  #grid .product-photo {
+    height:clamp(260px,38vw,430px); width:100%; border-radius:20px; position:relative; overflow:hidden;
+    background:radial-gradient(ellipse at 50% 72%,rgba(243,199,106,.25),transparent 50%),linear-gradient(145deg,rgba(90,32,64,.38),rgba(15,4,19,.55));
+    border:1px solid rgba(243,199,106,.32); box-shadow:inset 0 3px 22px rgba(0,0,0,.3),0 12px 28px rgba(0,0,0,.18);
+    transform:translateZ(12px);
+  }
+  #grid .product-photo::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(115deg,transparent 25%,rgba(255,235,185,.10) 48%,transparent 70%); opacity:.55; }
+  #grid .product-photo img { width:100% !important; height:100% !important; max-height:none; padding:14px; object-fit:contain !important; object-position:center; filter:drop-shadow(0 18px 14px rgba(0,0,0,.3)); transition:transform .4s ease,filter .4s ease; }
+  #grid .card:hover .product-photo img { transform:scale(1.045) translateY(-3px); filter:drop-shadow(0 24px 18px rgba(0,0,0,.38)); }
+  #grid .card > div:last-child { padding:4px 6px 2px; transform:translateZ(8px); }
+  #grid .card h3 { margin-top:2px; color:#f6d887; font-size:clamp(1.15rem,2.2vw,1.55rem); }
+  #grid .card p { font-size:clamp(.85rem,1.3vw,1rem); line-height:2; }
+  #grid .card [data-add] { min-height:46px; padding-inline:24px; border:1px solid rgba(255,239,190,.48); box-shadow:0 8px 22px rgba(224,160,48,.22); }
   #special > .reveal { border:1px solid rgba(255,228,165,.45); box-shadow:0 24px 65px rgba(0,0,0,.24); overflow:hidden; }
   #why [data-why-card] { border-color:rgba(243,199,106,.25); background:linear-gradient(145deg,rgba(255,240,220,.085),rgba(255,240,220,.025)); transition:transform .25s ease,border-color .25s ease,background .25s ease; }
   #why [data-why-card]:hover { transform:translateY(-4px); border-color:rgba(243,199,106,.58); background:linear-gradient(145deg,rgba(243,199,106,.12),rgba(255,240,220,.035)); }
-  @media (max-width:1024px) { #grid { grid-template-columns:repeat(2,minmax(0,1fr)); } #heroText { max-width:min(540px,90vw); } }
-  @media (max-width:640px) { nav.fixed { background:rgba(20,4,16,.96) !important; } #home { min-height:92svh; padding-top:110px; padding-bottom:70px; } #heroText { width:100%; padding:22px 18px; border-radius:22px; } #heroText h1 { font-size:clamp(2.7rem,12vw,4rem); } #heroText > p:nth-of-type(2) { font-size:clamp(1.25rem,6vw,1.8rem); } #grid { grid-template-columns:minmax(0,1fr); gap:14px !important; } #grid .card { padding:13px; } #grid .product-photo { height:230px; } #menu h2 { font-size:clamp(2rem,9vw,3rem); } }
+  @media (max-width:1024px) { #grid { grid-template-columns:minmax(0,1fr) !important; } #heroText { max-width:min(540px,90vw); } #grid .product-photo { height:clamp(260px,48vw,390px); } }
+  @media (max-width:640px) { nav.fixed { background:rgba(20,4,16,.96) !important; } #home { min-height:92svh; padding-top:110px; padding-bottom:70px; } #heroText { width:100%; padding:22px 18px; border-radius:22px; } #heroText h1 { font-size:clamp(2.7rem,12vw,4rem); } #heroText > p:nth-of-type(2) { font-size:clamp(1.25rem,6vw,1.8rem); } #grid { grid-template-columns:minmax(0,1fr) !important; gap:18px !important; } #grid .card { padding:14px; } #grid .product-photo { height:clamp(260px,78vw,340px); } #menu h2 { font-size:clamp(2rem,9vw,3rem); } }
 
 </style>
 </head>
