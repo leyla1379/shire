@@ -553,10 +553,13 @@ async function refreshWeeklyOfferDiscount() {
   if(!button) return;
   try {
     const [discounts, productRows]=await Promise.all([DB.getPublicProductDiscounts(), DB.getAllProducts()]);
-    const offerText=(siteContent.weekly_offer.title+" "+siteContent.weekly_offer.description).toLowerCase();
-    const offerProducts=productRows.filter(p=>/شیره\s*انگور/.test(String(p.name||""))&&/(سفید|سیاه)/.test(String(p.name||""))&&/(۱|1)\s*کیلویی|کیلویی\s*(۱|1)|۱\s*کیلو|1\s*کیلو/.test(String(p.name||"")));
-    const matched=offerProducts.map(p=>discounts.find(x=>String(x.product_id||"").split(",").map(v=>v.trim()).includes(String(p.id))&&x.active!==false)).filter(Boolean);
-    const d=matched.find(x=>matched.every(y=>String(y.code).toUpperCase()===String(x.code).toUpperCase()))||matched[0]||null;
+    // Product names differ between stores, so identify white/black grape molasses without requiring one exact "1 kg" spelling.
+    const offerProducts=productRows.filter(p=>/شیره\s*انگور/.test(String(p.name||""))&&/(سفید|سیاه)/.test(String(p.name||"")));
+    const offerIds=offerProducts.map(p=>String(p.id));
+    const activeDiscounts=discounts.filter(x=>x.active!==false&&String(x.code||"").trim()&&String(x.product_id||"").split(",").map(v=>v.trim()).some(id=>offerIds.includes(id)));
+    // Prefer one shared code that covers both offer products; otherwise show a code attached to either one.
+    const shared=activeDiscounts.find(x=>offerIds.length>0&&offerIds.every(id=>String(x.product_id||"").split(",").map(v=>v.trim()).includes(id)));
+    const d=shared||activeDiscounts[0]||null;
     button.dataset.discountCode=d?d.code:"";
     button.textContent=d?("🎟️ کد تخفیف: "+d.code):"🎟️ کد تخفیف فعلاً موجود نیست";
     button.disabled=!d;
