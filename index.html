@@ -1274,6 +1274,19 @@ function trackModal(result) {
 }
 
 document.addEventListener("click", async (e) => {
+  const discountDelete = e.target.closest("[data-discount-delete]");
+  if (discountDelete) {
+    e.preventDefault();
+    if (!confirm("کد تخفیف این محصول حذف شود؟")) return;
+    try {
+      await DB.deleteProductDiscount(discountDelete.dataset.discountDelete);
+      state.productDiscountApplied = null;
+      await renderProductAdmin();
+      await refreshWeeklyOfferDiscount();
+      toast("کد تخفیف حذف شد.");
+    } catch (err) { console.error(err); toast("حذف کد ناموفق بود: " + (err.message || "خطا")); }
+    return;
+  }
   // دکمه‌های مدیریت محصول data-act ندارند؛ باید قبل از جست‌وجوی data-act بررسی شوند.
   const deleteDiscount = e.target.closest("[data-discount-delete]");
   if (deleteDiscount) {
