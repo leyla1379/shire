@@ -521,7 +521,7 @@ const jarSVG = (c, id) => `
 
 const state = { cat: "همه", cart: {} };
 const defaultSiteContent = {
-  weekly_offer: { label: "پیشنهاد ویژه این هفته", title: "شیره انگور\nملایر", description: "غلیظ، براق و خوش‌عطر؛ از انگورهای رسیده باغات ملایر. مناسب صبحانه، شیره‌ارده و شیرینی‌های سنتی. یک بسته ۹۰۰ گرمی با تخفیف ویژه.", price: 384000, oldPrice: 480000, discount: 20 },
+  weekly_offer: { label: "پیشنهاد ویژه این هفته", title: "شیره انگور سفید و سیاه\nیک کیلویی", description: "پیشنهاد ویژه برای شیره انگور سفید یک‌کیلویی و شیره انگور سیاه یک‌کیلویی؛ مناسب صبحانه، شیره‌ارده و شیرینی‌های سنتی.", price: 384000, oldPrice: 480000, discount: 20 },
   why: [
     { emoji: "🍇", title: "میوه انتخابی", description: "فقط انگور و خرمای رسیده و درجه یک" },
     { emoji: "🔥", title: "پخت سنتی", description: "جوشاندن آرام روی حرارت ملایم" },
@@ -554,9 +554,9 @@ async function refreshWeeklyOfferDiscount() {
   try {
     const [discounts, productRows]=await Promise.all([DB.getPublicProductDiscounts(), DB.getAllProducts()]);
     const offerText=(siteContent.weekly_offer.title+" "+siteContent.weekly_offer.description).toLowerCase();
-    let product=productRows.find(p=>/ملایر|شیره انگور|انگور ملایر/.test(String(p.name||"")));
-    if(!product) product=productRows.find(p=>offerText.includes(String(p.name||"").toLowerCase()) || String(p.name||"").toLowerCase().includes("ملایر"));
-    const d=product?discounts.find(x=>String(x.product_id)===String(product.id)&&x.active!==false):null;
+    const offerProducts=productRows.filter(p=>/شیره\s*انگور/.test(String(p.name||""))&&/(سفید|سیاه)/.test(String(p.name||""))&&/(۱|1)\s*کیلویی|کیلویی\s*(۱|1)|۱\s*کیلو|1\s*کیلو/.test(String(p.name||"")));
+    const matched=offerProducts.map(p=>discounts.find(x=>String(x.product_id||"").split(",").map(v=>v.trim()).includes(String(p.id))&&x.active!==false)).filter(Boolean);
+    const d=matched.find(x=>matched.every(y=>String(y.code).toUpperCase()===String(x.code).toUpperCase()))||matched[0]||null;
     button.dataset.discountCode=d?d.code:"";
     button.textContent=d?("🎟️ کد تخفیف: "+d.code):"🎟️ کد تخفیف فعلاً موجود نیست";
     button.disabled=!d;
@@ -815,8 +815,10 @@ const DB = {
   },
   async saveProductDiscount(d) {
     if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
-    const row={product_id:String(d.product_id||""),code:String(d.code||"").trim().toUpperCase(),discount_type:d.discount_type==="fixed"?"fixed":"percent",discount_value:Number(d.discount_value),active:d.active!==false,updated_at:new Date().toISOString()};
-    if(!row.product_id || !/^[A-Z0-9_-]{3,32}$/.test(row.code)) throw new Error("کد تخفیف باید ۳ تا ۳۲ نویسه انگلیسی، عدد، خط تیره یا زیرخط باشد.");
+    const selected=Array.isArray(d.product_ids)?d.product_ids.map(String).filter(Boolean):String(d.product_id||"").split(",").map(x=>x.trim()).filter(Boolean);
+    const productIds=[...new Set(selected)];
+    const row={product_id:productIds.join(","),code:String(d.code||"").trim().toUpperCase(),discount_type:d.discount_type==="fixed"?"fixed":"percent",discount_value:Number(d.discount_value),active:d.active!==false,updated_at:new Date().toISOString()};
+    if(!productIds.length || !/^[A-Z0-9_-]{3,32}$/.test(row.code)) throw new Error("حداقل یک محصول را انتخاب کنید و کد معتبر وارد کنید.");
     if(!Number.isFinite(row.discount_value)||row.discount_value<=0||(row.discount_type==="percent"&&row.discount_value>100)) throw new Error("مقدار تخفیف معتبر نیست.");
     if(sb){const {data,error}=await sb.from("product_discounts").upsert(row,{onConflict:"product_id"}).select().single();if(error)throw error;return data;}
     const all=LS.get("sh_product_discounts",[]).filter(x=>String(x.product_id)!==row.product_id&&String(x.code).toUpperCase()!==row.code);all.push(row);LS.set("sh_product_discounts",all);return row;
@@ -828,7 +830,7 @@ const DB = {
   },
   async getActiveDiscountByCode(code) {
     const clean=String(code||"").trim().toUpperCase(); if(!clean)return null;
-    if(sb){const {data,error}=await sb.from("product_discounts").select("product_id,code,discount_type,discount_value,active").eq("code",clean).eq("active",true).maybeSingle();if(error)throw error;return data||null;}
+    if(sb){const {data,error}=await sb.from("product_discounts").select("product_id,code,discount_type,discount_value,active").eq("code",clean).eq("active",true).limit(1);if(error)throw error;return data?.[0]||null;}
     return LS.get("sh_product_discounts",[]).find(x=>x.active!==false&&String(x.code).toUpperCase()===clean)||null;
   },
   async deleteProduct(id) {
@@ -947,7 +949,7 @@ function authModal(mode) {
 const itemInfo = (id) => id === "special" ? { id, name:siteContent.weekly_offer.title.replace(/\n/g," ").trim()+" (ویژه)", price:Number(siteContent.weekly_offer.price) } : products.find(p=>String(p.id)===String(id));
 const cartLines = () => Object.entries(state.cart).filter(([,q])=>q>0).map(([id,q])=>({id,q:Number(q),...itemInfo(id)})).filter(l=>l.name);
 const cartTotal = () => cartLines().reduce((sum,l)=>sum+Number(l.price)*l.q,0);
-const cartDiscountLines = () => {const d=state.productDiscountApplied;if(!d)return[];return cartLines().filter(l=>String(l.id)===String(d.product_id)&&l.id!=="special").map(l=>{const base=Number(l.price)*l.q;const amount=d.discount_type==="fixed"?Math.min(base,Math.round(Number(d.discount_value)*l.q)):Math.min(base,Math.round(base*Number(d.discount_value)/100));return{product_id:l.id,product_name:l.name,code:d.code,discount_type:d.discount_type,discount_value:Number(d.discount_value),amount};}).filter(x=>x.amount>0);};
+const cartDiscountLines = () => {const d=state.productDiscountApplied;if(!d)return[];const ids=String(d.product_id||"").split(",").map(x=>x.trim());return cartLines().filter(l=>ids.includes(String(l.id))&&l.id!=="special").map(l=>{const base=Number(l.price)*l.q;const amount=d.discount_type==="fixed"?Math.min(base,Math.round(Number(d.discount_value)*l.q)):Math.min(base,Math.round(base*Number(d.discount_value)/100));return{product_id:l.id,product_name:l.name,code:d.code,discount_type:d.discount_type,discount_value:Number(d.discount_value),amount};}).filter(x=>x.amount>0);};
 const discountAmount = () => cartDiscountLines().reduce((sum,d)=>sum+d.amount,0);
 const finalCartTotal = () => Math.max(0,cartTotal()-discountAmount());
 
@@ -964,7 +966,7 @@ function cartModal() {
         <input class="field" id="cartDiscountCode" name="discountCode" autocomplete="off" placeholder="کد تخفیف را وارد کنید" value="${esc(state.productDiscountApplied?.code||"")}" dir="ltr" style="text-align:left">
         <button type="button" data-act="applyDiscount" class="btn-gold shrink-0 rounded-xl px-4 py-2">اعمال</button>
       </div>
-      <p class="mt-2 text-xs text-cream/65">کد تخفیف فقط روی محصول مربوط به خودش اعمال می‌شود.</p>
+      <p class="mt-2 text-xs text-cream/65">کد تخفیف روی محصولات مشمول آن که در سبد خرید باشند اعمال می‌شود.</p>
       ${saving ? `<p class="mt-2 text-sm text-green-200">تخفیف محصول: ${fa(saving)} تومان</p>` : ""}
     </div>
     <div class="my-2 flex justify-between text-sm"><span>جمع کالاها</span><span>${fa(subtotal)} تومان</span></div>
@@ -1221,9 +1223,9 @@ async function renderProductAdmin(editId = null) {
     <div class="admin-scroll">${rows.length?rows.map(p=>`<div class="admin-mini" style="align-items:center"><div class="flex items-center gap-3 min-w-0"><img class="admin-product-thumb" src="${esc(p.image_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='10' fill='%234a1a2c'/%3E%3Ctext x='40' y='45' font-size='24' text-anchor='middle' fill='%23f3c76a'%3E🍯%3C/text%3E%3C/svg%3E")}" alt="${esc(p.name)}"><div class="min-w-0"><b class="block">${esc(p.name)}</b><span class="text-xs text-cream/60">${esc(p.cat)} · ${fa(p.price)} تومان</span><span class="block text-xs ${p.active===false?"text-red-200":"text-green-200"}">${p.active===false?"مخفی از فروشگاه":"نمایش در فروشگاه"}</span></div></div><div class="flex flex-wrap gap-1"><button class="admin-action" type="button" data-product-edit="${esc(p.id)}">ویرایش</button><button class="admin-action" type="button" data-product-delete="${esc(p.id)}">حذف</button></div></div>`).join(""):`<p class="text-sm text-cream/60 py-4">هنوز محصولی ذخیره نشده است.</p>`}</div>
     <section class="glass rounded-xl p-3 mt-5">
       <h5 class="admin-subtitle">🎟️ مدیریت کد تخفیف محصولات</h5>
-      <p class="text-xs text-cream/60 leading-6 mb-3">برای هر محصول یک کد مستقل بسازید؛ تخفیف فقط روی همان محصول اعمال می‌شود. برای غیرفعال‌سازی، تیک «فعال» را بردارید.</p>
+      <p class="text-xs text-cream/60 leading-6 mb-3">یک یا چند محصول را تیک بزن تا یک کد مشترک برای آن‌ها ساخته شود.</p>
       <form class="form grid gap-2 mb-4" data-form="productDiscountSave">
-        <label class="text-xs">محصول<select class="field mt-1" name="product_id" required><option value="">انتخاب محصول…</option>${rows.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("")}</select></label>
+        <fieldset class="rounded-xl border border-white/10 p-3"><legend class="text-xs px-1">انتخاب چند محصول</legend><div class="grid gap-2 sm:grid-cols-2 max-h-56 overflow-auto">${rows.map(p=>`<label class="flex items-center gap-2 text-xs"><input type="checkbox" name="product_ids" value="${esc(p.id)}"> <span>${esc(p.name)}</span></label>`).join("")}</div></fieldset>
         <label class="text-xs">کد تخفیف<input class="field mt-1" name="code" required maxlength="32" pattern="[A-Za-z0-9_-]{3,32}" dir="ltr" style="text-align:left" placeholder="PARIS10"></label>
         <div class="grid grid-cols-2 gap-2"><label class="text-xs">نوع تخفیف<select class="field mt-1" name="discount_type"><option value="percent">درصدی</option><option value="fixed">مبلغ ثابت (تومان)</option></select></label><label class="text-xs">مقدار تخفیف<input class="field mt-1" name="discount_value" type="number" min="1" step="1" required placeholder="10"></label></div>
         <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="active" checked> فعال باشد</label>
@@ -1237,14 +1239,15 @@ async function renderProductAdmin(editId = null) {
 async function renderProductDiscountList(productsRows) {
   const area=document.getElementById("productDiscountList"); if(!area||!isOwner())return;
   const discounts=await DB.getProductDiscounts(); const byId=new Map((productsRows||await DB.getAllProducts()).map(p=>[String(p.id),p]));
-  area.innerHTML=discounts.length?discounts.map(d=>`<form class="admin-mini grid gap-2 mb-2" data-form="productDiscountSave">
-    <input type="hidden" name="product_id" value="${esc(d.product_id)}"><b>${esc(byId.get(String(d.product_id))?.name||"محصول حذف‌شده")}</b>
+  area.innerHTML=discounts.length?discounts.map(d=>{const ids=String(d.product_id||"").split(",").map(x=>x.trim());const names=ids.map(id=>byId.get(id)?.name||"محصول حذف‌شده");return `<form class="admin-mini grid gap-2 mb-2" data-form="productDiscountSave">
+    <input type="hidden" name="product_id" value="${esc(d.product_id)}"><b>${esc(names.join(" + "))}</b>
     <div class="grid grid-cols-2 gap-2"><label class="text-xs">کد<input class="field mt-1" name="code" value="${esc(d.code)}" required maxlength="32" pattern="[A-Za-z0-9_-]{3,32}" dir="ltr" style="text-align:left"></label><label class="text-xs">نوع<select class="field mt-1" name="discount_type"><option value="percent" ${d.discount_type==="percent"?"selected":""}>درصدی</option><option value="fixed" ${d.discount_type==="fixed"?"selected":""}>مبلغ ثابت</option></select></label></div>
     <label class="text-xs">مقدار تخفیف<input class="field mt-1" name="discount_value" type="number" min="1" value="${esc(d.discount_value)}" required></label>
     <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="active" ${d.active===false?"":"checked"}> فعال باشد</label>
     <div class="flex gap-2"><button class="admin-action flex-1" type="submit">ذخیره تغییرات</button><button class="admin-action" type="button" data-discount-delete="${esc(d.product_id)}">حذف کد</button></div>
-  </form>`).join(""):'<p class="text-sm text-cream/60 py-3">هنوز کد تخفیفی ثبت نشده است.</p>';
+  </form>`}).join(""):'<p class="text-sm text-cream/60 py-3">هنوز کد تخفیفی ثبت نشده است.</p>';
 }
+
 function renderStoreProducts() { renderPills(); renderGrid(); }
 
 function exportOrdersCSV() {
@@ -1373,7 +1376,8 @@ document.addEventListener("click", async (e) => {
     try {
       const d=await DB.getActiveDiscountByCode(entered);
       if(!d){state.productDiscountApplied=null;toast("کد تخفیف معتبر یا فعال نیست.");cartModal();return;}
-      if(!cartLines().some(l=>String(l.id)===String(d.product_id)&&l.id!=="special")){state.productDiscountApplied=null;toast("این کد فقط برای محصول مربوط به خودش است؛ آن محصول را به سبد اضافه کنید.");cartModal();return;}
+      const eligibleIds=String(d.product_id||"").split(",").map(x=>x.trim());
+      if(!cartLines().some(l=>eligibleIds.includes(String(l.id))&&l.id!=="special")){state.productDiscountApplied=null;toast("این کد برای محصولات انتخاب‌شده است؛ حداقل یکی از آن‌ها را به سبد اضافه کنید.");cartModal();return;}
       state.productDiscountApplied=d;toast("کد تخفیف محصول اعمال شد.");cartModal();
     } catch(err){console.error(err);toast("اعتبارسنجی کد ناموفق بود: "+(err.message||"خطا"));}
   }
@@ -1499,7 +1503,7 @@ document.addEventListener("submit", async (e) => {
       renderStoreProducts(); await renderProductAdmin(); toast(existing?"محصول ویرایش شد و ذخیره شد.":"محصول جدید اضافه شد.");
     } else if (kind === "productDiscountSave") {
       if(!isOwner()) throw new Error("فقط مدیر فروشگاه اجازه تغییر کد تخفیف را دارد.");
-      await DB.saveProductDiscount({product_id:v.product_id,code:v.code,discount_type:v.discount_type,discount_value:v.discount_value,active:f.querySelector('[name="active"]').checked});
+      await DB.saveProductDiscount({product_ids:[...f.querySelectorAll('input[name="product_ids"]:checked')].map(x=>x.value),product_id:v.product_id,code:v.code,discount_type:v.discount_type,discount_value:v.discount_value,active:f.querySelector('[name="active"]').checked});
       await renderProductAdmin(); await refreshWeeklyOfferDiscount(); toast("کد تخفیف ذخیره شد.");
     } else if (kind === "supportReply") {
       if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
