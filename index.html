@@ -706,7 +706,9 @@ document.getElementById("specialJar").innerHTML = jarSVG("#2e1030", "sp");
 const CFG = { url: "https://gppcrkyxthonpeyeuoyg.supabase.co", key: "sb_publishable_3KFoes-a0z3LW2Y5qkeIsw_SBryBY3g" };
 const OWNER_EMAIL = "leylakazempoor79@gmail.com";   // مالک فروشگاه؛ با این ایمیل وارد شود، پنل مدیریت سفارش‌ها را می‌بیند
 const STATUSES = ["در انتظار تأیید", "در حال آماده‌سازی", "ارسال شد", "تحویل داده شد", "لغو شد"];
-const isOwner = () => !!me && me.email?.toLowerCase() === OWNER_EMAIL;
+let managerAccess = false;
+const isStoreOwner = () => !!me && me.email?.toLowerCase() === OWNER_EMAIL;
+const isOwner = () => isStoreOwner() || managerAccess;
 const sb = (CFG.url && CFG.key && window.supabase) ? window.supabase.createClient(CFG.url, CFG.key) : null;
 const LS = {
   get: (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } },
@@ -988,9 +990,15 @@ async function loadSiteContent() {
 async function refreshUser() {
   try {
     me = await DB.user();
+    managerAccess = false;
+    if (me && !isStoreOwner() && sb) {
+      const { data, error } = await sb.rpc("store_is_manager");
+      if (!error) managerAccess = data === true;
+    }
   } catch (err) {
     console.warn("وضعیت ورود از پایگاه داده دریافت نشد؛ دکمه‌های ورود و ثبت‌نام همچنان نمایش داده می‌شوند.", err);
     me = null;
+    managerAccess = false;
   } finally {
     renderAuth();
   }
@@ -1189,7 +1197,7 @@ async function adminModal(initialTab = "overview") {
   const n7 = Number(stats?.visits_7d || 0);
   showModal(head("🔐 پنل مدیریت") + `
     <p class="mb-4 text-xs text-cream/70">مدیر واردشده: <span dir="ltr">${esc(OWNER_EMAIL)}</span></p>
-    <div class="admin-tabs"><button class="active" data-admin-tab="overview">📊 داشبورد آمار</button><button data-admin-tab="users">👥 مدیریت کاربران (${fa(users.length)})</button><button data-admin-tab="notifications">🔔 مرکز اعلان‌ها</button><button data-admin-tab="orders">🛠️ سفارش‌ها (${fa(total)})</button><button data-admin-tab="messages">💬 صندوق گفت‌وگوها (${fa(ids.length)})</button><button data-admin-tab="products">🛍️ مدیریت محصولات</button><button data-admin-tab="content">📝 محتوای صفحه</button><button data-act="exportOrders">📥 دریافت گزارش CSV</button><button data-act="refreshAdmin" data-tab="${initialTab}" class="admin-action">🔄 بروزرسانی داده‌ها</button></div>
+    <div class="admin-tabs"><button class="active" data-admin-tab="overview">📊 داشبورد آمار</button><button data-admin-tab="users">👥 مدیریت کاربران (${fa(users.length)})</button><button data-admin-tab="notifications">🔔 مرکز اعلان‌ها</button><button data-admin-tab="orders">🛠️ سفارش‌ها (${fa(total)})</button><button data-admin-tab="messages">💬 صندوق گفت‌وگوها (${fa(ids.length)})</button><button data-admin-tab="products">🛍️ مدیریت محصولات</button><button data-admin-tab="content">📝 محتوای صفحه</button>${isStoreOwner()?`<button data-admin-tab="managers">👤 مدیریت مدیران</button>`:""}<button data-act="exportOrders">📥 دریافت گزارش CSV</button><button data-act="refreshAdmin" data-tab="${initialTab}" class="admin-action">🔄 بروزرسانی داده‌ها</button></div>
     <input class="field mb-3" id="adminSearch" placeholder="جست‌وجوی سفارش، کاربر یا پیام…">
     <section id="adminOverview">
       <h4 class="admin-section-title">📊 داشبورد آمار</h4>
@@ -1226,8 +1234,9 @@ async function adminModal(initialTab = "overview") {
     <section id="adminMessages" class="hidden"><h4 class="admin-section-title">💬 صندوق گفت‌وگوها (${fa(ids.length)})</h4><div class="admin-scroll">${inbox}</div></section>
     <section id="adminProducts" class="hidden"><h4 class="admin-section-title">🛍️ مدیریت محصولات</h4><p class="text-xs leading-7 text-cream/70">نام، دسته‌بندی، توضیحات، قیمت و تصویر محصولات را اضافه یا ویرایش کنید. تصویرها به اندازه استاندارد ۸۰۰×۸۰۰ تبدیل می‌شوند و در کارت محصول بدون کشیدگی نمایش داده می‌شوند.</p><div id="productAdminArea" class="mt-3"><p class="py-5 text-center text-sm text-cream/70">در حال بارگذاری محصولات…</p></div></section>
     <section id="adminContent" class="hidden"><h4 class="admin-section-title">📝 ویرایش محتوای صفحه</h4><p class="text-xs leading-7 text-cream/70">این تغییرات در پایگاه داده ذخیره می‌شوند و پس از بارگذاری دوباره برای همه بازدیدکنندگان نمایش داده خواهند شد.</p><div id="contentAdminArea" class="mt-3"><p class="py-5 text-center text-sm text-cream/70">در حال بارگذاری محتوا…</p></div></section>
+    ${isStoreOwner()?'<section id="adminManagers" class="hidden"><h4 class="admin-section-title">👤 مدیریت مدیران فروشگاه</h4><p class="mb-3 text-xs leading-6 text-cream/70">برای افزودن مدیر، ایمیل حسابی را وارد کن که قبلاً در فروشگاه ثبت‌نام کرده باشد.</p><form class="form glass rounded-xl p-3 mb-4" data-form="storeManagerAdd"><label class="text-xs">ایمیل حساب کاربری<input class="field mt-1" name="email" type="email" required maxlength="254" dir="ltr" style="text-align:left" placeholder="manager@example.com"></label><button class="btn-gold rounded-xl px-4 py-3 w-full" type="submit">➕ افزودن مدیر</button></form><div id="storeManagerList"><p class="text-sm text-cream/60">برای مشاهده فهرست، این بخش را باز کن.</p></div></section>':''}
   `);
-  const tabMap = { overview:"adminOverview", users:"adminUsers", notifications:"adminNotifications", orders:"adminOrders", messages:"adminMessages", products:"adminProducts", content:"adminContent" };
+  const tabMap = { overview:"adminOverview", users:"adminUsers", notifications:"adminNotifications", orders:"adminOrders", messages:"adminMessages", products:"adminProducts", content:"adminContent", managers:"adminManagers" };
   document.querySelectorAll("[data-admin-tab]").forEach(tab => tab.addEventListener("click", () => {
     const target = tab.dataset.adminTab;
     document.querySelectorAll("[data-admin-tab]").forEach(t=>t.classList.toggle("active",t===tab));
@@ -1235,6 +1244,7 @@ async function adminModal(initialTab = "overview") {
     document.getElementById(tabMap[target])?.classList.remove("hidden");
     if (target === "products") renderProductAdmin().catch(err=>{ const el=document.getElementById("productAdminArea"); if(el) el.innerHTML=`<p class="text-sm text-red-200">${esc(err.message || "خطا در دریافت محصولات")}</p>`; });
     if (target === "content") renderContentAdmin().catch(err=>{ const el=document.getElementById("contentAdminArea"); if(el) el.innerHTML=`<p class="text-sm text-red-200">${esc(err.message || "خطا در دریافت محتوا")}</p>`; });
+    if (target === "managers" && isStoreOwner()) renderStoreManagers().catch(err=>{ const el=document.getElementById("storeManagerList"); if(el) el.innerHTML=`<p class="text-sm text-red-200">${esc(err.message || "خطا در دریافت مدیران")}</p>`; });
   }));
   const applyAdminFilters = () => {
     const q = (document.getElementById("adminSearch")?.value || "").trim().toLowerCase();
@@ -1249,6 +1259,15 @@ async function adminModal(initialTab = "overview") {
   document.getElementById("adminSearch")?.addEventListener("input", applyAdminFilters);
   document.getElementById("adminOrderStatusFilter")?.addEventListener("change", applyAdminFilters);
   if (initialTab && initialTab !== "overview") document.querySelector(`[data-admin-tab="${initialTab}"]`)?.click();
+}
+async function renderStoreManagers() {
+  if (!isStoreOwner() || !sb) throw new Error("فقط مالک فروشگاه و اتصال پایگاه داده اجازه مدیریت مدیران را دارد.");
+  const area = document.getElementById("storeManagerList");
+  if (!area) return;
+  const { data, error } = await sb.rpc("store_list_managers");
+  if (error) throw error;
+  const rows = data || [];
+  area.innerHTML = rows.length ? rows.map(m => `<div class="admin-mini mb-2 flex flex-wrap items-center justify-between gap-3"><div class="min-w-0"><b class="block">${esc(m.full_name || "مدیر فروشگاه")}</b><span class="text-xs text-cream/70 break-all" dir="ltr">${esc(m.email || "")}</span><span class="block text-xs text-cream/50">افزوده‌شده: ${esc(m.added_at ? new Date(m.added_at).toLocaleDateString("fa-IR") : "—")}</span></div><button class="admin-action" type="button" data-act="removeStoreManager" data-user-id="${esc(m.user_id)}" data-email="${esc(m.email || "")}">حذف مدیر</button></div>`).join("") : '<p class="text-sm text-cream/60 py-3">هنوز مدیر دیگری اضافه نشده است.</p>';
 }
 async function renderContentAdmin() {
   if (!isOwner()) return;
@@ -1470,6 +1489,19 @@ document.addEventListener("click", async (e) => {
   }
   else if (act === "panel") panelModal();
   else if (act === "admin") adminModal();
+  else if (act === "removeStoreManager") {
+    if (!isStoreOwner()) return toast("فقط مالک فروشگاه اجازه حذف مدیر را دارد.");
+    const userId = b.dataset.userId;
+    if (!userId || !confirm(`مدیر ${b.dataset.email || ""} حذف شود؟`)) return;
+    try {
+      b.disabled = true;
+      const { error } = await sb.rpc("store_remove_manager", { p_user_id: userId });
+      if (error) throw error;
+      await renderStoreManagers();
+      toast("دسترسی مدیر حذف شد.");
+    } catch (err) { toast("حذف مدیر ناموفق بود: " + (err.message || "خطا")); }
+    finally { b.disabled = false; }
+  }
   else if (act === "refreshAdmin") { if (!isOwner()) return; await adminModal(b.dataset.tab || "overview"); toast("اطلاعات پنل به‌روزرسانی شد."); }
   else if (act === "support") supportModal();
   else if (act === "supportAdmin") supportAdminModal();
@@ -1522,7 +1554,15 @@ document.addEventListener("submit", async (e) => {
   const v = Object.fromEntries(new FormData(f)); const btn = f.querySelector("button"); btn.disabled = true;
   try {
     const kind = f.dataset.form;
-    if (kind === "register") {
+    if (kind === "storeManagerAdd") {
+      if (!isStoreOwner() || !sb) throw new Error("فقط مالک فروشگاه اجازه افزودن مدیر را دارد.");
+      const email = String(v.email || "").trim().toLowerCase();
+      const { error } = await sb.rpc("store_add_manager", { p_email: email });
+      if (error) throw error;
+      f.reset();
+      await renderStoreManagers();
+      toast("مدیر با موفقیت اضافه شد.");
+    } else if (kind === "register") {
       const result = await DB.signUp({ full_name: v.full_name, username: v.username, phone: v.phone, email: v.email, password: v.password });
       if (result.needsEmailConfirmation) {
         showModal(head("📩 ایمیل فعال‌سازی ارسال شد") + `<p class="text-sm leading-7 text-cream/80">حساب شما ثبت شد. صندوق ورودی ایمیل <b dir="ltr">${esc(v.email.trim())}</b> را بررسی کن و روی لینک تأیید بزن؛ سپس با همین ایمیل و رمز عبور وارد شو. اگر ایمیل را نمی‌بینی، پوشه هرزنامه را هم بررسی کن.</p><button data-act="login" class="btn-gold mt-4 w-full rounded-xl px-4 py-3">رفتن به ورود</button>`);
