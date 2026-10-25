@@ -1144,11 +1144,12 @@ async function adminModal(initialTab = "overview") {
     } else {
       users = LS.get("sh_users", []).map(u => ({ user_id:u.id, email:u.email, full_name:u.full_name, created_at:u.created_at }));
       const visits = LS.get("sh_site_visits", []);
-      const since = Date.now() - 7*86400000;
-      const recent = visits.filter(v => new Date(v.created_at).getTime() >= since);
+      const now = Date.now();
+      const last24h = visits.filter(v => new Date(v.created_at).getTime() >= now - 24*60*60*1000);
+      const recent7d = visits.filter(v => new Date(v.created_at).getTime() >= now - 7*86400000);
       const counts = {};
-      visits.forEach(v => counts[v.path] = (counts[v.path] || 0) + 1);
-      stats = { registered_users:users.length, total_visits:visits.length, unique_visitors:new Set(visits.map(v=>v.visitor_id)).size, visits_7d:recent.length, top_pages:Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([path,count])=>({path,count})) };
+      last24h.forEach(v => counts[v.path] = (counts[v.path] || 0) + 1);
+      stats = { registered_users:users.length, total_visits:last24h.length, unique_visitors:new Set(last24h.map(v=>v.visitor_id)).size, visits_7d:recent7d.length, top_pages:Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([path,count])=>({path,count})) };
     }
   } catch (err) {
     console.error(err);
@@ -1208,11 +1209,11 @@ async function adminModal(initialTab = "overview") {
       <h4 class="admin-section-title">👥 کاربران و بازدیدها</h4>
       <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <div class="admin-stat"><p class="text-xs text-cream/70">کاربران ثبت‌نام‌شده</p><strong class="mt-1 block text-2xl text-honey">${fa(stats?.registered_users ?? users.length)}</strong></div>
-        <div class="admin-stat"><p class="text-xs text-cream/70">کل بازدیدهای ثبت‌شده</p><strong class="mt-1 block text-2xl text-honey">${fa(stats?.total_visits || 0)}</strong></div>
-        <div class="admin-stat"><p class="text-xs text-cream/70">بازدیدکنندگان یکتا (تقریبی)</p><strong class="mt-1 block text-2xl text-honey">${fa(stats?.unique_visitors || 0)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">بازدیدهای ۲۴ ساعت اخیر</p><strong class="mt-1 block text-2xl text-honey">${fa(stats?.total_visits || 0)}</strong></div>
+        <div class="admin-stat"><p class="text-xs text-cream/70">بازدیدکنندگان یکتای ۲۴ ساعت اخیر (تقریبی)</p><strong class="mt-1 block text-2xl text-honey">${fa(stats?.unique_visitors || 0)}</strong></div>
         <div class="admin-stat"><p class="text-xs text-cream/70">بازدیدهای ۷ روز اخیر</p><strong class="mt-1 block text-2xl text-honey">${fa(n7)}</strong></div>
       </div>
-      <h4 class="admin-section-title">📄 صفحات پربازدید</h4>${topPages}
+      <h4 class="admin-section-title">📄 صفحات پربازدید در ۲۴ ساعت اخیر</h4>${topPages}
       <p class="mt-3 text-xs leading-6 text-cream/50">آمار کاربران از حساب‌های ثبت‌شده در Supabase و آمار بازدید از بازدیدهای ثبت‌شده در این سایت محاسبه می‌شود. بازدیدهای پیش از فعال‌سازی ثبت‌کننده قابل بازیابی نیستند؛ شمارش بازدیدکنندگان یکتا بر اساس شناسه مرورگر تقریبی است.</p>
     </section>
     <section id="adminUsers" class="hidden"><h4 class="admin-section-title">👥 مدیریت کاربران</h4><p class="mb-3 text-xs text-cream/60">فهرست حساب‌های ثبت‌نام‌شده؛ اطلاعات حساس ورود نمایش داده نمی‌شود.</p><div class="admin-scroll">${userRows}</div></section>
