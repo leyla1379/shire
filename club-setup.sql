@@ -28,7 +28,7 @@ create or replace function public.award_shire_club_points_on_payment()
 returns trigger language plpgsql security definer set search_path=pg_catalog,public as $$
 declare v_points integer;
 begin
- if new.payment_status='paid' and (tg_op='INSERT' or old.payment_status is distinct from new.payment_status) and not new.points_awarded and new.user_id is not null then
+ if tg_op='UPDATE' and new.payment_status='paid' and old.payment_status is distinct from new.payment_status and not new.points_awarded and new.user_id is not null then
   v_points:=greatest(0,floor(greatest(coalesce(new.total,0),0)::numeric/10000)::integer);
   if v_points>0 then
    insert into public.club_points(user_id,points,updated_at) values(new.user_id,v_points,now())
