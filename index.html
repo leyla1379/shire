@@ -448,6 +448,33 @@ tailwind.config = { theme: { extend: {
   }
 
 
+
+  /* Mobile repair: keep admin tabs and member/product panels within phone width */
+  #modalRoot, #modalRoot * { min-width: 0; }
+  .modal .admin-tabs { display:flex; flex-wrap:wrap; width:100%; }
+  .modal [data-admin-tab] { max-width:100%; overflow-wrap:anywhere; }
+  .modal table { display:block; width:100%; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .modal .admin-mini, .modal .row-item, .modal .admin-search-item {
+    width:100%; max-width:100%; overflow-wrap:anywhere; word-break:break-word;
+  }
+  .modal input, .modal select, .modal textarea, .modal button { max-width:100%; }
+  .modal img { max-width:100%; height:auto; }
+  @media (max-width: 640px) {
+    .modal-bg { width:100vw; max-width:100vw; padding:6px !important; overflow-x:hidden; }
+    .modal { width:100% !important; max-width:100% !important; min-width:0 !important; padding:10px !important; overflow-x:hidden !important; }
+    .modal > *, .modal section, .modal .grid, .modal [class*="grid-cols-"] {
+      min-width:0 !important; max-width:100% !important;
+    }
+    .modal [class*="grid-cols-"] { grid-template-columns:minmax(0,1fr) !important; }
+    .modal .admin-tabs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+    .modal .admin-tabs button { width:100%; min-width:0; padding:8px 5px; font-size:11px; line-height:1.5; overflow-wrap:anywhere; }
+    .modal .admin-stat { width:100%; }
+    .modal .admin-mini, .modal .row-item { flex-wrap:wrap; align-items:flex-start; gap:8px; }
+    .modal .admin-mini > *, .modal .row-item > * { max-width:100%; }
+    .modal .admin-action { white-space:normal; overflow-wrap:anywhere; }
+    .modal .admin-product-thumb { width:56px; height:56px; flex:0 0 56px; }
+  }
+
 </style>
 </head>
 <body>
