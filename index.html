@@ -541,20 +541,16 @@ tailwind.config = { theme: { extend: {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 <script type="module">
-import * as THREE from "three";
-gsap.registerPlugin(ScrollTrigger);
+if (window.gsap && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
 
 /* ---------------- Products ---------------- */
 const fa = (n) => Number(n).toLocaleString("fa-IR");
 let products = [
-  { id: 1, cat: "انگور", name: "شیره انگور سنتی", note: "غلیظ و تیره، ۹۰۰ گرم", price: 320000, c: "#4a1a2c" },
-  { id: 2, cat: "انگور", name: "شیره انگور سفید", note: "روشن و ملایم، ۹۰۰ گرم", price: 340000, c: "#b9701c" },
-  { id: 3, cat: "خرما", name: "شیره خرما", note: "شیرین طبیعی، ۸۰۰ گرم", price: 360000, c: "#5a2e14" },
-  { id: 4, cat: "خرما", name: "شیره خرما مضافتی", note: "خوش‌عطر و غلیظ، ۸۰۰ گرم", price: 420000, c: "#3e1d0c" },
-  { id: 5, cat: "سایر", name: "شیره توت", note: "طعم سنتی، ۷۰۰ گرم", price: 380000, c: "#6b2a1a" },
-  { id: 6, cat: "سایر", name: "شیره انجیر", note: "ارگانیک، ۷۰۰ گرم", price: 450000, c: "#7a4a22" },
-  { id: 7, cat: "سایر", name: "ارده و شیره", note: "مخلوط آماده صبحانه، ۶۰۰ گرم", price: 390000, c: "#a8742c" },
-  { id: 8, cat: "انگور", name: "شیره انگور ملایر", note: "ویژه، ۹۰۰ گرم", price: 384000, c: "#2e1030" },
+  { id: "1792758941561", cat: "انگور", name: "شیره انگور سیاه سنتی", note: "وزن ۵۰۰ گرم", price: 410000, image_url: "https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792758941561-1792770581333.webp", c: "#4a1a2c", active: true, sort_order: 3 },
+  { id: "1792758389895", cat: "انگور", name: "شیره انگور سیاه سنتی", note: "وزن ۱ کیلوگرم", price: 820000, image_url: "https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792758389895-1792770614830.webp", c: "#4a1a2c", active: true, sort_order: 2 },
+  { id: "1792757877689", cat: "انگور", name: "شیره انگور سفید سنتی", note: "وزن ۵۰۰ گرم", price: 410000, image_url: "https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792757877689-1792770445216.webp", c: "#b9701c", active: true, sort_order: 4 },
+  { id: "2", cat: "انگور", name: "شیره انگور سفید سنتی", note: "وزن ۱ کیلوگرم", price: 820000, image_url: "https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/2-1792769672798.webp", c: "#b9701c", active: true, sort_order: 2 },
+  { id: "1792780130028", cat: "سایر", name: "معجون چهار مغز", note: "وزن ۴۰۰ گرم", price: 590000, image_url: "https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792780130028-1792780222621.webp", c: "#a8742c", active: true, sort_order: 5 },
 ];
 const cats = ["همه", "انگور", "خرما", "سایر"];
 
@@ -668,7 +664,7 @@ function renderGrid() {
         </div>
       </div>
     </div>`).join("");
-  gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
+  if (window.gsap) gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
 }
 function renderCart() {
   let n = 0, total = 0;
@@ -952,7 +948,7 @@ refreshWeeklyOfferDiscount();
 async function loadPublicProducts() {
   try {
     const rows = await DB.getProducts();
-    if (sb || rows.length) {
+    if (rows.length) {
       products = rows.map((p,i)=>({ ...p, id:p.id, price:Number(p.price), c:p.c || "#4a1a2c", sort_order:p.sort_order ?? i }));
       renderPills(); renderGrid();
     }
@@ -1588,7 +1584,9 @@ document.addEventListener("submit", async (e) => {
   }
 });
 
-/* ---------------- Three.js scene ---------------- */
+/* ---------------- Three.js scene: optional enhancement; storefront must work without this CDN ---------------- */
+try {
+const THREE = await import("three");
 const mobile = matchMedia("(max-width: 768px)").matches;
 const canvas = document.getElementById("gl");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, alpha: true });
@@ -1769,6 +1767,11 @@ function tick() {
   requestAnimationFrame(tick);
 }
 tick();
+} catch (err) {
+  console.warn("نمایش سه‌بعدی بارگذاری نشد؛ فروشگاه و ورود همچنان فعال می‌مانند.", err);
+  const canvas = document.getElementById("gl");
+  if (canvas) canvas.style.display = "none";
+}
 </script>
 </body>
 </html>
