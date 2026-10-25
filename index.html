@@ -541,7 +541,8 @@ tailwind.config = { theme: { extend: {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 <script type="module">
-if (window.gsap && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+import * as THREE from "three";
+gsap.registerPlugin(ScrollTrigger);
 
 /* ---------------- Products ---------------- */
 const fa = (n) => Number(n).toLocaleString("fa-IR");
@@ -571,7 +572,7 @@ const jarSVG = (c, id) => `
 
 const state = { cat: "همه", cart: {} };
 const defaultSiteContent = {
-  weekly_offer: { label: "پیشنهاد ویژه این هفته", title: "شیره انگور سفید و سیاه\nیک کیلویی", description: "تخفیف ۱۰٪ برای شیره انگور سفید یک‌کیلویی و شیره انگور سیاه یک‌کیلویی؛ قیمت هر شیشه با تخفیف ۷۳۸٬۰۰۰ تومان.", price: 738000, oldPrice: 820000, discount: 10 },
+  weekly_offer: { label: "پیشنهاد ویژه این هفته", title: "شیره انگور سفید و سیاه\\nیک کیلویی", description: "تخفیف ۱۰٪ برای شیره انگور سفید یک‌کیلویی و شیره انگور سیاه یک‌کیلویی؛ قیمت هر شیشه با تخفیف ۷۳۸٬۰۰۰ تومان.", price: 738000, oldPrice: 820000, discount: 10 },
   why: [
     { emoji: "🍇", title: "میوه انتخابی", description: "فقط انگور و خرمای رسیده و درجه یک" },
     { emoji: "🔥", title: "پخت سنتی", description: "جوشاندن آرام روی حرارت ملایم" },
@@ -664,7 +665,7 @@ function renderGrid() {
         </div>
       </div>
     </div>`).join("");
-  if (window.gsap) gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
+  gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
 }
 function renderCart() {
   let n = 0, total = 0;
@@ -948,7 +949,7 @@ refreshWeeklyOfferDiscount();
 async function loadPublicProducts() {
   try {
     const rows = await DB.getProducts();
-    if (rows.length) {
+    if (sb || rows.length) {
       products = rows.map((p,i)=>({ ...p, id:p.id, price:Number(p.price), c:p.c || "#4a1a2c", sort_order:p.sort_order ?? i }));
       renderPills(); renderGrid();
     }
@@ -1584,9 +1585,7 @@ document.addEventListener("submit", async (e) => {
   }
 });
 
-/* ---------------- Three.js scene: optional enhancement; storefront must work without this CDN ---------------- */
-try {
-const THREE = await import("three");
+/* ---------------- Three.js scene ---------------- */
 const mobile = matchMedia("(max-width: 768px)").matches;
 const canvas = document.getElementById("gl");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, alpha: true });
@@ -1767,11 +1766,6 @@ function tick() {
   requestAnimationFrame(tick);
 }
 tick();
-} catch (err) {
-  console.warn("نمایش سه‌بعدی بارگذاری نشد؛ فروشگاه و ورود همچنان فعال می‌مانند.", err);
-  const canvas = document.getElementById("gl");
-  if (canvas) canvas.style.display = "none";
-}
 </script>
 </body>
 </html>
