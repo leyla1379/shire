@@ -989,11 +989,19 @@ refreshWeeklyOfferDiscount();
 async function loadPublicProducts() {
   try {
     const rows = await DB.getProducts();
-    if (sb || rows.length) {
+    // Never replace the currently visible catalog with an empty/failed response.
+    // This keeps the existing storefront products visible during transient DB or RLS issues.
+    if (Array.isArray(rows) && rows.length > 0) {
       products = rows.map((p,i)=>({ ...p, id:p.id, price:Number(p.price), c:p.c || "#4a1a2c", sort_order:p.sort_order ?? i }));
-      renderPills(); renderGrid();
+      renderPills();
+      renderGrid();
+      renderCart();
+    } else {
+      console.warn("فهرست محصولات از پایگاه داده خالی است؛ فهرست فعلی برای جلوگیری از خالی‌شدن صفحه حفظ شد.");
     }
-  } catch (err) { console.warn("دریافت فهرست محصولات انجام نشد:", err.message); }
+  } catch (err) {
+    console.warn("دریافت فهرست محصولات انجام نشد؛ فهرست فعلی حفظ شد:", err.message);
+  }
 }
 loadPublicProducts();
 
