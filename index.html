@@ -986,8 +986,19 @@ async function loadSiteContent() {
     if (saved) { siteContent = normalizeSiteContent(saved); applySiteContent(); }
   } catch (err) { console.warn("محتوای قابل ویرایش بارگذاری نشد؛ محتوای پیش‌فرض نمایش داده می‌شود.", err.message); }
 }
-async function refreshUser() { me = await DB.user(); renderAuth(); }
-if (sb) sb.auth.onAuthStateChange(() => refreshUser());
+async function refreshUser() {
+  try {
+    me = await DB.user();
+  } catch (err) {
+    console.warn("وضعیت ورود از پایگاه داده دریافت نشد؛ دکمه‌های ورود و ثبت‌نام همچنان نمایش داده می‌شوند.", err);
+    me = null;
+  } finally {
+    renderAuth();
+  }
+}
+// نمایش فوری دکمه‌ها؛ منتظر پاسخ Supabase نمی‌مانیم.
+renderAuth();
+if (sb) sb.auth.onAuthStateChange(() => { refreshUser(); });
 refreshUser();
 loadSiteContent();
 
