@@ -1157,6 +1157,7 @@ async function panelModal() {
       <p class="text-sm text-cream/80" dir="rtl">شماره تماس: <b dir="ltr">${esc(me.phone || "ثبت نشده")}</b></p>
       <button class="btn-gold rounded-xl px-4 py-2.5">ذخیره تغییرات</button>
     </form>
+    <a href="./club.html" class="btn-gold mt-4 mb-2 w-full rounded-xl px-4 py-3 text-center block" style="text-decoration:none">✨ باشگاه مشتریان و مزایای عضویت</a>
     <h4 class="mt-5 mb-2 font-bold text-honey">سفارش‌های من</h4>
     ${ordersError ? `<p class="text-sm leading-7 text-red-200">سفارش‌ها بارگذاری نشدند. تنظیمات دسترسی جدول سفارش‌ها در Supabase را اجرا کنید.<span class="block mt-1 text-xs opacity-80">${esc(ordersError)}</span></p>` : orders.length ? orders.map(o => `<div class="row-item" style="display:block">
       <div class="flex flex-wrap items-center justify-between gap-2"><b dir="ltr">${esc(o.code)}</b><span class="tag">${esc(o.status || "وضعیت نامشخص")}</span><b class="text-honey">${fa(o.total)} تومان</b></div>
