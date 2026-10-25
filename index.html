@@ -160,11 +160,18 @@ tailwind.config = { theme: { extend: {
   }
 
   .container,
-  .wrap,
-  main {
+  .wrap {
     max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  /* Keep the page's main background and sections full-width on desktop. */
+  main {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   section {
