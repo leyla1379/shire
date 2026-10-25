@@ -57,43 +57,8 @@ tailwind.config = { theme: { extend: {
   .chat-user { justify-self:start; background:rgba(243,199,106,.16); border:1px solid rgba(243,199,106,.28); }
   .chat-admin { justify-self:end; background:rgba(243,199,106,.95); color:#2a0f33; }
   .chat-meta { display:block; font-size:10px; opacity:.7; margin-top:4px; }
-  /* کارت‌های حرفه‌ای محصولات؛ فقط ظاهر، بدون تغییر منطق سفارش */
-  #grid .card {
-    position: relative;
-    overflow: hidden;
-    padding: 16px;
-    border-radius: 22px;
-    background: linear-gradient(135deg, rgba(255,240,220,.10), rgba(255,240,220,.035));
-    border: 1px solid rgba(243,199,106,.28);
-    box-shadow: 0 10px 28px rgba(0,0,0,.12);
-    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
-  }
-  #grid .card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(243,199,106,.72);
-    box-shadow: 0 16px 34px rgba(0,0,0,.22);
-  }
-  .product-photo {
-    height: 220px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-    border-radius:16px;
-    border:1px solid rgba(243,199,106,.18);
-    background: radial-gradient(ellipse at center, rgba(243,199,106,.13), rgba(75,29,82,.16) 68%, rgba(30,10,38,.25));
-  }
-  .product-photo img {
-    width:100%;
-    height:100%;
-    object-fit:contain;
-    padding:10px;
-    transition: transform .3s ease;
-  }
-  #grid .card:hover .product-photo img { transform: scale(1.035); }
-  #grid .card h3 { font-size: 1.1rem; line-height: 1.8; }
-  #grid .card p { font-size: .8rem; line-height: 1.9; color: rgba(251,240,220,.78); }
-  #grid .card [data-add] { min-height: 38px; padding-inline: 18px; font-weight: 700; }
+  .product-photo { height:180px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:12px; }
+  .product-photo img { width:100%; height:100%; object-fit:contain; }
   .admin-product-thumb { width:76px;height:76px;object-fit:contain;aspect-ratio:1/1;border-radius:10px;background:rgba(255,240,220,.08);border:1px solid rgba(243,199,106,.25); }
   .admin-stat { background:linear-gradient(145deg,rgba(243,199,106,.16),rgba(255,240,220,.04));border:1px solid rgba(243,199,106,.24);border-radius:16px;padding:14px; }
   .admin-section-title { color:#f3c76a;font-weight:800;font-size:17px;margin:22px 0 10px; }
@@ -172,274 +137,6 @@ tailwind.config = { theme: { extend: {
     padding-right: 32px;
   }
 }
-
-  /* ارتقای بصری لوکس و سه‌بعدی؛ فقط CSS، بدون تغییر منطق سایت */
-  #grid .card {
-    transform-style: preserve-3d;
-    background:
-      radial-gradient(ellipse at 8% 0%, rgba(243,199,106,.13), transparent 48%),
-      linear-gradient(145deg, rgba(255,240,220,.115), rgba(255,240,220,.035) 58%, rgba(24,7,31,.22));
-    box-shadow: 0 14px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07);
-  }
-  #grid .card:hover {
-    transform: translateY(-5px) perspective(900px) rotateX(.6deg);
-    box-shadow: 0 22px 42px rgba(0,0,0,.3), 0 0 0 1px rgba(243,199,106,.08), inset 0 1px 0 rgba(255,255,255,.1);
-  }
-  .product-photo {
-    position: relative;
-    box-shadow: inset 0 2px 12px rgba(0,0,0,.2), 0 8px 18px rgba(0,0,0,.12);
-    background:
-      radial-gradient(ellipse at 50% 35%, rgba(255,241,201,.17), transparent 44%),
-      radial-gradient(ellipse at center, rgba(243,199,106,.12), rgba(75,29,82,.18) 68%, rgba(30,10,38,.3));
-  }
-  .product-photo img {
-    filter: drop-shadow(0 9px 9px rgba(0,0,0,.22));
-  }
-  #grid .card [data-add] {
-    border-radius: 999px;
-    box-shadow: 0 5px 14px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.22);
-    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
-  }
-  #grid .card [data-add]:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.06);
-    box-shadow: 0 9px 20px rgba(0,0,0,.24), 0 0 16px rgba(243,199,106,.12);
-  }
-  .btn-gold {
-    box-shadow: 0 9px 24px -9px rgba(224,160,48,.85), inset 0 1px 0 rgba(255,255,255,.28);
-  }
-  .glass {
-    box-shadow: 0 12px 30px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.06);
-  }
-  @media (max-width: 640px) {
-    #grid .card { border-radius: 19px; }
-    .product-photo { height: 200px; }
-    #grid .card:hover { transform: translateY(-2px); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #grid .card, .product-photo img, #grid .card [data-add], .btn-gold {
-      transition: none !important;
-    }
-    #grid .card:hover, #grid .card [data-add]:hover, .btn-gold:hover {
-      transform: none !important;
-    }
-  }
-
-
-  /* ویترین سینمایی و نورپردازی استودیویی؛ فقط CSS */
-  #home #heroText h1 {
-    text-shadow: 0 10px 32px rgba(0,0,0,.28), 0 0 28px rgba(243,199,106,.08);
-  }
-  #home #heroText > p:first-child {
-    display: inline-block;
-    padding: 7px 12px;
-    border: 1px solid rgba(243,199,106,.3);
-    border-radius: 999px;
-    background: rgba(255,240,220,.06);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 20px rgba(0,0,0,.12);
-  }
-  nav.fixed {
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(243,199,106,.14);
-  }
-  nav.fixed a { transition: color .22s ease, text-shadow .22s ease; }
-  nav.fixed a:hover { color: #f3c76a; text-shadow: 0 0 16px rgba(243,199,106,.24); }
-  #menu > .glass {
-    border-color: rgba(243,199,106,.3);
-    background:
-      radial-gradient(ellipse at 92% 0%, rgba(243,199,106,.09), transparent 42%),
-      linear-gradient(145deg, rgba(255,240,220,.075), rgba(255,240,220,.025));
-    box-shadow: 0 24px 58px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.07);
-  }
-  .product-photo {
-    isolation: isolate;
-    background:
-      radial-gradient(ellipse at 50% 28%, rgba(255,241,201,.2), transparent 42%),
-      radial-gradient(ellipse at center, rgba(243,199,106,.13), rgba(75,29,82,.2) 67%, rgba(30,10,38,.34));
-    box-shadow: inset 0 2px 14px rgba(0,0,0,.22), 0 10px 22px rgba(0,0,0,.13);
-  }
-  .product-photo::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    border-radius: inherit;
-    background: linear-gradient(135deg, rgba(255,255,255,.075), transparent 34%, transparent 72%, rgba(243,199,106,.045));
-  }
-  .product-photo img {
-    position: relative;
-    z-index: 0;
-    filter: drop-shadow(0 12px 10px rgba(0,0,0,.26));
-    transition: transform .32s ease, filter .32s ease;
-  }
-  #grid .card:hover .product-photo img {
-    transform: scale(1.055) translateY(-2px);
-    filter: drop-shadow(0 16px 12px rgba(0,0,0,.32));
-  }
-  #grid .card {
-    box-shadow: 0 15px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07);
-  }
-  #grid .card [data-add] {
-    box-shadow: 0 6px 16px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.25);
-    transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
-  }
-  #grid .card [data-add]:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.06);
-    box-shadow: 0 10px 22px rgba(0,0,0,.24), 0 0 14px rgba(243,199,106,.1);
-  }
-  #special .reveal {
-    border: 1px solid rgba(255,241,201,.3);
-    box-shadow: 0 22px 48px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.22);
-  }
-  @media (max-width: 640px) {
-    #grid .card:hover { transform: translateY(-2px); }
-    .product-photo { height: 200px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    nav.fixed a, .product-photo img, #grid .card [data-add] { transition: none !important; }
-    #grid .card:hover, #grid .card [data-add]:hover, #grid .card:hover .product-photo img { transform: none !important; }
-  }
-
-
-  /* Live product cards — safe visual-only enhancement */
-  #grid .card {
-    animation: shire-product-arrive .42s ease both;
-    will-change: transform;
-  }
-  #grid .card:nth-child(2n) { animation-delay: 45ms; }
-  #grid .card:nth-child(3n) { animation-delay: 80ms; }
-  #grid .card .product-photo {
-    position: relative;
-    isolation: isolate;
-    transition: border-color .28s ease, box-shadow .28s ease, background-color .28s ease;
-  }
-  #grid .card .product-photo::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.10) 48%, transparent 68%);
-    transform: translateX(120%);
-    transition: transform .65s ease;
-  }
-  #grid .card:hover .product-photo::after { transform: translateX(-120%); }
-  #grid .card:hover .product-photo {
-    border-color: rgba(243,199,106,.48);
-    box-shadow: inset 0 0 24px rgba(243,199,106,.07);
-  }
-  @keyframes shire-product-arrive {
-    from { opacity: .72; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #grid .card { animation: none; }
-    #grid .card, #grid .card .product-photo, #grid .card .product-photo::after,
-    #grid .card .product-photo img { transition: none !important; }
-  }
-
-
-  /* ویترین لوکس شیره‌ها — فقط ظاهر؛ داده و منطق فروشگاه حفظ می‌شود */
-  nav.fixed { background:linear-gradient(180deg,rgba(20,4,16,.97),rgba(30,8,28,.86)) !important; border-bottom:1px solid rgba(243,199,106,.32); box-shadow:0 8px 30px rgba(0,0,0,.2); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
-  .brand-name { letter-spacing:-.04em; text-shadow:0 0 22px rgba(243,199,106,.2); }
-  #home { min-height:min(860px,100svh); padding-top:110px; padding-bottom:80px; background:radial-gradient(ellipse at 72% 44%,rgba(166,81,35,.19),transparent 38%),radial-gradient(ellipse at 14% 58%,rgba(243,199,106,.08),transparent 42%); }
-  #heroText { position:relative; z-index:4; max-width:560px; padding:clamp(24px,4vw,48px); border:1px solid rgba(243,199,106,.22); border-radius:28px; background:linear-gradient(135deg,rgba(28,7,25,.82),rgba(54,15,48,.38)); box-shadow:0 24px 70px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.05); backdrop-filter:blur(8px); }
-  #heroText > p:first-child { display:inline-flex; border:1px solid rgba(243,199,106,.32); border-radius:999px; padding:7px 13px; background:rgba(243,199,106,.08); letter-spacing:.01em; }
-  #heroText h1 { text-shadow:0 8px 30px rgba(0,0,0,.28); }
-  #heroText > p:nth-of-type(2) { line-height:1.5; }
-  #heroText > p:nth-of-type(3) { max-width:440px; }
-  #stage { border-top:1px solid rgba(243,199,106,.14); border-bottom:1px solid rgba(243,199,106,.14); background:linear-gradient(90deg,rgba(18,4,17,.38),rgba(243,199,106,.035),rgba(18,4,17,.38)); }
-  #stageText { padding:28px; border:1px solid rgba(243,199,106,.24); border-radius:24px; background:rgba(26,6,24,.58); backdrop-filter:blur(10px); }
-  #menu > .glass { border-color:rgba(243,199,106,.3); background:linear-gradient(145deg,rgba(48,13,43,.84),rgba(23,6,23,.9)); box-shadow:0 26px 70px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.045); }
-  #menu h2, #whyHeading { letter-spacing:-.035em; }
-  #pills { padding-bottom:16px; border-bottom:1px solid rgba(243,199,106,.16); }
-  #pills .pill { padding:9px 18px; border-radius:999px; }
-  /* نمایش یک‌به‌یک محصولات در همه اندازه‌ها + عمق سه‌بعدی واضح‌تر */
-  #grid { display:grid !important; grid-template-columns:minmax(0,1fr) !important; gap:24px !important; perspective:1400px; }
-  #grid .card {
-    width:100%; min-width:0; display:grid; grid-template-columns:minmax(0,1fr); gap:12px;
-    padding:clamp(14px,2.5vw,28px); border-radius:26px; overflow:hidden;
-    background:radial-gradient(ellipse at 50% 0%,rgba(243,199,106,.17),transparent 58%),linear-gradient(145deg,rgba(255,240,220,.105),rgba(24,7,31,.48));
-    border:1px solid rgba(243,199,106,.38);
-    box-shadow:0 24px 55px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.09),inset 0 -2px rgba(0,0,0,.15);
-    transform-style:preserve-3d; transition:transform .35s ease,box-shadow .35s ease,border-color .35s ease;
-  }
-  #grid .card:hover { transform:translateY(-5px) perspective(1000px) rotateX(1deg); box-shadow:0 32px 68px rgba(0,0,0,.38),0 0 24px rgba(243,199,106,.07),inset 0 1px rgba(255,255,255,.12); border-color:rgba(243,199,106,.72); }
-  #grid .product-photo {
-    height:clamp(260px,38vw,430px); width:100%; border-radius:20px; position:relative; overflow:hidden;
-    background:radial-gradient(ellipse at 50% 72%,rgba(243,199,106,.25),transparent 50%),linear-gradient(145deg,rgba(90,32,64,.38),rgba(15,4,19,.55));
-    border:1px solid rgba(243,199,106,.32); box-shadow:inset 0 3px 22px rgba(0,0,0,.3),0 12px 28px rgba(0,0,0,.18);
-    transform:translateZ(12px);
-  }
-  #grid .product-photo::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(115deg,transparent 25%,rgba(255,235,185,.10) 48%,transparent 70%); opacity:.55; }
-  #grid .product-photo img { width:100% !important; height:100% !important; max-height:none; padding:14px; object-fit:contain !important; object-position:center; filter:drop-shadow(0 18px 14px rgba(0,0,0,.3)); transition:transform .4s ease,filter .4s ease; }
-  #grid .card:hover .product-photo img { transform:scale(1.045) translateY(-3px); filter:drop-shadow(0 24px 18px rgba(0,0,0,.38)); }
-  #grid .card > div:last-child { padding:4px 6px 2px; transform:translateZ(8px); }
-  #grid .card h3 { margin-top:2px; color:#f6d887; font-size:clamp(1.15rem,2.2vw,1.55rem); }
-  #grid .card p { font-size:clamp(.85rem,1.3vw,1rem); line-height:2; }
-  #grid .card [data-add] { min-height:46px; padding-inline:24px; border:1px solid rgba(255,239,190,.48); box-shadow:0 8px 22px rgba(224,160,48,.22); }
-  #special > .reveal { border:1px solid rgba(255,228,165,.45); box-shadow:0 24px 65px rgba(0,0,0,.24); overflow:hidden; }
-  #why [data-why-card] { border-color:rgba(243,199,106,.25); background:linear-gradient(145deg,rgba(255,240,220,.085),rgba(255,240,220,.025)); transition:transform .25s ease,border-color .25s ease,background .25s ease; }
-  #why [data-why-card]:hover { transform:translateY(-4px); border-color:rgba(243,199,106,.58); background:linear-gradient(145deg,rgba(243,199,106,.12),rgba(255,240,220,.035)); }
-  @media (max-width:1024px) { #grid { grid-template-columns:minmax(0,1fr) !important; } #heroText { max-width:min(540px,90vw); } #grid .product-photo { height:clamp(260px,48vw,390px); } }
-  @media (max-width:640px) { nav.fixed { background:rgba(20,4,16,.96) !important; } #home { min-height:92svh; padding-top:110px; padding-bottom:70px; } #heroText { width:100%; padding:22px 18px; border-radius:22px; } #heroText h1 { font-size:clamp(2.7rem,12vw,4rem); } #heroText > p:nth-of-type(2) { font-size:clamp(1.25rem,6vw,1.8rem); } #grid { grid-template-columns:minmax(0,1fr) !important; gap:18px !important; } #grid .card { padding:14px; } #grid .product-photo { height:clamp(260px,78vw,340px); } #menu h2 { font-size:clamp(2rem,9vw,3rem); } }
-
-
-  /* بازگردانی امن انیمیشن‌ها: محتوا حتی در صورت خطای GSAP هم پنهان نمی‌ماند */
-  .reveal { opacity: 1; transform: none; }
-  #why [data-why-card] {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    transform: perspective(900px) translateY(0) rotateX(0);
-    transform-style: preserve-3d;
-    box-shadow: 0 14px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.08);
-    transition: transform .38s cubic-bezier(.2,.8,.2,1), border-color .38s ease, box-shadow .38s ease, background .38s ease;
-    animation: why-card-enter .7s both;
-  }
-  #why [data-why-card]:nth-child(2) { animation-delay: .08s; }
-  #why [data-why-card]:nth-child(3) { animation-delay: .16s; }
-  #why [data-why-card]:nth-child(4) { animation-delay: .24s; }
-  #why [data-why-card]::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    opacity: .65;
-    background: radial-gradient(circle at 50% 0%, rgba(243,199,106,.18), transparent 65%);
-    transition: opacity .35s ease;
-  }
-  #why [data-why-card] [data-why-emoji] {
-    display: inline-block;
-    filter: drop-shadow(0 7px 8px rgba(0,0,0,.25));
-    transform: translateZ(22px);
-    transition: transform .38s cubic-bezier(.2,.8,.2,1), filter .38s ease;
-  }
-  #why [data-why-card]:hover {
-    transform: perspective(900px) translateY(-8px) rotateX(2deg);
-    border-color: rgba(243,199,106,.65);
-    box-shadow: 0 25px 48px rgba(0,0,0,.3), 0 0 22px rgba(243,199,106,.08), inset 0 1px 0 rgba(255,255,255,.12);
-  }
-  #why [data-why-card]:hover::before { opacity: 1; }
-  #why [data-why-card]:hover [data-why-emoji] {
-    transform: translateZ(32px) scale(1.12) rotate(-4deg);
-    filter: drop-shadow(0 10px 10px rgba(0,0,0,.32));
-  }
-  #whyHeading { text-shadow: 0 8px 28px rgba(0,0,0,.2), 0 0 24px rgba(243,199,106,.12); }
-  #special .reveal { opacity: 1; transform: none; }
-  @keyframes why-card-enter {
-    from { opacity: 0; transform: perspective(900px) translateY(18px) rotateX(2deg); }
-    to { opacity: 1; transform: perspective(900px) translateY(0) rotateX(0); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #why [data-why-card] { animation: none; transition: none; }
-    #why [data-why-card]:hover { transform: none; }
-    #why [data-why-card]:hover [data-why-emoji] { transform: none; }
-  }
-
 </style>
 </head>
 <body>
@@ -515,7 +212,7 @@ tailwind.config = { theme: { extend: {
           <span id="weeklyOfferPrice" class="text-4xl font-extrabold">۳۸۴٬۰۰۰ <small class="text-base">تومان</small></span>
           <span id="weeklyOfferOldPrice" class="text-lg line-through opacity-60">۴۸۰٬۰۰۰</span>
         </div>
-        <button id="weeklyOfferCodeButton" data-discount-code="" class="mt-5 rounded-full bg-grape px-7 py-3 font-bold text-honey transition hover:scale-105">🎟️ مشاهده کد تخفیف</button>
+        <button data-discount-code="shire" class="mt-5 rounded-full bg-grape px-7 py-3 font-bold text-honey transition hover:scale-105">🎟️ کد تخفیف</button>
       </div>
       <div class="flex justify-center"><div id="specialJar" class="w-52 sm:w-64"></div></div>
     </div>
@@ -575,7 +272,7 @@ const jarSVG = (c, id) => `
 
 const state = { cat: "همه", cart: {} };
 const defaultSiteContent = {
-  weekly_offer: { label: "پیشنهاد ویژه این هفته", title: "شیره انگور سفید و سیاه\nیک کیلویی", description: "پیشنهاد ویژه برای شیره انگور سفید یک‌کیلویی و شیره انگور سیاه یک‌کیلویی؛ مناسب صبحانه، شیره‌ارده و شیرینی‌های سنتی.", price: 384000, oldPrice: 480000, discount: 20 },
+  weekly_offer: { label: "پیشنهاد ویژه این هفته", title: "شیره انگور\nملایر", description: "غلیظ، براق و خوش‌عطر؛ از انگورهای رسیده باغات ملایر. مناسب صبحانه، شیره‌ارده و شیرینی‌های سنتی. یک بسته ۹۰۰ گرمی با تخفیف ویژه.", price: 384000, oldPrice: 480000, discount: 20 },
   why: [
     { emoji: "🍇", title: "میوه انتخابی", description: "فقط انگور و خرمای رسیده و درجه یک" },
     { emoji: "🔥", title: "پخت سنتی", description: "جوشاندن آرام روی حرارت ملایم" },
@@ -602,27 +299,6 @@ const normalizeSiteContent = (raw) => {
     })
   };
 };
-async function refreshWeeklyOfferDiscount() {
-  const button=document.getElementById("weeklyOfferCodeButton");
-  if(!button) return;
-  try {
-    const [discounts, productRows]=await Promise.all([DB.getPublicProductDiscounts(), DB.getProducts()]);
-    // Match the two grape-molasses products flexibly; each discount row has one product_id.
-    const normalizeName=v=>String(v||"").replace(/[ي]/g,"ی").replace(/[ك]/g,"ک").replace(/[\u200c\s]/g,"").toLowerCase();
-    const offerProducts=productRows.filter(p=>{
-      const n=normalizeName(p.name);
-      return n.includes("شیره")&&n.includes("انگور")&&(n.includes("سفید")||n.includes("سیاه")||n.includes("سياه"));
-    });
-    const offerIds=offerProducts.map(p=>String(p.id));
-    const activeDiscounts=discounts.filter(x=>x.active!==false&&String(x.code||"").trim()&&offerIds.includes(String(x.product_id||"")));
-    // Show a code assigned to either selected weekly-offer product.
-    const d=activeDiscounts[0]||null;
-    button.dataset.discountCode=d?d.code:"";
-    button.textContent=d?("🎟️ کد تخفیف: "+d.code):"🎟️ کد تخفیف فعلاً موجود نیست";
-    button.disabled=!d;
-    button.classList.toggle("opacity-60",!d);
-  } catch(err) { console.warn("weekly offer discount unavailable",err); button.dataset.discountCode=""; button.textContent="🎟️ مشاهده کد تخفیف"; }
-}
 function applySiteContent() {
   siteContent = normalizeSiteContent(siteContent);
   const o = siteContent.weekly_offer;
@@ -682,9 +358,7 @@ function renderCart() {
 document.addEventListener("click", (e) => {
   const discount = e.target.closest("[data-discount-code]");
   if (discount) {
-    const code = String(discount.dataset.discountCode || "").trim().toUpperCase();
-    if (!code) { showModal(head("🎟️ کد تخفیف پیشنهاد ویژه") + '<p class="py-6 text-center text-cream/80">فعلاً کد تخفیف فعالی برای پیشنهاد این هفته ثبت نشده است.</p>'); return; }
-    showModal(head("🎟️ کد تخفیف پیشنهاد ویژه") + `<div class="py-6 text-center"><p class="text-sm text-cream/80 mb-3">این کد را در سبد خرید وارد کنید</p><div class="text-3xl font-extrabold tracking-widest text-honey" dir="ltr">${esc(code)}</div><button data-act="copyDiscountCode" data-code="${esc(code)}" class="btn-gold rounded-xl px-5 py-3 mt-5">کپی کد تخفیف</button></div>`);
+    showModal(head("🎟️ کد تخفیف پیشنهاد ویژه") + `<div class="py-6 text-center"><p class="text-sm text-cream/80 mb-3">کد تخفیف خود را هنگام سفارش وارد کنید</p><div class="text-3xl font-extrabold tracking-widest text-honey" dir="ltr">shire</div><button data-act="copyDiscountCode" class="btn-gold rounded-xl px-5 py-3 mt-5">کپی کد تخفیف</button></div>`);
     modal.dataset.view = "discount-code";
     return;
   }
@@ -698,7 +372,6 @@ document.addEventListener("click", (e) => {
 });
 renderPills(); renderGrid(); renderCart();
 document.getElementById("specialJar").innerHTML = jarSVG("#2e1030", "sp");
-
 
 /* ---------------- Database (Supabase, with local fallback) ---------------- */
 // برای فعال‌سازی پایگاه داده واقعی، آدرس و کلید پروژه Supabase را اینجا بگذار (راهنما: supabase-setup.sql)
@@ -779,7 +452,7 @@ const DB = {
   },
   async createOrder(o) {
     const code = "SH-" + Math.random().toString(36).slice(2, 10).toUpperCase();
-    const row = { code, user_id:o.user_id||null, name:o.name, phone:o.phone, address:o.address, items:o.items, subtotal:o.subtotal??o.total, discount_total:o.discount_total||0, discount_details:o.discount_details||[], total:o.total, status:"در انتظار تأیید", payment_provider:null, payment_status:"unpaid" };
+    const row = { code, user_id: o.user_id || null, name: o.name, phone: o.phone, address: o.address, items: o.items, total: o.total, status: "در انتظار تأیید" };
     if (sb) { const { error } = await sb.from("orders").insert(row); if (error) throw error; return code; }
     const all = LS.get("sh_orders", []); all.unshift({ ...row, created_at: new Date().toISOString() }); LS.set("sh_orders", all); return code;
   },
@@ -864,49 +537,6 @@ const DB = {
     if (sb) { const { error } = await sb.from("product_catalog").upsert(row); if (error) throw error; return row; }
     const all = LS.get("sh_products", products); const idx = all.findIndex(x=>String(x.id)===row.id); if (idx>=0) all[idx]=row; else all.push(row); LS.set("sh_products", all); return row;
   },
-  async getPublicProductDiscounts() {
-    if (sb) { const { data, error } = await sb.from("product_discounts").select("product_id,code,discount_type,discount_value,active"); if(error) throw error; return data || []; }
-    return LS.get("sh_product_discounts", []);
-  },
-  async getProductDiscounts() {
-    if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
-    if (sb) { const { data, error } = await sb.from("product_discounts").select("*").order("updated_at", { ascending:false }); if(error) throw error; return data || []; }
-    return LS.get("sh_product_discounts", []);
-  },
-  async saveProductDiscount(d) {
-    if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
-    const submitted=Array.isArray(d.product_ids)?d.product_ids.map(String).filter(Boolean):[];
-    const selected=submitted.length?submitted:String(d.product_id||"").split(",").map(x=>x.trim()).filter(Boolean);
-    const productIds=[...new Set(selected)];
-    const row={code:String(d.code||"").trim().toUpperCase(),discount_type:d.discount_type==="fixed"?"fixed":"percent",discount_value:Number(d.discount_value),active:d.active!==false,updated_at:new Date().toISOString()};
-    if(!productIds.length || !/^[A-Z0-9_-]{3,32}$/.test(row.code)) throw new Error("حداقل یک محصول را انتخاب کنید و کد معتبر وارد کنید.");
-    if(!Number.isFinite(row.discount_value)||row.discount_value<=0||(row.discount_type==="percent"&&row.discount_value>100)) throw new Error("مقدار تخفیف معتبر نیست.");
-    // Store one valid product_id per row; product_id may be a foreign key and must never contain comma-separated IDs.
-    if(sb){
-      const saved=[];
-      for(const productId of productIds){
-        const productRow={...row,product_id:productId};
-        const {data,error}=await sb.from("product_discounts").upsert(productRow,{onConflict:"product_id"}).select().single();
-        if(error) throw error;
-        saved.push(data);
-      }
-      return saved;
-    }
-    let all=LS.get("sh_product_discounts",[]);
-    all=all.filter(x=>!productIds.includes(String(x.product_id)) && String(x.code).toUpperCase()!==row.code);
-    const saved=productIds.map(product_id=>({...row,product_id}));
-    all.push(...saved); LS.set("sh_product_discounts",all); return saved;
-  },
-  async deleteProductDiscount(productId) {
-    if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
-    if (sb) { const { error } = await sb.from("product_discounts").delete().eq("product_id", String(productId)); if(error) throw error; return; }
-    LS.set("sh_product_discounts", LS.get("sh_product_discounts", []).filter(x=>String(x.product_id)!==String(productId)));
-  },
-  async getActiveDiscountByCode(code) {
-    const clean=String(code||"").trim().toUpperCase(); if(!clean)return [];
-    if(sb){const {data,error}=await sb.from("product_discounts").select("product_id,code,discount_type,discount_value,active").eq("code",clean).eq("active",true);if(error)throw error;return data||[];}
-    return LS.get("sh_product_discounts",[]).filter(x=>x.active!==false&&String(x.code).trim().toUpperCase()===clean);
-  },
   async deleteProduct(id) {
     if (!isOwner()) throw new Error("فقط مدیر فروشگاه می‌تواند محصولات را حذف کند.");
     if (sb) { const { error } = await sb.from("product_catalog").delete().eq("id", String(id)); if (error) throw error; return; }
@@ -947,7 +577,6 @@ async track(code) {
   ) || null;
   }
 };
-refreshWeeklyOfferDiscount();
 
 async function loadPublicProducts() {
   try {
@@ -1020,65 +649,21 @@ function authModal(mode) {
 }
 
 /* cart helpers */
-const itemInfo = (id) => id === "special" ? { id, name:siteContent.weekly_offer.title.replace(/\n/g," ").trim()+" (ویژه)", price:Number(siteContent.weekly_offer.price) } : products.find(p=>String(p.id)===String(id));
-const cartLines = () => Object.entries(state.cart).filter(([,q])=>q>0).map(([id,q])=>({id,q:Number(q),...itemInfo(id)})).filter(l=>l.name);
-const cartTotal = () => cartLines().reduce((sum,l)=>sum+Number(l.price)*l.q,0);
-const cartDiscountLines = () => {const d=state.productDiscountApplied;if(!d)return[];const ids=String(d.product_id||"").split(",").map(x=>x.trim());return cartLines().filter(l=>ids.includes(String(l.id))&&l.id!=="special").map(l=>{const base=Number(l.price)*l.q;const amount=d.discount_type==="fixed"?Math.min(base,Math.round(Number(d.discount_value)*l.q)):Math.min(base,Math.round(base*Number(d.discount_value)/100));return{product_id:l.id,product_name:l.name,code:d.code,discount_type:d.discount_type,discount_value:Number(d.discount_value),amount};}).filter(x=>x.amount>0);};
-const discountAmount = () => cartDiscountLines().reduce((sum,d)=>sum+d.amount,0);
-const finalCartTotal = () => Math.max(0,cartTotal()-discountAmount());
+const itemInfo = (id) => id === "special" ? { name: siteContent.weekly_offer.title.replace(/\n/g, " ").trim() + " (ویژه)", price: siteContent.weekly_offer.price } : products.find(p => p.id == id);
+const cartLines = () => Object.entries(state.cart).filter(([, q]) => q > 0).map(([id, q]) => ({ id, q, ...itemInfo(id) }));
+const cartTotal = () => cartLines().reduce((s, l) => s + l.price * l.q, 0);
 
 function cartModal() {
   const lines = cartLines();
   modal.dataset.view = "cart";
   if (!lines.length) { showModal(head("🛒 سبد خرید") + `<p class="py-8 text-center text-cream/70">سبد خرید شما خالی است.</p>`); modal.dataset.view = "cart"; return; }
-  const subtotal = cartTotal(), saving = discountAmount(), finalTotal = finalCartTotal();
   showModal(head("🛒 سبد خرید") +
-    lines.map(l => `<div class="row-item"><span class="font-semibold">${esc(l.name)}</span><span class="qty flex items-center gap-2"><button type="button" data-act="dec" data-id="${l.id}">−</button><b>${fa(l.q)}</b><button type="button" data-act="inc" data-id="${l.id}">+</button></span><span class="text-honey">${fa(l.price * l.q)}</span></div>`).join("") +
-    `<div class="my-3 rounded-xl border border-amber-300/20 bg-white/5 p-3">
-      <label class="mb-2 block text-sm font-bold text-honey" for="cartDiscountCode">🎟️ کد تخفیف</label>
-      <div class="flex gap-2">
-        <input class="field" id="cartDiscountCode" name="discountCode" autocomplete="off" placeholder="کد تخفیف را وارد کنید" value="${esc(state.productDiscountApplied?.code||"")}" dir="ltr" style="text-align:left">
-        <button type="button" data-act="applyDiscount" class="btn-gold shrink-0 rounded-xl px-4 py-2">اعمال</button>
-      </div>
-      <p class="mt-2 text-xs text-cream/65">کد تخفیف روی محصولات مشمول آن که در سبد خرید باشند اعمال می‌شود.</p>
-      ${saving ? `<p class="mt-2 text-sm text-green-200">تخفیف محصول: ${fa(saving)} تومان</p>` : ""}
-    </div>
-    <div class="my-2 flex justify-between text-sm"><span>جمع کالاها</span><span>${fa(subtotal)} تومان</span></div>
-    ${saving ? `<div class="my-2 flex justify-between text-sm text-green-200"><span>مبلغ تخفیف</span><span>− ${fa(saving)} تومان</span></div>` : ""}
-    <div class="my-3 flex justify-between text-lg font-extrabold"><span>مبلغ نهایی</span><span class="text-honey">${fa(finalTotal)} تومان</span></div>
+    lines.map(l => `<div class="row-item"><span class="font-semibold">${esc(l.name)}</span><span class="qty flex items-center gap-2"><button data-act="dec" data-id="${l.id}">−</button><b>${fa(l.q)}</b><button data-act="inc" data-id="${l.id}">+</button></span><span class="text-honey">${fa(l.price * l.q)}</span></div>`).join("") +
+    `<div class="my-3 flex justify-between text-lg font-bold"><span>جمع کل</span><span class="text-honey">${fa(cartTotal())} تومان</span></div>
     <form class="form" data-form="checkout">
       <input class="field" name="name" required placeholder="نام و نام خانوادگی" value="${esc(me?.full_name || "")}">
       <input class="field" name="phone" type="tel" required placeholder="شماره تماس" value="${esc(me?.phone || "")}" dir="ltr" style="text-align:right">
-      <div class="rounded-2xl border border-honey/20 bg-white/5 p-3 sm:p-4">
-        <p class="mb-3 text-sm font-bold text-honey">📍 نشانی تحویل سفارش</p>
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label class="block text-xs text-cream/80">استان
-            <select class="field mt-1" name="province" required>
-              <option value="">انتخاب استان</option>
-              <option>آذربایجان شرقی</option><option>آذربایجان غربی</option><option>اردبیل</option><option>اصفهان</option><option>البرز</option><option>ایلام</option><option>بوشهر</option><option>تهران</option><option>چهارمحال و بختیاری</option><option>خراسان جنوبی</option><option>خراسان رضوی</option><option>خراسان شمالی</option><option>خوزستان</option><option>زنجان</option><option>سمنان</option><option>سیستان و بلوچستان</option><option>فارس</option><option>قزوین</option><option>قم</option><option>کردستان</option><option>کرمان</option><option>کرمانشاه</option><option>کهگیلویه و بویراحمد</option><option>گلستان</option><option>گیلان</option><option>لرستان</option><option>مازندران</option><option>مرکزی</option><option>هرمزگان</option><option>همدان</option><option>یزد</option>
-            </select>
-          </label>
-          <label class="block text-xs text-cream/80">شهرستان
-            <input class="field mt-1" name="county" required list="iran-counties" placeholder="نام شهرستان را وارد کنید">
-            <datalist id="iran-counties">
-              <option value="تهران"><option value="اسلامشهر"><option value="شهریار"><option value="ری"><option value="قدس"><option value="کرج"><option value="فردیس"><option value="نظرآباد"><option value="اصفهان"><option value="کاشان"><option value="شیراز"><option value="مشهد"><option value="نیشابور"><option value="تبریز"><option value="مراغه"><option value="ارومیه"><option value="اردبیل"><option value="رشت"><option value="لاهیجان"><option value="ساری"><option value="آمل"><option value="بابل"><option value="گرگان"><option value="اهواز"><option value="دزفول"><option value="آبادان"><option value="بندرعباس"><option value="یزد"><option value="کرمان"><option value="همدان"><option value="قم"><option value="قزوین"><option value="زنجان"><option value="سنندج"><option value="کرمانشاه"><option value="خرم‌آباد"><option value="بوشهر"><option value="زاهدان"><option value="بیرجند"><option value="بجنورد"><option value="سمنان"><option value="ایلام"><option value="یاسوج"><option value="شهرکرد"><option value="زابل"><option value="کیش"><option value="قشم">
-            </datalist>
-          </label>
-          <label class="block text-xs text-cream/80">کد پستی ۱۰ رقمی
-            <input class="field mt-1" name="postal_code" required inputmode="numeric" pattern="[0-9۰-۹]{10}" maxlength="10" placeholder="مثلاً 1234567890" dir="ltr" style="text-align:right">
-          </label>
-          <label class="block text-xs text-cream/80">پلاک
-            <input class="field mt-1" name="plate" required maxlength="20" placeholder="شماره پلاک">
-          </label>
-          <label class="block text-xs text-cream/80 sm:col-span-2">طبقه / واحد <span class="text-cream/50">(در صورت نیاز)</span>
-            <input class="field mt-1" name="floor" maxlength="40" placeholder="مثلاً طبقه ۲، واحد ۵">
-          </label>
-        </div>
-        <label class="mt-3 block text-xs text-cream/80">آدرس دقیق، خیابان و کوچه
-          <textarea class="field mt-1" name="street_address" required rows="3" maxlength="600" placeholder="نام خیابان، کوچه، نام ساختمان و نشانه‌های لازم برای تحویل"></textarea>
-        </label>
-        <p class="mt-2 text-xs leading-6 text-cream/55">لطفاً نشانی را دقیق وارد کنید تا سفارش بدون مشکل به دستتان برسد.</p>
-      </div>
+      <textarea class="field" name="address" required rows="3" placeholder="آدرس کامل"></textarea>
       <button class="btn-gold rounded-xl px-4 py-3">ثبت سفارش</button>
     </form>`);
   modal.dataset.view = "cart";
@@ -1295,33 +880,8 @@ async function renderProductAdmin(editId = null) {
     </form>
     <h5 class="admin-subtitle">فهرست محصولات (${fa(rows.length)})</h5>
     <div class="admin-scroll">${rows.length?rows.map(p=>`<div class="admin-mini" style="align-items:center"><div class="flex items-center gap-3 min-w-0"><img class="admin-product-thumb" src="${esc(p.image_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='10' fill='%234a1a2c'/%3E%3Ctext x='40' y='45' font-size='24' text-anchor='middle' fill='%23f3c76a'%3E🍯%3C/text%3E%3C/svg%3E")}" alt="${esc(p.name)}"><div class="min-w-0"><b class="block">${esc(p.name)}</b><span class="text-xs text-cream/60">${esc(p.cat)} · ${fa(p.price)} تومان</span><span class="block text-xs ${p.active===false?"text-red-200":"text-green-200"}">${p.active===false?"مخفی از فروشگاه":"نمایش در فروشگاه"}</span></div></div><div class="flex flex-wrap gap-1"><button class="admin-action" type="button" data-product-edit="${esc(p.id)}">ویرایش</button><button class="admin-action" type="button" data-product-delete="${esc(p.id)}">حذف</button></div></div>`).join(""):`<p class="text-sm text-cream/60 py-4">هنوز محصولی ذخیره نشده است.</p>`}</div>
-    <section class="glass rounded-xl p-3 mt-5">
-      <h5 class="admin-subtitle">🎟️ مدیریت کد تخفیف محصولات</h5>
-      <p class="text-xs text-cream/60 leading-6 mb-3">یک یا چند محصول را تیک بزن تا یک کد مشترک برای آن‌ها ساخته شود.</p>
-      <form class="form grid gap-2 mb-4" data-form="productDiscountSave">
-        <fieldset class="rounded-xl border border-white/10 p-3"><legend class="text-xs px-1">انتخاب چند محصول</legend><div class="grid gap-2 sm:grid-cols-2 max-h-56 overflow-auto">${rows.map(p=>`<label class="flex items-center gap-2 text-xs"><input type="checkbox" name="product_ids" value="${esc(p.id)}"> <span>${esc(p.name)}</span></label>`).join("")}</div></fieldset>
-        <label class="text-xs">کد تخفیف<input class="field mt-1" name="code" required maxlength="32" pattern="[A-Za-z0-9_-]{3,32}" dir="ltr" style="text-align:left" placeholder="PARIS10"></label>
-        <div class="grid grid-cols-2 gap-2"><label class="text-xs">نوع تخفیف<select class="field mt-1" name="discount_type"><option value="percent">درصدی</option><option value="fixed">مبلغ ثابت (تومان)</option></select></label><label class="text-xs">مقدار تخفیف<input class="field mt-1" name="discount_value" type="number" min="1" step="1" required placeholder="10"></label></div>
-        <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="active" checked> فعال باشد</label>
-        <button class="btn-gold rounded-xl px-4 py-2.5" type="submit">ذخیره کد تخفیف</button>
-      </form>
-      <div id="productDiscountList"><p class="text-sm text-cream/60">در حال بارگذاری…</p></div>
-    </section>
   `;
-  await renderProductDiscountList(rows);
 }
-async function renderProductDiscountList(productsRows) {
-  const area=document.getElementById("productDiscountList"); if(!area||!isOwner())return;
-  const discounts=await DB.getProductDiscounts(); const byId=new Map((productsRows||await DB.getAllProducts()).map(p=>[String(p.id),p]));
-  area.innerHTML=discounts.length?discounts.map(d=>{const ids=String(d.product_id||"").split(",").map(x=>x.trim());const names=ids.map(id=>byId.get(id)?.name||"محصول حذف‌شده");return `<form class="admin-mini grid gap-2 mb-2" data-form="productDiscountSave">
-    <input type="hidden" name="product_id" value="${esc(d.product_id)}"><b>${esc(names.join(" + "))}</b>
-    <div class="grid grid-cols-2 gap-2"><label class="text-xs">کد<input class="field mt-1" name="code" value="${esc(d.code)}" required maxlength="32" pattern="[A-Za-z0-9_-]{3,32}" dir="ltr" style="text-align:left"></label><label class="text-xs">نوع<select class="field mt-1" name="discount_type"><option value="percent" ${d.discount_type==="percent"?"selected":""}>درصدی</option><option value="fixed" ${d.discount_type==="fixed"?"selected":""}>مبلغ ثابت</option></select></label></div>
-    <label class="text-xs">مقدار تخفیف<input class="field mt-1" name="discount_value" type="number" min="1" value="${esc(d.discount_value)}" required></label>
-    <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="active" ${d.active===false?"":"checked"}> فعال باشد</label>
-    <div class="flex gap-2"><button class="admin-action flex-1" type="submit">ذخیره تغییرات</button><button class="admin-action" type="button" data-discount-delete="${esc(d.product_id)}">حذف کد</button></div>
-  </form>`}).join(""):'<p class="text-sm text-cream/60 py-3">هنوز کد تخفیفی ثبت نشده است.</p>';
-}
-
 function renderStoreProducts() { renderPills(); renderGrid(); }
 
 function exportOrdersCSV() {
@@ -1380,29 +940,7 @@ function trackModal(result) {
 }
 
 document.addEventListener("click", async (e) => {
-  const discountDelete = e.target.closest("[data-discount-delete]");
-  if (discountDelete) {
-    e.preventDefault();
-    if (!confirm("کد تخفیف این محصول حذف شود؟")) return;
-    try {
-      await DB.deleteProductDiscount(discountDelete.dataset.discountDelete);
-      state.productDiscountApplied = null;
-      await renderProductAdmin();
-      await refreshWeeklyOfferDiscount();
-      toast("کد تخفیف حذف شد.");
-    } catch (err) { console.error(err); toast("حذف کد ناموفق بود: " + (err.message || "خطا")); }
-    return;
-  }
   // دکمه‌های مدیریت محصول data-act ندارند؛ باید قبل از جست‌وجوی data-act بررسی شوند.
-  const deleteDiscount = e.target.closest("[data-discount-delete]");
-  if (deleteDiscount) {
-    e.preventDefault();
-    if (!isOwner()) { toast("فقط مدیر می‌تواند کد تخفیف را حذف کند."); return; }
-    if (!confirm("کد تخفیف این محصول حذف شود؟")) return;
-    try { await DB.deleteProductDiscount(deleteDiscount.dataset.discountDelete); state.productDiscountApplied=null; await renderProductAdmin(); await refreshWeeklyOfferDiscount(); toast("کد تخفیف حذف شد."); }
-    catch(err) { toast("حذف کد ناموفق بود: "+(err.message||"خطا")); }
-    return;
-  }
   const editProduct = e.target.closest("[data-product-edit]");
   if (editProduct) {
     e.preventDefault();
@@ -1435,26 +973,15 @@ document.addEventListener("click", async (e) => {
   if (act === "close") closeModal();
   else if (act === "copyDiscountCode") {
     try {
-      await navigator.clipboard.writeText(String(b.dataset.code||"").toUpperCase());
-      toast("کد تخفیف کپی شد.");
+      await navigator.clipboard.writeText("shire");
+      toast("کد تخفیف shire کپی شد.");
     } catch {
-      toast("کد تخفیف: "+String(b.dataset.code||"").toUpperCase());
+      toast("کد تخفیف: shire");
     }
   }
   else if (act === "login") authModal("login");
   else if (act === "register") authModal("register");
   else if (act === "cart") cartModal();
-  else if (act === "applyDiscount") {
-    const input=document.getElementById("cartDiscountCode"); const entered=String(input?.value||"").trim().toUpperCase();
-    if(!entered){state.productDiscountApplied=null;toast("کد تخفیف را وارد کنید.");cartModal();return;}
-    try {
-      const discounts=await DB.getActiveDiscountByCode(entered);
-      if(!discounts.length){state.productDiscountApplied=null;toast("کد تخفیف معتبر یا فعال نیست.");cartModal();return;}
-      const eligibleIds=discounts.map(d=>String(d.product_id));
-      if(!cartLines().some(l=>eligibleIds.includes(String(l.id))&&l.id!=="special")){state.productDiscountApplied=null;toast("این کد برای محصولات انتخاب‌شده است؛ حداقل یکی از آن‌ها را به سبد اضافه کنید.");cartModal();return;}
-      state.productDiscountApplied=discounts[0];state.productDiscountApplied.product_ids=eligibleIds;toast("کد تخفیف محصول اعمال شد.");cartModal();
-    } catch(err){console.error(err);toast("اعتبارسنجی کد ناموفق بود: "+(err.message||"خطا"));}
-  }
   else if (act === "panel") panelModal();
   else if (act === "admin") adminModal();
   else if (act === "refreshAdmin") { if (!isOwner()) return; await adminModal(b.dataset.tab || "overview"); toast("اطلاعات پنل به‌روزرسانی شد."); }
@@ -1523,22 +1050,9 @@ document.addEventListener("submit", async (e) => {
       await DB.saveName(v.full_name.trim()); await refreshUser(); toast("اطلاعات ذخیره شد ✅");
     } else if (kind === "checkout") {
       const lines = cartLines(); if (!lines.length) return;
-      const subtotal = cartTotal(), saving = discountAmount(), finalTotal = finalCartTotal();
-      const orderItems = lines.map(l => ({ name: l.name, qty: l.q, price: l.price }));
-      if (saving > 0) orderItems.push({ name:"تخفیف محصول: "+cartDiscountLines().map(d=>d.code+" ("+d.product_name+")").join(", "), qty:1, price:-saving });
-      const postalCode = String(v.postal_code || "").replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d)).trim();
-      if (!/^\d{10}$/.test(postalCode)) { toast("کد پستی باید دقیقاً ۱۰ رقم باشد."); return; }
-      const fullAddress = [
-        "استان: " + v.province.trim(),
-        "شهرستان: " + v.county.trim(),
-        "کد پستی: " + postalCode,
-        "پلاک: " + v.plate.trim(),
-        "طبقه/واحد: " + (v.floor.trim() || "ثبت نشده"),
-        "نشانی: " + v.street_address.trim()
-      ].join("، ");
-      const code = await DB.createOrder({ user_id:me?.id, name:v.name.trim(), phone:v.phone.trim(), address:fullAddress, subtotal, discount_total:saving, discount_details:cartDiscountLines(), total:finalTotal, items:orderItems });
-      state.cart = {}; state.productDiscountApplied = null; renderCart();
-      showModal(head("✅ سفارش ثبت شد") + `<p class="text-sm leading-7">سفارش شما با موفقیت ثبت شد.</p><div class="my-3 rounded-xl bg-white/5 p-3 text-sm"><p>جمع کالاها: ${fa(subtotal)} تومان</p><p class="mt-1 text-green-200">مبلغ تخفیف: ${fa(saving)} تومان</p><p class="mt-1 font-bold text-honey">مبلغ نهایی: ${fa(finalTotal)} تومان</p></div><p class="text-sm leading-7">کد پیگیری خود را نگه دارید:</p><p class="my-4 rounded-xl bg-honey py-3 text-center text-2xl font-extrabold text-grape" dir="ltr">${code}</p><p class="text-xs text-cream/70">با همین کد از دکمه «پیگیری سفارش» وضعیت را ببینید.</p>`);
+      const code = await DB.createOrder({ user_id: me?.id, name: v.name.trim(), phone: v.phone.trim(), address: v.address.trim(), total: cartTotal(), items: lines.map(l => ({ name: l.name, qty: l.q, price: l.price })) });
+      state.cart = {}; renderCart();
+      showModal(head("✅ سفارش ثبت شد") + `<p class="text-sm leading-7">سفارش شما با موفقیت ثبت شد. کد پیگیری خود را نگه دارید:</p><p class="my-4 rounded-xl bg-honey py-3 text-center text-2xl font-extrabold text-grape" dir="ltr">${code}</p><p class="text-xs text-cream/70">با همین کد از دکمه «پیگیری سفارش» وضعیت را ببینید.</p>`);
     } else if (kind === "track") {
       trackModal(await DB.track(v.code));
     } else if (kind === "supportSend") {
@@ -1575,10 +1089,6 @@ document.addEventListener("submit", async (e) => {
       const row=await DB.saveProduct({id,cat:v.cat,name:v.name.trim(),note:v.note.trim(),price:v.price,c:v.c,image_url,active:f.querySelector('[name="active"]').checked,sort_order:v.sort_order});
       const all=await DB.getAllProducts(); products=all.filter(p=>p.active!==false).map((p,i)=>({...p,price:Number(p.price),c:p.c||"#4a1a2c",sort_order:p.sort_order??i}));
       renderStoreProducts(); await renderProductAdmin(); toast(existing?"محصول ویرایش شد و ذخیره شد.":"محصول جدید اضافه شد.");
-    } else if (kind === "productDiscountSave") {
-      if(!isOwner()) throw new Error("فقط مدیر فروشگاه اجازه تغییر کد تخفیف را دارد.");
-      await DB.saveProductDiscount({product_ids:[...f.querySelectorAll('input[name="product_ids"]:checked')].map(x=>x.value),product_id:v.product_id,code:v.code,discount_type:v.discount_type,discount_value:v.discount_value,active:f.querySelector('[name="active"]').checked});
-      await renderProductAdmin(); await refreshWeeklyOfferDiscount(); toast("کد تخفیف ذخیره شد.");
     } else if (kind === "supportReply") {
       if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
       await DB.sendMessage(v.message, v.user_id, "admin"); toast("پاسخ برای مشتری ارسال شد."); await supportAdminModal();
