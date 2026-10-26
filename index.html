@@ -731,7 +731,8 @@ document.addEventListener("click", (e) => {
     }
   }
 });
-renderPills(); renderGrid(); renderCart();
+/* Do not render category pills or products until esc() and DB are initialized below. */
+renderCart();
 document.getElementById("specialJar").innerHTML = jarSVG("#2e1030", "sp");
 
 
