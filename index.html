@@ -775,6 +775,21 @@ function renderCart() {
   document.getElementById("cartTotal").textContent = fa(total);
 }
 document.addEventListener("click", (e) => {
+  const removeProductPhoto=e.target.closest("[data-product-photo-remove]");
+  if(removeProductPhoto){
+    const form=removeProductPhoto.closest('form[data-form="productSave"]');
+    if(!form||!isOwner())return;
+    const index=Number(removeProductPhoto.dataset.productPhotoRemove);
+    const hidden=form.querySelector('[name="removed_images"]');
+    let removed=[];try{removed=JSON.parse(hidden?.value||"[]");}catch{removed=[];}
+    if(!Array.isArray(removed))removed=[];
+    if(!removed.includes(index))removed.push(index);
+    if(hidden)hidden.value=JSON.stringify(removed);
+    const photo=removeProductPhoto.closest("[data-existing-photo]");
+    if(photo){photo.style.opacity=".35";photo.style.filter="grayscale(1)";removeProductPhoto.textContent="برای حذف انتخاب شد";removeProductPhoto.disabled=true;}
+    toast("عکس برای حذف انتخاب شد؛ برای نهایی شدن «ذخیره تغییرات» را بزن.");
+    return;
+  }
   const photoStep=e.target.closest("[data-photo-step]");
   if(photoStep){const g=photoStep.closest("[data-photo-gallery]");if(g)setProductPhotoIndex(g,Number(g.dataset.photoIndex||0)+(photoStep.dataset.photoStep==="next"?1:-1));return;}
   const photoDot=e.target.closest("[data-photo-index]");
@@ -1449,7 +1464,7 @@ async function renderProductAdmin(editId = null) {
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><label class="text-xs text-cream/80">دسته‌بندی<select class="field mt-1" name="cat">${["انگور","خرما","سایر"].map(c=>`<option ${editing?.cat===c?"selected":""}>${c}</option>`).join("")}</select></label><label class="text-xs text-cream/80">قیمت (تومان)<input class="field mt-1" name="price" type="number" min="0" step="1000" required value="${esc(editing?.price ?? "")}" placeholder="320000"></label></div>
       <label class="text-xs text-cream/80">توضیحات کوتاه<input class="field mt-1" name="note" maxlength="180" value="${esc(editing?.note || "")}" placeholder="وزن، ویژگی یا توضیح کوتاه"></label>
       <label class="text-xs text-cream/80">تصاویر محصول (چند عکس انتخاب کن)<input class="field mt-1" type="file" name="images" multiple accept="image/png,image/jpeg,image/webp,image/avif"><span class="block mt-1 text-cream/50">چند عکس را هم‌زمان انتخاب کن؛ هر فایل حداکثر ۱۰ مگابایت و مجموع تصاویر هر محصول حداکثر ۸ عکس. عکس‌های جدید به انتهای گالری اضافه می‌شوند.</span></label>
-      ${productImageList(editing?.image_url).length?`<div class="flex flex-wrap items-center gap-2">${productImageList(editing.image_url).map((url,i)=>`<div class="text-center"><img src="${esc(url)}" alt="تصویر فعلی ${i+1}" class="admin-product-thumb"><span class="block text-[10px] text-cream/50">${i+1}</span></div>`).join("")}<span class="text-xs text-cream/60">تصاویر فعلی حفظ می‌شوند.</span></div>`:""}
+      ${productImageList(editing?.image_url).length?`<div class="mt-2"><p class="text-xs text-cream/70 mb-2">برای حذف هر عکس، دکمه «حذف عکس» زیر همان تصویر را بزن؛ سپس «ذخیره تغییرات» را انتخاب کن.</p><input type="hidden" name="removed_images" value="[]"><div class="flex flex-wrap items-start gap-3">${productImageList(editing.image_url).map((url,i)=>`<div class="text-center" data-existing-photo="${i}"><img src="${esc(url)}" alt="تصویر فعلی ${i+1}" class="admin-product-thumb"><span class="block text-[10px] text-cream/50 mb-1">عکس ${i+1}</span><button class="admin-action" type="button" data-product-photo-remove="${i}" style="border-color:#f87171;color:#fecaca">حذف عکس</button></div>`).join("")}</div><p class="text-xs text-cream/60 mt-2">عکس‌هایی که حذف می‌کنی تا زمان ذخیره نهایی فقط از این فرم پنهان می‌شوند.</p></div>`:""}
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><label class="text-xs text-cream/80">رنگ کارت محصول<input class="field mt-1" type="color" name="c" value="${esc(editing?.c || "#4a1a2c")}" style="height:46px;padding:5px"></label><label class="text-xs text-cream/80">ترتیب نمایش<input class="field mt-1" type="number" name="sort_order" min="0" value="${esc(editing?.sort_order ?? rows.length)}"></label></div>
       <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="active" ${editing?.active===false?"":"checked"}> نمایش محصول در فروشگاه</label>
       <div class="flex flex-wrap gap-2"><button class="btn-gold rounded-xl px-4 py-2.5" type="submit">💾 ${editing?"ذخیره تغییرات":"افزودن محصول"}</button>${editing?`<button class="admin-action" type="button" data-product-cancel>لغو ویرایش</button>`:""}</div>
@@ -1753,7 +1768,12 @@ document.addEventListener("submit", async (e) => {
       const id=(v.id || String(Date.now()));
       const existing=(await DB.getAllProducts()).find(p=>String(p.id)===String(id));
       let imageList=productImageList(existing?.image_url);
-      if(files.length && imageList.length+files.length>8) throw new Error("حداکثر ۸ تصویر برای هر محصول مجاز است.");
+      let removedImages=[];
+      try { removedImages=JSON.parse(String(v.removed_images||"[]")); } catch { removedImages=[]; }
+      if(!Array.isArray(removedImages)) removedImages=[];
+      const removedSet=new Set(removedImages.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<imageList.length));
+      imageList=imageList.filter((_,index)=>!removedSet.has(index));
+      if(imageList.length+files.length>8) throw new Error("حداکثر ۸ تصویر برای هر محصول مجاز است.");
       if(files.some(file=>file.size>10*1024*1024)) throw new Error("حجم هر تصویر باید کمتر از ۱۰ مگابایت باشد.");
       for(let i=0;i<files.length;i++){btn.textContent="در حال آماده‌سازی تصویر "+(i+1)+" از "+files.length+"…";imageList.push(await DB.uploadProductImage(files[i],id));}
       const image_url=imageList.length>1?JSON.stringify(imageList):(imageList[0]||null);
