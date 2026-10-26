@@ -480,46 +480,6 @@ tailwind.config = { theme: { extend: {
   }
 
 
-  /* Product-card slider: visual-only, reuses the existing product data and actions. */
-  #productSliderViewport { width:100%; overflow:hidden; border-radius:26px; touch-action:pan-y; }
-  #grid {
-    display:flex !important; flex-wrap:nowrap !important; direction:ltr;
-    width:100%; gap:0 !important; margin-top:0 !important;
-    perspective:none; transition:transform .55s cubic-bezier(.22,.75,.25,1);
-    will-change:transform;
-  }
-  #grid .card { flex:0 0 100%; width:100%; min-width:0; direction:rtl; }
-  .product-slider-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-  .product-slider-arrow {
-    display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px;
-    border:1px solid rgba(243,199,106,.48); border-radius:50%;
-    color:#f3c76a; background:rgba(255,240,220,.07); font-size:27px; line-height:1;
-    transition:background .2s ease, transform .2s ease;
-  }
-  .product-slider-arrow:hover { background:rgba(243,199,106,.16); transform:scale(1.04); }
-  .product-slider-arrow:focus-visible, .product-slider-dot:focus-visible { outline:2px solid #f3c76a; outline-offset:3px; }
-  .product-slider-dots { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:7px; }
-  .product-slider-dot { width:7px; height:7px; padding:0; border:0; border-radius:99px; background:rgba(251,240,220,.35); transition:width .25s ease,background .25s ease; }
-  .product-slider-dot[aria-current="true"] { width:22px; background:#f3c76a; }
-  .product-slider-controls[hidden] { display:none !important; }
-  .product-photo-track { display:block; width:100%; height:100%; direction:ltr; }
-  .product-photo-track > img { display:block; width:100%; max-width:100%; height:100%; min-width:0; object-fit:contain; }
-  .product-photo-arrow { position:absolute; z-index:3; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:32px; height:32px; border-radius:50%; border:1px solid rgba(243,199,106,.55); color:#f3c76a; background:rgba(25,7,24,.72); font-size:21px; line-height:1; }
-  .product-photo-arrow[data-photo-step="prev"] { left:9px; } .product-photo-arrow[data-photo-step="next"] { right:9px; }
-  .product-photo-dots { position:absolute; z-index:3; bottom:10px; left:0; right:0; display:flex; justify-content:center; gap:6px; }
-  .product-photo-dot { width:6px; height:6px; padding:0; border-radius:99px; border:0; background:rgba(255,240,220,.55); }
-  .product-photo-dot[aria-current="true"] { width:18px; background:#f3c76a; }
-  @media (max-width:640px) {
-    #productSliderViewport { border-radius:19px; }
-    .product-slider-arrow { flex-basis:38px; width:38px; height:38px; }
-    .product-slider-controls { gap:8px; }
-    .product-slider-dots { gap:6px; }
-  }
-  @media (prefers-reduced-motion:reduce) {
-    #grid { transition:none !important; }
-    .product-slider-arrow, .product-slider-dot { transition:none !important; }
-  }
-
 </style>
 </head>
 <body>
@@ -575,14 +535,7 @@ tailwind.config = { theme: { extend: {
         <div class="rounded-lg bg-honey px-4 py-2 text-sm font-bold text-grape">جمع سبد: <span id="cartTotal">۰</span> تومان</div>
       </div>
       <div id="pills" class="mt-8 flex flex-wrap justify-center gap-2"></div>
-      <div class="product-slider-controls mt-6 flex items-center justify-between gap-3" aria-label="کنترل اسلاید محصولات">
-        <button type="button" class="product-slider-arrow" data-product-slide="prev" aria-label="محصول قبلی">‹</button>
-        <div id="productSliderDots" class="product-slider-dots" aria-label="انتخاب اسلاید محصول"></div>
-        <button type="button" class="product-slider-arrow" data-product-slide="next" aria-label="محصول بعدی">›</button>
-      </div>
-      <div id="productSliderViewport" class="mt-4">
-        <div id="grid" class="grid grid-cols-1 gap-4"></div>
-      </div>
+      <div id="grid" class="mt-8 grid grid-cols-1 gap-4"></div>
     </div>
   </section>
 
@@ -737,7 +690,7 @@ function renderGrid() {
   const list = products.filter(p => state.cat === "همه" || p.cat === state.cat);
   grid.innerHTML = productLoadError ? `<div class="col-span-full rounded-2xl border border-red-400/30 p-8 text-center text-cream/80">بارگذاری محصولات با خطا روبه‌رو شد. اتصال اینترنت را بررسی و صفحه را دوباره بارگذاری کنید.</div>` : list.length ? list.map(p => `
     <div class="card flex flex-col rounded-2xl p-3">
-      <div class="product-photo" data-photo-gallery>${productImageList(p.image_url).length ? `<div class="product-photo-track">${productImageList(p.image_url).map((url,i)=>`<img src="${esc(url)}" alt="${esc(p.name)} — تصویر ${i+1}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">`).join("")}</div>${productImageList(p.image_url).length>1 ? `<button type="button" class="product-photo-arrow" data-photo-step="prev" aria-label="تصویر قبلی">‹</button><button type="button" class="product-photo-arrow" data-photo-step="next" aria-label="تصویر بعدی">›</button><div class="product-photo-dots">${productImageList(p.image_url).map((_,i)=>`<button type="button" class="product-photo-dot" data-photo-index="${i}" aria-label="تصویر ${i+1}" aria-current="${i===0?"true":"false"}"></button>`).join("")}</div>` : ""}` : jarSVG(p.c, p.id)}</div>
+      <div class="product-photo">${productImageList(p.image_url).length ? `<img src="${esc(productImageList(p.image_url)[0])}" alt="${esc(p.name)}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">` : jarSVG(p.c, p.id)}</div>
       <div class="flex flex-1 flex-col px-1 pt-3">
         <h3 class="text-base font-bold text-honey">${p.name}</h3>
         <p class="mt-1 text-[11px] leading-5 text-cream/70">${p.note}</p>
@@ -751,8 +704,7 @@ function renderGrid() {
   if (window.gsap && typeof window.gsap.from === "function") {
     window.gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
   }
-  setupProductSlider();
-  setupProductPhotoGalleries();
+  // Original product list layout restored: one product card and one main photo per product.
 }
 let productPhotoTimer = null;
 function setupProductPhotoGalleries() {
