@@ -547,8 +547,8 @@ tailwind.config = { theme: { extend: {
           <div><b id="weeklyOfferDiscount" class="text-2xl">۲۰٪</b><p class="text-xs opacity-80">تخفیف</p></div>
         </div>
         <div class="mt-6 flex items-center gap-4">
-          <span id="weeklyOfferPrice" class="text-4xl font-extrabold">۳۸۴٬۰۰۰ <small class="text-base">تومان</small></span>
-          <span id="weeklyOfferOldPrice" class="text-lg line-through opacity-60">۴۸۰٬۰۰۰</span>
+          <span id="weeklyOfferPrice" class="text-4xl font-extrabold">۷۳۸٬۰۰۰ <small class="text-base">تومان</small></span>
+          <span id="weeklyOfferOldPrice" class="text-lg line-through opacity-60">۸۲۰٬۰۰۰</span>
         </div>
         <button id="weeklyOfferCodeButton" data-discount-code="" class="mt-5 rounded-full bg-grape px-7 py-3 font-bold text-honey transition hover:scale-105">🎟️ مشاهده کد تخفیف</button>
       </div>
@@ -601,7 +601,7 @@ const jarSVG = (c, id) => `
 
 const state = { cat: "همه", cart: {} };
 const defaultSiteContent = {
-  weekly_offer: { label: "پیشنهاد ویژه این هفته", title: "شیره انگور سفید و سیاه\nیک کیلویی", description: "پیشنهاد ویژه برای شیره انگور سفید یک‌کیلویی و شیره انگور سیاه یک‌کیلویی؛ مناسب صبحانه، شیره‌ارده و شیرینی‌های سنتی.", price: 384000, oldPrice: 480000, discount: 20 },
+  weekly_offer: { label: "پیشنهاد ویژه این هفته", title: "شیره انگور سفید و سیاه\nیک کیلویی", description: "تخفیف ویژه ۱۰ درصدی برای شیره انگور سفید و سیاه سنتی یک‌کیلویی؛ کد تخفیف هنگام خرید اعمال شود.", price: 738000, oldPrice: 820000, discount: 10 },
   why: [
     { emoji: "🍇", title: "میوه انتخابی", description: "فقط انگور و خرمای رسیده و درجه یک" },
     { emoji: "🔥", title: "پخت سنتی", description: "جوشاندن آرام روی حرارت ملایم" },
@@ -980,11 +980,22 @@ refreshWeeklyOfferDiscount();
 async function loadPublicProducts() {
   try {
     const rows = await DB.getProducts();
-    if (sb || rows.length) {
-      products = rows.map((p,i)=>({ ...p, id:p.id, price:Number(p.price), c:p.c || "#4a1a2c", sort_order:p.sort_order ?? i }));
-      renderPills(); renderGrid();
-    }
-  } catch (err) { console.warn("دریافت فهرست محصولات انجام نشد:", err.message); }
+    // Always render only real active products returned by the database.
+    products = (Array.isArray(rows) ? rows : []).map((p,i)=>({
+      ...p,
+      id: String(p.id),
+      price: Number(p.price) || 0,
+      c: p.c || "#4a1a2c",
+      sort_order: p.sort_order ?? i
+    }));
+    renderPills();
+    renderGrid();
+  } catch (err) {
+    console.warn("دریافت فهرست محصولات انجام نشد:", err.message);
+    products = [];
+    renderPills();
+    renderGrid();
+  }
 }
 loadPublicProducts();
 
