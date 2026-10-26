@@ -581,16 +581,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* ---------------- Products ---------------- */
 const fa = (n) => Number(n).toLocaleString("fa-IR");
-let products = [
-  { id: 1, cat: "انگور", name: "شیره انگور سنتی", note: "غلیظ و تیره، ۹۰۰ گرم", price: 320000, c: "#4a1a2c" },
-  { id: 2, cat: "انگور", name: "شیره انگور سفید", note: "روشن و ملایم، ۹۰۰ گرم", price: 340000, c: "#b9701c" },
-  { id: 3, cat: "خرما", name: "شیره خرما", note: "شیرین طبیعی، ۸۰۰ گرم", price: 360000, c: "#5a2e14" },
-  { id: 4, cat: "خرما", name: "شیره خرما مضافتی", note: "خوش‌عطر و غلیظ، ۸۰۰ گرم", price: 420000, c: "#3e1d0c" },
-  { id: 5, cat: "سایر", name: "شیره توت", note: "طعم سنتی، ۷۰۰ گرم", price: 380000, c: "#6b2a1a" },
-  { id: 6, cat: "سایر", name: "شیره انجیر", note: "ارگانیک، ۷۰۰ گرم", price: 450000, c: "#7a4a22" },
-  { id: 7, cat: "سایر", name: "ارده و شیره", note: "مخلوط آماده صبحانه، ۶۰۰ گرم", price: 390000, c: "#a8742c" },
-  { id: 8, cat: "انگور", name: "شیره انگور ملایر", note: "ویژه، ۹۰۰ گرم", price: 384000, c: "#2e1030" },
-];
+let products = [];
 const cats = ["همه", "انگور", "خرما", "سایر"];
 
 const jarSVG = (c, id) => `
@@ -691,7 +682,7 @@ function renderPills() {
 }
 function renderGrid() {
   const list = products.filter(p => state.cat === "همه" || p.cat === state.cat);
-  grid.innerHTML = list.map(p => `
+  grid.innerHTML = list.length ? list.map(p => `
     <div class="card flex flex-col rounded-2xl p-3">
       <div class="product-photo">${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">` : jarSVG(p.c, p.id)}</div>
       <div class="flex flex-1 flex-col px-1 pt-3">
@@ -702,7 +693,7 @@ function renderGrid() {
           <button data-add="${p.id}" class="btn-gold rounded-full px-3 py-1 text-[11px]">افزودن</button>
         </div>
       </div>
-    </div>`).join("");
+    </div>`).join("") : `<div class="col-span-full rounded-2xl border border-honey/20 p-8 text-center text-cream/80">هنوز محصولی ثبت نشده است. محصولات پس از ثبت توسط مدیریت نمایش داده می‌شوند.</div>`;
   gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
 }
 function renderCart() {
@@ -887,19 +878,19 @@ const DB = {
       if (error) throw error;
       return data || [];
     }
-    return LS.get("sh_products", products).filter(p => p.active !== false).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+    return LS.get("sh_products", []).filter(p => p.active !== false).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
   },
   async getAllProducts() {
     if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
     if (sb) { const { data, error } = await sb.from("product_catalog").select("id,cat,name,note,price,c,image_url,active,sort_order").order("sort_order", { ascending: true }); if (error) throw error; return data || []; }
-    return LS.get("sh_products", products).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+    return LS.get("sh_products", []).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
   },
   async saveProduct(p) {
     if (!isOwner()) throw new Error("فقط مدیر فروشگاه می‌تواند محصولات را تغییر دهد.");
     const row = { id: String(p.id || Date.now()), cat: p.cat, name: p.name, note: p.note || "", price: Number(p.price), c: p.c || "#4a1a2c", image_url: p.image_url || null, active: p.active !== false, sort_order: Number(p.sort_order || 0) };
     if (!row.name || !Number.isFinite(row.price) || row.price < 0) throw new Error("نام و قیمت معتبر محصول را وارد کنید.");
     if (sb) { const { error } = await sb.from("product_catalog").upsert(row); if (error) throw error; return row; }
-    const all = LS.get("sh_products", products); const idx = all.findIndex(x=>String(x.id)===row.id); if (idx>=0) all[idx]=row; else all.push(row); LS.set("sh_products", all); return row;
+    const all = LS.get("sh_products", []); const idx = all.findIndex(x=>String(x.id)===row.id); if (idx>=0) all[idx]=row; else all.push(row); LS.set("sh_products", all); return row;
   },
   async getPublicProductDiscounts() {
     if (sb) { const { data, error } = await sb.from("product_discounts").select("product_id,code,discount_type,discount_value,active"); if(error) throw error; return data || []; }
@@ -947,7 +938,7 @@ const DB = {
   async deleteProduct(id) {
     if (!isOwner()) throw new Error("فقط مدیر فروشگاه می‌تواند محصولات را حذف کند.");
     if (sb) { const { error } = await sb.from("product_catalog").delete().eq("id", String(id)); if (error) throw error; return; }
-    LS.set("sh_products", LS.get("sh_products", products).filter(x=>String(x.id)!==String(id)));
+    LS.set("sh_products", LS.get("sh_products", []).filter(x=>String(x.id)!==String(id)));
   },
   async uploadProductImage(file, productId) {
     if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
