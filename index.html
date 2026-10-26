@@ -479,6 +479,40 @@ tailwind.config = { theme: { extend: {
     .modal .admin-product-thumb { width:56px; height:56px; flex:0 0 56px; }
   }
 
+
+  /* Product-card slider: visual-only, reuses the existing product data and actions. */
+  #productSliderViewport { width:100%; overflow:hidden; border-radius:26px; touch-action:pan-y; }
+  #grid {
+    display:flex !important; flex-wrap:nowrap !important; direction:ltr;
+    width:100%; gap:0 !important; margin-top:0 !important;
+    perspective:none; transition:transform .55s cubic-bezier(.22,.75,.25,1);
+    will-change:transform;
+  }
+  #grid .card { flex:0 0 100%; width:100%; min-width:0; direction:rtl; }
+  .product-slider-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .product-slider-arrow {
+    display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px;
+    border:1px solid rgba(243,199,106,.48); border-radius:50%;
+    color:#f3c76a; background:rgba(255,240,220,.07); font-size:27px; line-height:1;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .product-slider-arrow:hover { background:rgba(243,199,106,.16); transform:scale(1.04); }
+  .product-slider-arrow:focus-visible, .product-slider-dot:focus-visible { outline:2px solid #f3c76a; outline-offset:3px; }
+  .product-slider-dots { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:7px; }
+  .product-slider-dot { width:7px; height:7px; padding:0; border:0; border-radius:99px; background:rgba(251,240,220,.35); transition:width .25s ease,background .25s ease; }
+  .product-slider-dot[aria-current="true"] { width:22px; background:#f3c76a; }
+  .product-slider-controls[hidden] { display:none !important; }
+  @media (max-width:640px) {
+    #productSliderViewport { border-radius:19px; }
+    .product-slider-arrow { flex-basis:38px; width:38px; height:38px; }
+    .product-slider-controls { gap:8px; }
+    .product-slider-dots { gap:6px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    #grid { transition:none !important; }
+    .product-slider-arrow, .product-slider-dot { transition:none !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -534,7 +568,14 @@ tailwind.config = { theme: { extend: {
         <div class="rounded-lg bg-honey px-4 py-2 text-sm font-bold text-grape">جمع سبد: <span id="cartTotal">۰</span> تومان</div>
       </div>
       <div id="pills" class="mt-8 flex flex-wrap justify-center gap-2"></div>
-      <div id="grid" class="mt-8 grid grid-cols-1 gap-4"></div>
+      <div class="product-slider-controls mt-6 flex items-center justify-between gap-3" aria-label="کنترل اسلاید محصولات">
+        <button type="button" class="product-slider-arrow" data-product-slide="prev" aria-label="محصول قبلی">‹</button>
+        <div id="productSliderDots" class="product-slider-dots" aria-label="انتخاب اسلاید محصول"></div>
+        <button type="button" class="product-slider-arrow" data-product-slide="next" aria-label="محصول بعدی">›</button>
+      </div>
+      <div id="productSliderViewport" class="mt-4">
+        <div id="grid" class="grid grid-cols-1 gap-4"></div>
+      </div>
     </div>
   </section>
 
@@ -702,6 +743,42 @@ function renderGrid() {
   if (window.gsap && typeof window.gsap.from === "function") {
     window.gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
   }
+  setupProductSlider();
+}
+let productSlideIndex = 0;
+let productSlideTimer = null;
+function setupProductSlider() {
+  const cards = [...grid.querySelectorAll(".card")];
+  const controls = document.querySelector(".product-slider-controls");
+  const dots = document.getElementById("productSliderDots");
+  if (productSlideTimer) { clearInterval(productSlideTimer); productSlideTimer = null; }
+  productSlideIndex = Math.min(productSlideIndex, Math.max(0, cards.length - 1));
+  if (!controls || !dots) return;
+  controls.hidden = cards.length < 2;
+  dots.innerHTML = cards.map((card, i) =>
+    '<button type="button" class="product-slider-dot" data-product-dot="' + i +
+    '" aria-label="نمایش محصول ' + (i + 1) + '" aria-current="' + (i === productSlideIndex ? "true" : "false") + '"></button>'
+  ).join("");
+  updateProductSlider();
+  if (cards.length > 1 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    productSlideTimer = setInterval(() => {
+      if (!document.hidden) moveProductSlide(productSlideIndex + 1);
+    }, 5200);
+  }
+}
+function updateProductSlider() {
+  const cards = [...grid.querySelectorAll(".card")];
+  const dots = document.getElementById("productSliderDots");
+  if (!cards.length) { grid.style.transform = "translateX(0)"; return; }
+  productSlideIndex = ((productSlideIndex % cards.length) + cards.length) % cards.length;
+  grid.style.transform = "translateX(-" + (productSlideIndex * 100) + "%)";
+  if (dots) [...dots.children].forEach((dot, i) => dot.setAttribute("aria-current", i === productSlideIndex ? "true" : "false"));
+}
+function moveProductSlide(nextIndex) {
+  const count = grid.querySelectorAll(".card").length;
+  if (count < 2) return;
+  productSlideIndex = ((nextIndex % count) + count) % count;
+  updateProductSlider();
 }
 function renderCart() {
   let n = 0, total = 0;
@@ -713,6 +790,13 @@ function renderCart() {
   document.getElementById("cartTotal").textContent = fa(total);
 }
 document.addEventListener("click", (e) => {
+  const slideButton = e.target.closest("[data-product-slide]");
+  if (slideButton) {
+    moveProductSlide(productSlideIndex + (slideButton.dataset.productSlide === "next" ? 1 : -1));
+    return;
+  }
+  const slideDot = e.target.closest("[data-product-dot]");
+  if (slideDot) { moveProductSlide(Number(slideDot.dataset.productDot)); return; }
   const discount = e.target.closest("[data-discount-code]");
   if (discount) {
     const code = String(discount.dataset.discountCode || "").trim().toUpperCase();
