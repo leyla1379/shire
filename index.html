@@ -502,6 +502,13 @@ tailwind.config = { theme: { extend: {
   .product-slider-dot { width:7px; height:7px; padding:0; border:0; border-radius:99px; background:rgba(251,240,220,.35); transition:width .25s ease,background .25s ease; }
   .product-slider-dot[aria-current="true"] { width:22px; background:#f3c76a; }
   .product-slider-controls[hidden] { display:none !important; }
+  .product-photo-track { display:flex; width:100%; height:100%; direction:ltr; transition:transform .45s cubic-bezier(.22,.75,.25,1); }
+  .product-photo-track > img { flex:0 0 100%; width:100%; min-width:100%; }
+  .product-photo-arrow { position:absolute; z-index:3; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:32px; height:32px; border-radius:50%; border:1px solid rgba(243,199,106,.55); color:#f3c76a; background:rgba(25,7,24,.72); font-size:21px; line-height:1; }
+  .product-photo-arrow[data-photo-step="prev"] { left:9px; } .product-photo-arrow[data-photo-step="next"] { right:9px; }
+  .product-photo-dots { position:absolute; z-index:3; bottom:10px; left:0; right:0; display:flex; justify-content:center; gap:6px; }
+  .product-photo-dot { width:6px; height:6px; padding:0; border-radius:99px; border:0; background:rgba(255,240,220,.55); }
+  .product-photo-dot[aria-current="true"] { width:18px; background:#f3c76a; }
   @media (max-width:640px) {
     #productSliderViewport { border-radius:19px; }
     .product-slider-arrow { flex-basis:38px; width:38px; height:38px; }
@@ -721,6 +728,7 @@ function applySiteContent() {
   renderCart();
 }
 const pills = document.getElementById("pills"), grid = document.getElementById("grid");
+function productImageList(value) { if (Array.isArray(value)) return value.filter(x => typeof x === "string" && x.trim()); if (typeof value !== "string" || !value.trim()) return []; try { const parsed=JSON.parse(value); if(Array.isArray(parsed)) return parsed.filter(x=>typeof x==="string"&&x.trim()); } catch {} return [value.trim()]; }
 
 function renderPills() {
   pills.innerHTML = cats.map(c => `<button class="pill rounded-full px-5 py-1.5 text-xs font-semibold ${c === state.cat ? "active" : ""}" data-cat="${esc(c)}">${c === "همه" ? "همه" : esc(c)}</button>`).join("");
@@ -729,7 +737,7 @@ function renderGrid() {
   const list = products.filter(p => state.cat === "همه" || p.cat === state.cat);
   grid.innerHTML = productLoadError ? `<div class="col-span-full rounded-2xl border border-red-400/30 p-8 text-center text-cream/80">بارگذاری محصولات با خطا روبه‌رو شد. اتصال اینترنت را بررسی و صفحه را دوباره بارگذاری کنید.</div>` : list.length ? list.map(p => `
     <div class="card flex flex-col rounded-2xl p-3">
-      <div class="product-photo">${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">` : jarSVG(p.c, p.id)}</div>
+      <div class="product-photo" data-photo-gallery>${productImageList(p.image_url).length ? `<div class="product-photo-track">${productImageList(p.image_url).map((url,i)=>`<img src="${esc(url)}" alt="${esc(p.name)} — تصویر ${i+1}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">`).join("")}</div>${productImageList(p.image_url).length>1 ? `<button type="button" class="product-photo-arrow" data-photo-step="prev" aria-label="تصویر قبلی">‹</button><button type="button" class="product-photo-arrow" data-photo-step="next" aria-label="تصویر بعدی">›</button><div class="product-photo-dots">${productImageList(p.image_url).map((_,i)=>`<button type="button" class="product-photo-dot" data-photo-index="${i}" aria-label="تصویر ${i+1}" aria-current="${i===0?"true":"false"}"></button>`).join("")}</div>` : ""}` : jarSVG(p.c, p.id)}</div>
       <div class="flex flex-1 flex-col px-1 pt-3">
         <h3 class="text-base font-bold text-honey">${p.name}</h3>
         <p class="mt-1 text-[11px] leading-5 text-cream/70">${p.note}</p>
@@ -744,7 +752,22 @@ function renderGrid() {
     window.gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
   }
   setupProductSlider();
+  setupProductPhotoGalleries();
 }
+let productPhotoTimer = null;
+function setupProductPhotoGalleries() {
+  if(productPhotoTimer) { clearInterval(productPhotoTimer); productPhotoTimer=null; }
+  grid.querySelectorAll("[data-photo-gallery]").forEach(g=>{g.dataset.photoIndex="0";updateProductPhotoGallery(g);});
+  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches) productPhotoTimer=setInterval(()=>{if(document.hidden)return;grid.querySelectorAll("[data-photo-gallery]").forEach(g=>{const n=g.querySelectorAll(".product-photo-track>img").length;if(n>1)setProductPhotoIndex(g,Number(g.dataset.photoIndex||0)+1);});},4200);
+}
+function updateProductPhotoGallery(g) {
+  const track=g.querySelector(".product-photo-track"); if(!track)return;
+  const n=track.querySelectorAll("img").length;if(!n)return;
+  const i=((Number(g.dataset.photoIndex||0)%n)+n)%n;g.dataset.photoIndex=String(i);
+  track.style.transform="translateX(-"+(i*100)+"%)";
+  g.querySelectorAll("[data-photo-index]").forEach((d,j)=>d.setAttribute("aria-current",j===i?"true":"false"));
+}
+function setProductPhotoIndex(g,next) {const n=g.querySelectorAll(".product-photo-track>img").length;if(n<2)return;g.dataset.photoIndex=String(((next%n)+n)%n);updateProductPhotoGallery(g);}
 let productSlideIndex = 0;
 let productSlideTimer = null;
 function setupProductSlider() {
@@ -790,6 +813,10 @@ function renderCart() {
   document.getElementById("cartTotal").textContent = fa(total);
 }
 document.addEventListener("click", (e) => {
+  const photoStep=e.target.closest("[data-photo-step]");
+  if(photoStep){const g=photoStep.closest("[data-photo-gallery]");if(g)setProductPhotoIndex(g,Number(g.dataset.photoIndex||0)+(photoStep.dataset.photoStep==="next"?1:-1));return;}
+  const photoDot=e.target.closest("[data-photo-index]");
+  if(photoDot){const g=photoDot.closest("[data-photo-gallery]");if(g)setProductPhotoIndex(g,Number(photoDot.dataset.photoIndex));return;}
   const slideButton = e.target.closest("[data-product-slide]");
   if (slideButton) {
     moveProductSlide(productSlideIndex + (slideButton.dataset.productSlide === "next" ? 1 : -1));
@@ -1459,14 +1486,14 @@ async function renderProductAdmin(editId = null) {
       <label class="text-xs text-cream/80">نام محصول<input class="field mt-1" name="name" required maxlength="100" value="${esc(editing?.name || "")}" placeholder="مثلاً شیره انگور سنتی"></label>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><label class="text-xs text-cream/80">دسته‌بندی<select class="field mt-1" name="cat">${["انگور","خرما","سایر"].map(c=>`<option ${editing?.cat===c?"selected":""}>${c}</option>`).join("")}</select></label><label class="text-xs text-cream/80">قیمت (تومان)<input class="field mt-1" name="price" type="number" min="0" step="1000" required value="${esc(editing?.price ?? "")}" placeholder="320000"></label></div>
       <label class="text-xs text-cream/80">توضیحات کوتاه<input class="field mt-1" name="note" maxlength="180" value="${esc(editing?.note || "")}" placeholder="وزن، ویژگی یا توضیح کوتاه"></label>
-      <label class="text-xs text-cream/80">تصویر محصول (اختیاری)<input class="field mt-1" type="file" name="image" accept="image/png,image/jpeg,image/webp,image/avif"><span class="block mt-1 text-cream/50">تصویر مربع ۸۰۰×۸۰۰ پیکسل می‌شود؛ فایل تا ۱۰ مگابایت. سوژه وسط تصویر قرار می‌گیرد و کشیده نمی‌شود.</span></label>
-      ${editing?.image_url?`<div class="flex items-center gap-3"><img src="${esc(editing.image_url)}" alt="تصویر فعلی" class="admin-product-thumb"><span class="text-xs text-cream/60">تصویر فعلی</span></div>`:""}
+      <label class="text-xs text-cream/80">تصاویر محصول (چند عکس انتخاب کن)<input class="field mt-1" type="file" name="images" multiple accept="image/png,image/jpeg,image/webp,image/avif"><span class="block mt-1 text-cream/50">چند عکس را هم‌زمان انتخاب کن؛ هر فایل حداکثر ۱۰ مگابایت و مجموع تصاویر هر محصول حداکثر ۸ عکس. عکس‌های جدید به انتهای گالری اضافه می‌شوند.</span></label>
+      ${productImageList(editing?.image_url).length?`<div class="flex flex-wrap items-center gap-2">${productImageList(editing.image_url).map((url,i)=>`<div class="text-center"><img src="${esc(url)}" alt="تصویر فعلی ${i+1}" class="admin-product-thumb"><span class="block text-[10px] text-cream/50">${i+1}</span></div>`).join("")}<span class="text-xs text-cream/60">تصاویر فعلی حفظ می‌شوند.</span></div>`:""}
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><label class="text-xs text-cream/80">رنگ کارت محصول<input class="field mt-1" type="color" name="c" value="${esc(editing?.c || "#4a1a2c")}" style="height:46px;padding:5px"></label><label class="text-xs text-cream/80">ترتیب نمایش<input class="field mt-1" type="number" name="sort_order" min="0" value="${esc(editing?.sort_order ?? rows.length)}"></label></div>
       <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="active" ${editing?.active===false?"":"checked"}> نمایش محصول در فروشگاه</label>
       <div class="flex flex-wrap gap-2"><button class="btn-gold rounded-xl px-4 py-2.5" type="submit">💾 ${editing?"ذخیره تغییرات":"افزودن محصول"}</button>${editing?`<button class="admin-action" type="button" data-product-cancel>لغو ویرایش</button>`:""}</div>
     </form>
     <h5 class="admin-subtitle">فهرست محصولات (${fa(rows.length)})</h5>
-    <div class="admin-scroll">${rows.length?rows.map(p=>`<div class="admin-mini" style="align-items:center"><div class="flex items-center gap-3 min-w-0"><img class="admin-product-thumb" src="${esc(p.image_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='10' fill='%234a1a2c'/%3E%3Ctext x='40' y='45' font-size='24' text-anchor='middle' fill='%23f3c76a'%3E🍯%3C/text%3E%3C/svg%3E")}" alt="${esc(p.name)}"><div class="min-w-0"><b class="block">${esc(p.name)}</b><span class="text-xs text-cream/60">${esc(p.cat)} · ${fa(p.price)} تومان</span><span class="block text-xs ${p.active===false?"text-red-200":"text-green-200"}">${p.active===false?"مخفی از فروشگاه":"نمایش در فروشگاه"}</span></div></div><div class="flex flex-wrap gap-1"><button class="admin-action" type="button" data-product-edit="${esc(p.id)}">ویرایش</button><button class="admin-action" type="button" data-product-delete="${esc(p.id)}">حذف</button></div></div>`).join(""):`<p class="text-sm text-cream/60 py-4">هنوز محصولی ذخیره نشده است.</p>`}</div>
+    <div class="admin-scroll">${rows.length?rows.map(p=>`<div class="admin-mini" style="align-items:center"><div class="flex items-center gap-3 min-w-0"><img class="admin-product-thumb" src="${esc(productImageList(p.image_url)[0] || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='10' fill='%234a1a2c'/%3E%3Ctext x='40' y='45' font-size='24' text-anchor='middle' fill='%23f3c76a'%3E🍯%3C/text%3E%3C/svg%3E")}" alt="${esc(p.name)}"><div class="min-w-0"><b class="block">${esc(p.name)}</b><span class="text-xs text-cream/60">${esc(p.cat)} · ${fa(p.price)} تومان</span><span class="block text-xs ${p.active===false?"text-red-200":"text-green-200"}">${p.active===false?"مخفی از فروشگاه":"نمایش در فروشگاه"}</span></div></div><div class="flex flex-wrap gap-1"><button class="admin-action" type="button" data-product-edit="${esc(p.id)}">ویرایش</button><button class="admin-action" type="button" data-product-delete="${esc(p.id)}">حذف</button></div></div>`).join(""):`<p class="text-sm text-cream/60 py-4">هنوز محصولی ذخیره نشده است.</p>`}</div>
     <section class="glass rounded-xl p-3 mt-5">
       <h5 class="admin-subtitle">🎟️ مدیریت کد تخفیف محصولات</h5>
       <p class="text-xs text-cream/60 leading-6 mb-3">یک یا چند محصول را تیک بزن تا یک کد مشترک برای آن‌ها ساخته شود.</p>
@@ -1760,11 +1787,14 @@ document.addEventListener("submit", async (e) => {
       await renderContentAdmin();
     } else if (kind === "productSave") {
       if (!isOwner()) throw new Error("فقط مدیر فروشگاه اجازه تغییر محصولات را دارد.");
-      const file=f.querySelector('input[name="image"]')?.files?.[0];
+      const files=[...(f.querySelector('input[name="images"]')?.files || [])];
       const id=(v.id || String(Date.now()));
       const existing=(await DB.getAllProducts()).find(p=>String(p.id)===String(id));
-      let image_url=existing?.image_url || null;
-      if(file) { btn.textContent="در حال آماده‌سازی تصویر…"; image_url=await DB.uploadProductImage(file,id); }
+      let imageList=productImageList(existing?.image_url);
+      if(files.length && imageList.length+files.length>8) throw new Error("حداکثر ۸ تصویر برای هر محصول مجاز است.");
+      if(files.some(file=>file.size>10*1024*1024)) throw new Error("حجم هر تصویر باید کمتر از ۱۰ مگابایت باشد.");
+      for(let i=0;i<files.length;i++){btn.textContent="در حال آماده‌سازی تصویر "+(i+1)+" از "+files.length+"…";imageList.push(await DB.uploadProductImage(files[i],id));}
+      const image_url=imageList.length>1?JSON.stringify(imageList):(imageList[0]||null);
       const row=await DB.saveProduct({id,cat:v.cat,name:v.name.trim(),note:v.note.trim(),price:v.price,c:v.c,image_url,active:f.querySelector('[name="active"]').checked,sort_order:v.sort_order});
       const all=await DB.getAllProducts(); products=all.filter(p=>p.active!==false).map((p,i)=>({...p,price:Number(p.price),c:p.c||"#4a1a2c",sort_order:p.sort_order??i}));
       renderStoreProducts(); await renderProductAdmin(); toast(existing?"محصول ویرایش شد و ذخیره شد.":"محصول جدید اضافه شد.");
