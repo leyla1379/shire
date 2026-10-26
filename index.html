@@ -698,7 +698,10 @@ function renderGrid() {
         </div>
       </div>
     </div>`).join("") : `<div class="col-span-full rounded-2xl border border-honey/20 p-8 text-center text-cream/80">هنوز محصولی ثبت نشده است. محصولات پس از ثبت توسط مدیریت نمایش داده می‌شوند.</div>`;
-  gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
+  // Animation is optional: a blocked animation CDN must never prevent the product grid from rendering.
+  if (window.gsap && typeof window.gsap.from === "function") {
+    window.gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
+  }
 }
 function renderCart() {
   let n = 0, total = 0;
@@ -723,7 +726,9 @@ document.addEventListener("click", (e) => {
   const add = e.target.closest("[data-add]");
   if (add) {
     const id = add.dataset.add; state.cart[id] = (state.cart[id] || 0) + 1; renderCart();
-    gsap.fromTo("#cartCount", { scale: 1.6 }, { scale: 1, duration: .4, ease: "back.out(3)" });
+    if (window.gsap && typeof window.gsap.fromTo === "function") {
+      window.gsap.fromTo("#cartCount", { scale: 1.6 }, { scale: 1, duration: .4, ease: "back.out(3)" });
+    }
   }
 });
 renderPills(); renderGrid(); renderCart();
