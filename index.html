@@ -576,8 +576,7 @@ tailwind.config = { theme: { extend: {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 <script type="module">
-import * as THREE from "three";
-gsap.registerPlugin(ScrollTrigger);
+if (window.gsap && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
 
 /* ---------------- Products ---------------- */
 const fa = (n) => Number(n).toLocaleString("fa-IR");
@@ -1676,7 +1675,9 @@ document.addEventListener("submit", async (e) => {
   }
 });
 
-/* ---------------- Three.js scene ---------------- */
+/* ---------------- Three.js scene: optional enhancement; keep storefront functional if WebGL fails ---------------- */
+try {
+const THREE = await import("three");
 const mobile = matchMedia("(max-width: 768px)").matches;
 const canvas = document.getElementById("gl");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, alpha: true });
@@ -1857,6 +1858,11 @@ function tick() {
   requestAnimationFrame(tick);
 }
 tick();
+} catch (err) {
+  console.warn("نمایش سه‌بعدی بارگذاری نشد؛ فروشگاه و ورود همچنان فعال می‌مانند.", err);
+  const canvas = document.getElementById("gl");
+  if (canvas) canvas.style.display = "none";
+}
 </script>
 </body>
 </html>
