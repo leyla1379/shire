@@ -636,14 +636,18 @@ async function refreshWeeklyOfferDiscount() {
     const normalizeName=v=>String(v||"").replace(/[ي]/g,"ی").replace(/[ك]/g,"ک").replace(/[\u200c\s]/g,"").toLowerCase();
     const offerProducts=productRows.filter(p=>{
       const n=normalizeName(p.name);
-      return n.includes("شیره")&&n.includes("انگور")&&(n.includes("سفید")||n.includes("سیاه")||n.includes("سياه"));
+      const note=normalizeName(p.note);
+      const grapeSyrup=n.includes("شیره")&&n.includes("انگور")&&(n.includes("سفید")||n.includes("سیاه")||n.includes("سياه"));
+      // Weekly offer is limited to the two real 1 kg products; never include 500 g items.
+      const oneKilo=/(1|۱)کیلو/.test(note) || /(1000|۱۰۰۰)گرم/.test(note);
+      return grapeSyrup && oneKilo;
     });
     const offerIds=offerProducts.map(p=>String(p.id));
     const activeDiscounts=discounts.filter(x=>x.active!==false&&String(x.code||"").trim()&&offerIds.includes(String(x.product_id||"")));
     // Show a code assigned to either selected weekly-offer product.
     const d=activeDiscounts[0]||null;
     button.dataset.discountCode=d?d.code:"";
-    button.textContent=d?("🎟️ کد تخفیف: "+d.code):"🎟️ کد تخفیف فعلاً موجود نیست";
+    button.textContent=d?("🎟️ کپی کد تخفیف "+d.code):"🎟️ کد تخفیف فعلاً موجود نیست";
     button.disabled=!d;
     button.classList.toggle("opacity-60",!d);
   } catch(err) { console.warn("weekly offer discount unavailable",err); button.dataset.discountCode=""; button.textContent="🎟️ مشاهده کد تخفیف"; }
