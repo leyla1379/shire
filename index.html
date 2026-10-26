@@ -585,7 +585,8 @@ if (window.gsap && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
 /* ---------------- Products ---------------- */
 const fa = (n) => Number(n).toLocaleString("fa-IR");
 let products = [];
-const cats = ["همه", "انگور", "خرما", "سایر"];
+let productLoadError = false;
+let cats = ["همه"];
 
 const jarSVG = (c, id) => `
 <svg viewBox="0 0 120 150" class="w-full" role="img" aria-label="شیشه شیره">
@@ -681,11 +682,11 @@ function applySiteContent() {
 const pills = document.getElementById("pills"), grid = document.getElementById("grid");
 
 function renderPills() {
-  pills.innerHTML = cats.map(c => `<button class="pill rounded-full px-5 py-1.5 text-xs font-semibold ${c === state.cat ? "active" : ""}" data-cat="${c}">${c === "همه" ? "همه" : "شیره " + c}</button>`).join("");
+  pills.innerHTML = cats.map(c => `<button class="pill rounded-full px-5 py-1.5 text-xs font-semibold ${c === state.cat ? "active" : ""}" data-cat="${esc(c)}">${c === "همه" ? "همه" : esc(c)}</button>`).join("");
 }
 function renderGrid() {
   const list = products.filter(p => state.cat === "همه" || p.cat === state.cat);
-  grid.innerHTML = list.length ? list.map(p => `
+  grid.innerHTML = productLoadError ? `<div class="col-span-full rounded-2xl border border-red-400/30 p-8 text-center text-cream/80">بارگذاری محصولات با خطا روبه‌رو شد. اتصال اینترنت را بررسی و صفحه را دوباره بارگذاری کنید.</div>` : list.length ? list.map(p => `
     <div class="card flex flex-col rounded-2xl p-3">
       <div class="product-photo">${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">` : jarSVG(p.c, p.id)}</div>
       <div class="flex flex-1 flex-col px-1 pt-3">
@@ -988,15 +989,23 @@ async function loadPublicProducts() {
     products = (Array.isArray(rows) ? rows : []).map((p,i)=>({
       ...p,
       id: String(p.id),
+      cat: String(p.cat || "سایر").trim() || "سایر",
+      name: String(p.name || ""),
+      note: String(p.note || ""),
       price: Number(p.price) || 0,
       c: p.c || "#4a1a2c",
       sort_order: p.sort_order ?? i
     }));
+    productLoadError = false;
+    cats = ["همه", ...new Set(products.map(p => p.cat).filter(Boolean))];
+    if (!cats.includes(state.cat)) state.cat = "همه";
     renderPills();
     renderGrid();
   } catch (err) {
     console.warn("دریافت فهرست محصولات انجام نشد:", err.message);
     products = [];
+    cats = ["همه"];
+    productLoadError = true;
     renderPills();
     renderGrid();
   }
