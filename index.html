@@ -246,10 +246,14 @@ tailwind.config = { theme: { extend: {
     box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 20px rgba(0,0,0,.12);
   }
   nav.fixed {
+    z-index: 50 !important;
+    pointer-events: auto;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(243,199,106,.14);
   }
+  nav.fixed #authArea { display:flex; align-items:center; flex-shrink:0; position:relative; z-index:2; pointer-events:auto; }
+  nav.fixed #authArea button { min-height:36px; cursor:pointer; pointer-events:auto; touch-action:manipulation; }
   nav.fixed a { transition: color .22s ease, text-shadow .22s ease; }
   nav.fixed a:hover { color: #f3c76a; text-shadow: 0 0 16px rgba(243,199,106,.24); }
   #menu > .glass {
@@ -877,7 +881,8 @@ const DB = {
       if (error) throw error;
       return data || [];
     }
-    return LS.get("sh_products", []).filter(p => p.active !== false).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+    // بدون اتصال پایگاه داده، محصولات محلی/آزمایشی را به مشتری نشان نده؛ ویترین فقط از product_catalog خوانده می‌شود.
+    return [];
   },
   async getAllProducts() {
     if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
