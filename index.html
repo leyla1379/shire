@@ -502,8 +502,8 @@ tailwind.config = { theme: { extend: {
   .product-slider-dot { width:7px; height:7px; padding:0; border:0; border-radius:99px; background:rgba(251,240,220,.35); transition:width .25s ease,background .25s ease; }
   .product-slider-dot[aria-current="true"] { width:22px; background:#f3c76a; }
   .product-slider-controls[hidden] { display:none !important; }
-  .product-photo-track { display:flex; width:100%; height:100%; direction:ltr; transition:transform .45s cubic-bezier(.22,.75,.25,1); }
-  .product-photo-track > img { flex:0 0 100%; width:100%; min-width:100%; }
+  .product-photo-track { display:block; width:100%; height:100%; direction:ltr; }
+  .product-photo-track > img { display:block; width:100%; max-width:100%; height:100%; min-width:0; object-fit:contain; }
   .product-photo-arrow { position:absolute; z-index:3; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:32px; height:32px; border-radius:50%; border:1px solid rgba(243,199,106,.55); color:#f3c76a; background:rgba(25,7,24,.72); font-size:21px; line-height:1; }
   .product-photo-arrow[data-photo-step="prev"] { left:9px; } .product-photo-arrow[data-photo-step="next"] { right:9px; }
   .product-photo-dots { position:absolute; z-index:3; bottom:10px; left:0; right:0; display:flex; justify-content:center; gap:6px; }
@@ -762,9 +762,10 @@ function setupProductPhotoGalleries() {
 }
 function updateProductPhotoGallery(g) {
   const track=g.querySelector(".product-photo-track"); if(!track)return;
-  const n=track.querySelectorAll("img").length;if(!n)return;
+  const images=[...track.querySelectorAll("img")];const n=images.length;if(!n)return;
   const i=((Number(g.dataset.photoIndex||0)%n)+n)%n;g.dataset.photoIndex=String(i);
-  track.style.transform="translateX(-"+(i*100)+"%)";
+  track.style.transform="none";
+  images.forEach((img,j)=>{img.style.display=j===i?"block":"none";img.setAttribute("aria-hidden",j===i?"false":"true");});
   g.querySelectorAll("[data-photo-index]").forEach((d,j)=>d.setAttribute("aria-current",j===i?"true":"false"));
 }
 function setProductPhotoIndex(g,next) {const n=g.querySelectorAll(".product-photo-track>img").length;if(n<2)return;g.dataset.photoIndex=String(((next%n)+n)%n);updateProductPhotoGallery(g);}
