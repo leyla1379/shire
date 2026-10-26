@@ -709,6 +709,26 @@ function renderCart() {
   document.getElementById("cartTotal").textContent = fa(total);
 }
 document.addEventListener("click", (e) => {
+  const weeklyButton = e.target.closest("#weeklyOfferCodeButton");
+  if (weeklyButton) {
+    const code = String(weeklyButton.dataset.discountCode || "").trim().toUpperCase();
+    if (!code) {
+      showModal(head("🎟️ کد تخفیف پیشنهاد ویژه") + '<p class="py-6 text-center text-cream/80">فعلاً کد تخفیف فعالی برای محصولات یک‌کیلویی ثبت نشده است.</p>');
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(() => {
+        toast("کد تخفیف " + code + " کپی شد؛ آن را در سبد خرید وارد کن.");
+      }).catch(() => {
+        showModal(head("🎟️ کد تخفیف پیشنهاد ویژه") + `<div class="py-6 text-center"><p class="text-sm text-cream/80 mb-3">این کد را در سبد خرید وارد کن</p><div class="text-3xl font-extrabold tracking-widest text-honey" dir="ltr">${esc(code)}</div><button data-act="copyDiscountCode" data-code="${esc(code)}" class="btn-gold rounded-xl px-5 py-3 mt-5">کپی کد تخفیف</button></div>`);
+        modal.dataset.view = "discount-code";
+      });
+    } else {
+      showModal(head("🎟️ کد تخفیف پیشنهاد ویژه") + `<div class="py-6 text-center"><p class="text-sm text-cream/80 mb-3">این کد را در سبد خرید وارد کن</p><div class="text-3xl font-extrabold tracking-widest text-honey" dir="ltr">${esc(code)}</div><button data-act="copyDiscountCode" data-code="${esc(code)}" class="btn-gold rounded-xl px-5 py-3 mt-5">کپی کد تخفیف</button></div>`);
+      modal.dataset.view = "discount-code";
+    }
+    return;
+  }
   const discount = e.target.closest("[data-discount-code]");
   if (discount) {
     const code = String(discount.dataset.discountCode || "").trim().toUpperCase();
