@@ -1765,6 +1765,12 @@ document.addEventListener("click", async (e) => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const act = b.dataset.act, id = b.dataset.id;
   if (act === "close") closeModal();
+  else if (act === "accountSection") {
+    const section = String(b.dataset.section || "orders");
+    const targetId = section === "orders" ? "sh-account-orders" : section === "profile" ? "sh-account-profile" : section === "club" ? "sh-account-club" : "sh-account-support";
+    const target = document.getElementById(targetId);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   else if (act === "copyDiscountCode") {
     try {
       await navigator.clipboard.writeText(String(b.dataset.code||"").toUpperCase());
