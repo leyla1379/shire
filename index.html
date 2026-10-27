@@ -1625,14 +1625,35 @@ async function supportAdminModal() {
 }
 
 function trackModal(result) {
+  const orderStatuses = ["در انتظار تأیید", "در حال آماده‌سازی", "ارسال شد", "تحویل داده شد"];
+  const currentStatus = String(result?.status || "");
+  const isCancelled = currentStatus === "لغو شد";
+  const currentStep = orderStatuses.indexOf(currentStatus);
+  const timeline = result && !isCancelled ? `
+    <ol class="mt-4 grid gap-2" aria-label="مراحل سفارش">
+      ${orderStatuses.map((status, index) => {
+        const done = currentStep >= 0 && index <= currentStep;
+        const active = index === currentStep;
+        return `<li class="flex items-start gap-3 rounded-xl border p-3 ${done ? "border-honey/40 bg-honey/10" : "border-white/10 bg-white/[.03]"}">
+          <span aria-hidden="true" class="grid h-7 w-7 shrink-0 place-items-center rounded-full ${done ? "bg-honey text-grape" : "border border-white/20 text-cream/60"}">${done ? (index < currentStep ? "✓" : "●") : String(index + 1)}</span>
+          <span class="min-w-0"><b class="block text-sm">${esc(status)}</b><small class="text-xs text-cream/60">${active ? "آخرین وضعیت ثبت‌شده" : done ? "این مرحله ثبت شده است" : "در انتظار رسیدن به این مرحله"}</small></span>
+        </li>`;
+      }).join("")}
+    </ol>` : "";
+  const createdDate = result?.created_at && !Number.isNaN(Date.parse(result.created_at))
+    ? new Date(result.created_at).toLocaleDateString("fa-IR")
+    : "";
   showModal(head("📦 پیگیری سفارش") + `
-    <p class="mb-3 text-sm text-cream/75">کد پیگیری سفارش را وارد کنید؛ کد رهگیری پستی پس از ثبت توسط فروشگاه همین‌جا نمایش داده می‌شود.</p>
-    <form class="form" data-form="track"><input class="field" name="code" required placeholder="مثلاً SH-AB12CD34" dir="ltr" style="text-align:right" value="${esc(result?.code || "")}"><button class="btn-gold rounded-xl px-4 py-2.5">پیگیری</button></form>
+    <p class="mb-3 text-sm text-cream/75">کد سفارش را وارد کنید تا آخرین وضعیت ثبت‌شده و کد رهگیری پستی را ببینید.</p>
+    <form class="form" data-form="track"><input class="field" name="code" required maxlength="40" autocomplete="off" placeholder="مثلاً SH-AB12CD34" dir="ltr" style="text-align:right" value="${esc(result?.code || "")}"><button class="btn-gold rounded-xl px-4 py-2.5">پیگیری سفارش</button></form>
     <div class="mt-4">${result === undefined ? "" : result ? `<div class="row-item" style="display:block">
-      <div class="flex flex-wrap items-center justify-between gap-2"><b dir="ltr">${esc(result.code)}</b><span class="tag">${esc(result.status || "وضعیت نامشخص")}</span><b>${fa(result.total)} تومان</b></div>
+      <div class="flex flex-wrap items-center justify-between gap-2"><b dir="ltr">${esc(result.code)}</b><span class="tag">${esc(currentStatus || "وضعیت نامشخص")}</span><b>${fa(result.total)} تومان</b></div>
+      ${createdDate ? `<p class="mt-2 text-xs text-cream/60">تاریخ ثبت سفارش: ${esc(createdDate)}</p>` : ""}
       ${result.items?.length ? `<p class="mt-2 text-xs text-cream/80">اقلام سفارش: ${result.items.map(i => esc(i.name) + " × " + fa(i.qty || 1)).join("، ")}</p>` : ""}
-      ${result.postal_tracking_code ? `<p class="mt-3 rounded-lg border border-honey/30 bg-honey/10 p-3 text-sm">کد رهگیری پستی: <b dir="ltr" class="text-honey">${esc(result.postal_tracking_code)}</b></p>` : `<p class="mt-3 text-xs text-cream/60">کد رهگیری پستی هنوز ثبت نشده است.</p>`}
-    </div>` : `<p class="text-sm text-cream/70">سفارشی با این کد پیدا نشد.</p>`}</div>`);
+      ${isCancelled ? `<p class="mt-4 rounded-xl border border-red-300/30 bg-red-400/10 p-3 text-sm">این سفارش لغو شده است. برای بررسی جزئیات، با پشتیبانی فروشگاه گفت‌وگو کنید.</p>` : timeline}
+      ${result.postal_tracking_code ? `<div class="mt-4 rounded-xl border border-honey/30 bg-honey/10 p-3 text-sm"><p>کد رهگیری پستی</p><b dir="ltr" class="my-2 block break-all text-lg text-honey">${esc(result.postal_tracking_code)}</b><a class="btn-gold inline-flex rounded-lg px-4 py-2 text-sm" href="https://tracking.post.ir/" target="_blank" rel="noopener noreferrer">پیگیری در سامانه پست</a><p class="mt-2 text-xs text-cream/65">کد بالا را در سامانه رسمی رهگیری مرسولات وارد کنید.</p></div>` : `<p class="mt-4 rounded-xl border border-white/10 p-3 text-xs text-cream/65">کد رهگیری پستی هنوز توسط فروشگاه ثبت نشده است؛ وضعیت سفارش را همین‌جا بررسی کنید.</p>`}
+      <p class="mt-4 text-xs leading-6 text-cream/60">وضعیت‌ها بر اساس اطلاعات ثبت‌شده در فروشگاه نمایش داده می‌شوند. اگر موردی نیاز به بررسی دارد، از گفت‌وگوی پشتیبانی استفاده کنید.</p>
+    </div>` : `<p class="rounded-xl border border-white/10 p-3 text-sm text-cream/70">سفارشی با این کد پیدا نشد. کد را دوباره بررسی کنید؛ برای سفارش مهمان نیز باید کد سفارش را وارد کنید.</p>`}</div>`);
 }
 
 document.addEventListener("click", async (e) => {
