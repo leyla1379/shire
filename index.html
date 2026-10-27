@@ -1799,7 +1799,7 @@ const THREE = await import("three");
 const mobile = matchMedia("(max-width: 768px)").matches;
 const canvas = document.getElementById("gl");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, alpha: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.5 : 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.25 : 1.5));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
@@ -1938,9 +1938,17 @@ gsap.utils.toArray(".reveal").forEach((el) => gsap.to(el, { opacity: 1, y: 0, du
 const mouse = { x: 0, y: 0 };
 addEventListener("pointermove", (e) => { mouse.x = e.clientX / innerWidth - .5; mouse.y = e.clientY / innerHeight - .5; });
 
-/* Loop */
+/* Loop: conserve battery/GPU while the tab is in the background. */
 const clock = new THREE.Clock(), tmp = new THREE.Vector3();
+let animationFrameId = null;
+function scheduleFrame() {
+  if (!document.hidden && animationFrameId === null) {
+    animationFrameId = requestAnimationFrame(tick);
+  }
+}
 function tick() {
+  animationFrameId = null;
+  if (document.hidden) return;
   const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime, scrollY = window.scrollY;
 
   jar.rotation.y = t * .25;
@@ -1973,9 +1981,15 @@ function tick() {
     s.material.opacity = Math.sin(u.t * Math.PI) * .6; });
 
   renderer.render(scene, camera);
-  requestAnimationFrame(tick);
+  scheduleFrame();
 }
-tick();
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    clock.getDelta();
+    scheduleFrame();
+  }
+});
+scheduleFrame();
 } catch (err) {
   console.warn("نمایش سه‌بعدی بارگذاری نشد؛ فروشگاه و ورود همچنان فعال می‌مانند.", err);
   const canvas = document.getElementById("gl");
