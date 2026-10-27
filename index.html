@@ -38,6 +38,14 @@ tailwind.config = { theme: { extend: {
   .gold-text { background: linear-gradient(90deg, #f3c76a, #fff1c9, #e0a030); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .modal-bg { position: fixed; inset: 0; z-index: 100; display: none; place-items: center; padding: 16px; background: rgba(15,4,20,.72); backdrop-filter: blur(6px); }
   .modal-bg.show { display: grid; }
+  body.account-page-mode { overflow:hidden; }
+  body.account-page-mode .modal-bg { padding:0; background:#1e0a26; backdrop-filter:none; }
+  body.account-page-mode .modal-bg.show { display:block; }
+  body.account-page-mode .modal { width:100%; max-width:none; height:100dvh; max-height:none; border-radius:0; padding:clamp(12px,2.5vw,28px); border:0; box-shadow:none; overflow:auto; }
+  body.account-page-mode .modal > * { max-width:1180px; margin-left:auto; margin-right:auto; }
+  body.account-page-mode .m-head { position:sticky; top:-1px; z-index:5; padding:12px 0; background:#2a0f33; border-bottom:1px solid rgba(243,199,106,.18); }
+  body.account-page-mode .x-btn { display:none; }
+  body.account-page-mode .support-fab { z-index:90; }
   .modal { width: min(980px, 100%); max-height: 92vh; overflow: auto; border-radius: 22px; padding: 22px; background: #2a0f33; border: 1px solid rgba(243,199,106,.35); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
   .m-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
   .m-head h3 { font-size: 20px; font-weight: 800; color: #f3c76a; }
@@ -1210,6 +1218,7 @@ async function loadSiteContent() {
     if (saved) { siteContent = normalizeSiteContent(saved); applySiteContent(); }
   } catch (err) { console.warn("محتوای قابل ویرایش بارگذاری نشد؛ محتوای پیش‌فرض نمایش داده می‌شود.", err.message); }
 }
+let accountPageAutoOpened = false;
 async function refreshUser() {
   try {
     me = await DB.user();
@@ -1224,6 +1233,11 @@ async function refreshUser() {
     managerAccess = false;
   } finally {
     renderAuth();
+    if (new URLSearchParams(location.search).get("accountPage") === "1" && !accountPageAutoOpened) {
+      accountPageAutoOpened = true;
+      document.body.classList.add("account-page-mode");
+      setTimeout(() => panelModal(), 0);
+    }
   }
 }
 // نمایش فوری دکمه‌ها؛ منتظر پاسخ Supabase نمی‌مانیم.
@@ -1793,7 +1807,7 @@ document.addEventListener("click", async (e) => {
       state.productDiscountApplied=discounts[0];state.productDiscountApplied.product_ids=eligibleIds;toast("کد تخفیف محصول اعمال شد.");cartModal();
     } catch(err){console.error(err);toast("اعتبارسنجی کد ناموفق بود: "+(err.message||"خطا"));}
   }
-  else if (act === "panel") panelModal();
+  else if (act === "panel") { if (new URLSearchParams(location.search).get("accountPage") !== "1") location.href = "./account.html"; else panelModal(); }
   else if (act === "admin") adminModal();
   else if (act === "removeStoreManager") {
     if (!isStoreOwner()) return toast("فقط مالک فروشگاه اجازه حذف مدیر را دارد.");
