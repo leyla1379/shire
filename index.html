@@ -489,6 +489,117 @@ tailwind.config = { theme: { extend: {
   .product-photo-dots { position:absolute; z-index:3; bottom:10px; left:0; right:0; display:flex; justify-content:center; gap:6px; }
   .product-photo-dot { width:6px; height:6px; padding:0; border-radius:99px; border:0; background:rgba(255,240,220,.55); cursor:pointer; }
   .product-photo-dot[aria-current="true"] { width:18px; background:#f3c76a; }
+
+
+  /* Premium product-card 3D motion — visual-only enhancement */
+  #menu .card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transform: perspective(1100px) translateZ(0);
+    transform-style: preserve-3d;
+    border: 1px solid rgba(243,199,106,.22);
+    background: linear-gradient(145deg, rgba(255,246,226,.105), rgba(48,17,52,.72) 58%, rgba(26,8,31,.94));
+    box-shadow: 0 12px 28px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08);
+    transition: transform .42s cubic-bezier(.2,.75,.25,1), box-shadow .42s ease, border-color .35s ease;
+    will-change: transform;
+  }
+  #menu .card::before {
+    content: "";
+    position: absolute;
+    inset: -70% -35%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(112deg, transparent 38%, rgba(255,245,205,.16) 48%, rgba(243,199,106,.09) 53%, transparent 64%);
+    transform: translateX(-42%) rotate(8deg);
+    transition: transform .8s ease, opacity .35s ease;
+  }
+  #menu .card > * { position: relative; z-index: 1; }
+  #menu .product-photo {
+    overflow: hidden;
+    border-radius: 14px;
+    background: radial-gradient(ellipse at 50% 38%, rgba(243,199,106,.12), rgba(26,8,31,.15) 68%);
+    transform: translateZ(18px);
+  }
+  #menu .product-photo-track > img {
+    transition: transform .65s cubic-bezier(.2,.75,.25,1), filter .5s ease;
+    backface-visibility: hidden;
+  }
+  #menu .card h3 { transition: color .3s ease, transform .35s ease; }
+  #menu .card [data-add] { box-shadow: 0 5px 0 rgba(111,61,20,.28); transition: transform .25s ease, box-shadow .25s ease, filter .25s ease; }
+  @media (hover:hover) and (pointer:fine) {
+    #menu .card:hover {
+      transform: perspective(1100px) translateY(-9px) rotateX(2deg) rotateY(-1.5deg);
+      border-color: rgba(243,199,106,.62);
+      box-shadow: 0 24px 48px rgba(0,0,0,.34), 0 0 25px rgba(243,199,106,.10), inset 0 1px 0 rgba(255,255,255,.13);
+    }
+    #menu .card:hover::before { opacity: 1; transform: translateX(42%) rotate(8deg); }
+    #menu .card:hover .product-photo-track > img { transform: scale(1.045) translateZ(10px); filter: drop-shadow(0 9px 10px rgba(0,0,0,.18)); }
+    #menu .card:hover h3 { color: #ffe09a; transform: translateZ(12px); }
+    #menu .card [data-add]:hover { transform: translateY(-2px); box-shadow: 0 7px 0 rgba(111,61,20,.24); filter: brightness(1.06); }
+  }
+  #menu .card:active { transform: perspective(1100px) scale(.99); }
+  #menu .product-photo-arrow, #menu .product-photo-dot { backdrop-filter: blur(8px); }
+  #menu .product-photo-dot { transition: width .22s ease, background .22s ease; }
+
+  /* Weekly special: elevated gold glass panel and gentle 3D jar stage */
+  #special > div {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid rgba(255,236,176,.48);
+    box-shadow: 0 22px 58px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.32);
+    transform: translateZ(0);
+  }
+  #special > div::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: -50% -25%;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 34%, rgba(255,255,255,.20) 47%, rgba(255,236,176,.10) 52%, transparent 65%);
+    transform: translateX(-55%) rotate(8deg);
+    animation: weekly-gold-sheen 9s ease-in-out infinite;
+  }
+  #special > div > * { position: relative; z-index: 1; }
+  #special #specialJar {
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 22px 18px rgba(68,25,8,.24));
+    animation: weekly-jar-float 5.2s ease-in-out infinite;
+    transition: filter .35s ease, transform .35s ease;
+  }
+  #special #weeklyOfferCodeButton {
+    box-shadow: 0 7px 0 rgba(49,16,45,.22), 0 12px 28px rgba(68,25,8,.16);
+    transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+  }
+  #special #weeklyOfferCodeButton:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 0 rgba(49,16,45,.16), 0 16px 32px rgba(68,25,8,.22);
+    filter: brightness(1.05);
+  }
+  @keyframes weekly-gold-sheen {
+    0%, 12% { transform: translateX(-55%) rotate(8deg); opacity: .55; }
+    48%, 100% { transform: translateX(55%) rotate(8deg); opacity: .85; }
+  }
+  @keyframes weekly-jar-float {
+    0%, 100% { transform: perspective(900px) translateY(0) rotateY(-3deg) rotateX(1deg); }
+    50% { transform: perspective(900px) translateY(-8px) rotateY(3deg) rotateX(-1deg); }
+  }
+  @media (max-width: 640px) {
+    #menu .card { transition: box-shadow .3s ease, border-color .3s ease; }
+    #special #specialJar { animation-duration: 6.5s; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #menu .card, #menu .product-photo-track > img, #menu .card h3,
+    #menu .card [data-add], #menu .product-photo-dot, #special #weeklyOfferCodeButton {
+      transition: none !important;
+    }
+    #menu .card:hover, #menu .card:active { transform: none !important; }
+    #menu .card::before { display: none; }
+    #special > div::before, #special #specialJar { animation: none !important; }
+  }
+
 </style>
 </head>
 <body>
