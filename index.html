@@ -1647,8 +1647,13 @@ function trackModal(result) {
     <p class="mb-3 text-sm text-cream/75">کد سفارش را وارد کنید تا آخرین وضعیت ثبت‌شده و کد رهگیری پستی را ببینید.</p>
     <form class="form" data-form="track"><input class="field" name="code" required maxlength="40" autocomplete="off" placeholder="مثلاً SH-AB12CD34" dir="ltr" style="text-align:right" value="${esc(result?.code || "")}"><button class="btn-gold rounded-xl px-4 py-2.5">پیگیری سفارش</button></form>
     <div class="mt-4">${result === undefined ? "" : result ? `<div class="row-item" style="display:block">
-      <div class="flex flex-wrap items-center justify-between gap-2"><b dir="ltr">${esc(result.code)}</b><span class="tag">${esc(currentStatus || "وضعیت نامشخص")}</span><b>${fa(result.total)} تومان</b></div>
-      ${createdDate ? `<p class="mt-2 text-xs text-cream/60">تاریخ ثبت سفارش: ${esc(createdDate)}</p>` : ""}
+      <div class="rounded-xl border border-honey/40 bg-gradient-to-br from-honey/15 to-transparent p-4">
+        <p class="text-xs text-cream/65">آخرین وضعیت سفارش شما</p>
+        <div class="mt-2 flex flex-wrap items-center justify-between gap-2"><b class="text-base text-honey">${esc(currentStatus || "وضعیت نامشخص")}</b><b class="text-sm">${fa(result.total)} تومان</b></div>
+        <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-label="پیشرفت سفارش" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${isCancelled ? 0 : currentStep < 0 ? 0 : Math.round(currentStep / (orderStatuses.length - 1) * 100)}"><div class="h-full rounded-full bg-honey transition-all" style="width:${isCancelled ? 0 : currentStep < 0 ? 0 : Math.round(currentStep / (orderStatuses.length - 1) * 100)}%"></div></div>
+        <div class="mt-2 flex items-center justify-between gap-2 text-[10px] text-cream/55"><span>ثبت سفارش</span><span>آماده‌سازی</span><span>ارسال</span><span>تحویل</span></div>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-cream/65"><span>کد سفارش: <b dir="ltr">${esc(result.code)}</b></span>${createdDate ? `<span>تاریخ ثبت: ${esc(createdDate)}</span>` : ""}</div>
       ${result.items?.length ? `<p class="mt-2 text-xs text-cream/80">اقلام سفارش: ${result.items.map(i => esc(i.name) + " × " + fa(i.qty || 1)).join("، ")}</p>` : ""}
       ${isCancelled ? `<p class="mt-4 rounded-xl border border-red-300/30 bg-red-400/10 p-3 text-sm">این سفارش لغو شده است. برای بررسی جزئیات، با پشتیبانی فروشگاه گفت‌وگو کنید.</p>` : timeline}
       ${result.postal_tracking_code ? `<div class="mt-4 rounded-xl border border-honey/30 bg-honey/10 p-3 text-sm"><p>کد رهگیری پستی</p><b dir="ltr" class="my-2 block break-all text-lg text-honey">${esc(result.postal_tracking_code)}</b><a class="btn-gold inline-flex rounded-lg px-4 py-2 text-sm" href="https://tracking.post.ir/" target="_blank" rel="noopener noreferrer">پیگیری در سامانه پست</a><p class="mt-2 text-xs text-cream/65">کد بالا را در سامانه رسمی رهگیری مرسولات وارد کنید.</p></div>` : `<p class="mt-4 rounded-xl border border-white/10 p-3 text-xs text-cream/65">کد رهگیری پستی هنوز توسط فروشگاه ثبت نشده است؛ وضعیت سفارش را همین‌جا بررسی کنید.</p>`}
