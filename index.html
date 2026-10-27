@@ -1224,6 +1224,9 @@ async function refreshUser() {
     managerAccess = false;
   } finally {
     renderAuth();
+    if (new URLSearchParams(window.location.search).get("accountPage") === "1") {
+      if (me) panelModal(); else authModal("login");
+    }
   }
 }
 // نمایش فوری دکمه‌ها؛ منتظر پاسخ Supabase نمی‌مانیم.
