@@ -489,6 +489,56 @@ tailwind.config = { theme: { extend: {
   .product-photo-dots { position:absolute; z-index:3; bottom:10px; left:0; right:0; display:flex; justify-content:center; gap:6px; }
   .product-photo-dot { width:6px; height:6px; padding:0; border-radius:99px; border:0; background:rgba(255,240,220,.55); cursor:pointer; }
   .product-photo-dot[aria-current="true"] { width:18px; background:#f3c76a; }
+
+  /* Premium 3D product cards and weekly offer — visual-only enhancement */
+  #grid { perspective: 1200px; }
+  #grid .card {
+    transform-style: preserve-3d;
+    will-change: transform;
+    isolation: isolate;
+    background: linear-gradient(145deg,rgba(255,240,220,.13),rgba(75,29,82,.22) 55%,rgba(255,240,220,.045));
+    box-shadow: 0 14px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  #grid .card::before {
+    content: ""; position:absolute; inset:-1px; z-index:0; pointer-events:none; opacity:0;
+    background: radial-gradient(420px circle at var(--pointer-x,50%) var(--pointer-y,0%),rgba(243,199,106,.22),transparent 55%);
+    transition: opacity .25s ease;
+  }
+  #grid .card:hover::before { opacity:1; }
+  #grid .card > * { position:relative; z-index:1; }
+  #grid .card:hover { border-color:rgba(243,199,106,.82); box-shadow:0 24px 46px rgba(0,0,0,.3),0 0 24px rgba(243,199,106,.08); }
+  #grid .product-photo { position:relative; transform:translateZ(18px); box-shadow:inset 0 0 30px rgba(243,199,106,.06); }
+  #grid .product-photo img { filter: drop-shadow(0 12px 10px rgba(0,0,0,.2)); }
+  #grid .card h3 { transform:translateZ(12px); }
+  #grid .card [data-add] { box-shadow:0 7px 18px rgba(224,160,48,.2); }
+  #special > .reveal {
+    position:relative; overflow:hidden; isolation:isolate;
+    transform-style:preserve-3d;
+    box-shadow:0 28px 70px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.24);
+    border:1px solid rgba(255,241,201,.36);
+    background-image:radial-gradient(ellipse at 80% 20%,rgba(255,244,199,.38),transparent 36%),linear-gradient(125deg,#f3c76a 0%,#d9902a 38%,#a8541c 100%) !important;
+  }
+  #special > .reveal::before {
+    content:""; position:absolute; inset:-45%; z-index:-1; pointer-events:none;
+    background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.16) 49%,transparent 58%);
+    transform:translateX(-65%) rotate(8deg); animation:weeklyShimmer 8s ease-in-out infinite;
+  }
+  #special > .reveal > * { transform:translateZ(12px); }
+  #special #specialJar { filter:drop-shadow(0 24px 18px rgba(42,15,51,.35)); animation:jarFloat 4.5s ease-in-out infinite; transform-style:preserve-3d; }
+  #weeklyOfferCodeButton { box-shadow:0 10px 26px rgba(42,15,51,.25); }
+  #weeklyOfferCodeButton:hover { transform:translateY(-3px) scale(1.025); box-shadow:0 14px 32px rgba(42,15,51,.32); }
+  @keyframes weeklyShimmer { 0%,55% { transform:translateX(-65%) rotate(8deg); } 85%,100% { transform:translateX(65%) rotate(8deg); } }
+  @keyframes jarFloat { 0%,100% { transform:translateY(0) rotateY(-5deg); } 50% { transform:translateY(-10px) rotateY(5deg); } }
+  @media (hover:none), (max-width:640px) {
+    #grid .card { transform:none !important; }
+    #grid .card::before { display:none; }
+    #special #specialJar { animation-duration:6s; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    #special > .reveal::before, #special #specialJar { animation:none !important; }
+    #grid .card { transform:none !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -1996,5 +2046,39 @@ scheduleFrame();
   if (canvas) canvas.style.display = "none";
 }
 </script>
+
+<script>
+/* Lightweight pointer-driven 3D tilt. Never touches product, cart, or database state. */
+(function () {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !window.matchMedia("(hover:hover) and (pointer:fine)").matches) return;
+  const grid = document.getElementById("grid");
+  const special = document.querySelector("#special > .reveal");
+  function tilt(el, event, max) {
+    const r = el.getBoundingClientRect();
+    const x = (event.clientX - r.left) / r.width;
+    const y = (event.clientY - r.top) / r.height;
+    el.style.setProperty("--pointer-x", (x * 100) + "%");
+    el.style.setProperty("--pointer-y", (y * 100) + "%");
+    el.style.transform = "perspective(1000px) rotateX(" + ((.5-y)*max) + "deg) rotateY(" + ((x-.5)*max) + "deg) translateY(-4px)";
+  }
+  function reset(el) { el.style.transform = ""; el.style.removeProperty("--pointer-x"); el.style.removeProperty("--pointer-y"); }
+  if (grid) {
+    grid.addEventListener("pointermove", function (e) {
+      const card = e.target.closest(".card");
+      if (card && grid.contains(card)) tilt(card, e, 5);
+    }, {passive:true});
+    grid.addEventListener("pointerleave", function () { grid.querySelectorAll(".card").forEach(reset); }, {passive:true});
+    grid.addEventListener("pointerout", function (e) {
+      const card = e.target.closest(".card");
+      if (card && !card.contains(e.relatedTarget)) reset(card);
+    }, {passive:true});
+  }
+  if (special) {
+    special.addEventListener("pointermove", e => tilt(special, e, 2.5), {passive:true});
+    special.addEventListener("pointerleave", () => reset(special), {passive:true});
+  }
+})();
+</script>
+
 </body>
 </html>
