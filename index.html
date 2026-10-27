@@ -1150,6 +1150,19 @@ async function loadPublicProducts() {
     if (!cats.includes(state.cat)) state.cat = "همه";
     renderPills();
     renderGrid();
+    // Product detail pages hand off one requested item; consume it once after live products load.
+    try {
+      const params = new URLSearchParams(location.search);
+      const requestedId = params.get("addProduct");
+      const pending = LS.get("sh_pending_product", null);
+      if (requestedId && pending && String(pending.id) === String(requestedId) && products.some(p => String(p.id) === String(requestedId))) {
+        state.cart[requestedId] = (state.cart[requestedId] || 0) + 1;
+        LS.set("sh_pending_product", null);
+        renderCart();
+        toast("محصول به سبد خرید اضافه شد.");
+        history.replaceState({}, "", location.pathname + "#menu");
+      }
+    } catch (handoffError) { console.warn("افزودن محصول از صفحه جزئیات انجام نشد:", handoffError); }
   } catch (err) {
     console.warn("دریافت فهرست محصولات انجام نشد:", err.message);
     products = [];
