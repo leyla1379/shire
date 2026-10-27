@@ -749,16 +749,28 @@ function productImageList(value) { if (Array.isArray(value)) return value.filter
 function renderPills() {
   pills.innerHTML = cats.map(c => `<button class="pill rounded-full px-5 py-1.5 text-xs font-semibold ${c === state.cat ? "active" : ""}" data-cat="${esc(c)}">${c === "همه" ? "همه" : esc(c)}</button>`).join("");
 }
+grid.addEventListener("click", e => {
+  const card = e.target.closest("[data-product-detail]");
+  if (!card || e.target.closest("button, a, input, select, textarea")) return;
+  location.href = "product.html?id=" + encodeURIComponent(card.dataset.productDetail);
+});
+grid.addEventListener("keydown", e => {
+  const card = e.target.closest("[data-product-detail]");
+  if (!card || (e.key !== "Enter" && e.key !== " ")) return;
+  if (e.target !== card) return;
+  e.preventDefault();
+  location.href = "product.html?id=" + encodeURIComponent(card.dataset.productDetail);
+});
 function renderGrid() {
   const list = products.filter(p => state.cat === "همه" || p.cat === state.cat);
   grid.innerHTML = productLoadError ? `<div class="col-span-full rounded-2xl border border-red-400/30 p-8 text-center text-cream/80">بارگذاری محصولات با خطا روبه‌رو شد. اتصال اینترنت را بررسی و صفحه را دوباره بارگذاری کنید.</div>` : list.length ? list.map(p => `
-    <div class="card flex flex-col rounded-2xl p-3">
-      <a class="product-detail-link block rounded-2xl focus:outline-none focus:ring-2 focus:ring-honey" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="مشاهده جزئیات ${esc(p.name)}">
+    <div class="card flex flex-col rounded-2xl p-3" data-product-detail="${p.id}" tabindex="0" role="link" aria-label="مشاهده جزئیات ${esc(p.name)}" style="cursor:pointer">
+      <div class="product-detail-link block rounded-2xl">
       <div class="product-photo" data-photo-gallery>${productImageList(p.image_url).length ? `<div class="product-photo-track">${productImageList(p.image_url).map((url,i)=>`<img src="${esc(url)}" alt="${esc(p.name)} — تصویر ${i+1}" loading="lazy" width="800" height="800" style="width:100%;height:180px;object-fit:contain;object-position:center;border-radius:12px">`).join("")}</div>${productImageList(p.image_url).length>1 ? `<button type="button" class="product-photo-arrow" data-photo-step="prev" aria-label="تصویر قبلی">‹</button><button type="button" class="product-photo-arrow" data-photo-step="next" aria-label="تصویر بعدی">›</button><div class="product-photo-dots">${productImageList(p.image_url).map((_,i)=>`<button type="button" class="product-photo-dot" data-photo-index="${i}" aria-label="تصویر ${i+1}" aria-current="${i===0?"true":"false"}"></button>`).join("")}</div>` : ""}` : jarSVG(p.c, p.id)}</div>
       <div class="flex flex-1 flex-col px-1 pt-3">
         <h3 class="text-base font-bold text-honey">${p.name}</h3>
         <p class="mt-1 text-[11px] leading-5 text-cream/70">${p.note}</p>
-      </div></a>
+      </div></div>
       <div class="mt-auto flex items-center justify-between px-1 pt-3">
         <span class="text-sm font-bold">${fa(p.price)} <small class="text-[10px] font-normal opacity-70">تومان</small></span>
         <button data-add="${p.id}" class="btn-gold rounded-full px-3 py-1 text-[11px]">افزودن</button>
