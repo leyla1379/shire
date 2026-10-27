@@ -1200,9 +1200,9 @@ function renderAuth() {
   const el = document.getElementById("authArea");
   el.innerHTML = me
     ? (isOwner()
-      ? `<div class="flex gap-1.5"><button data-act="admin" class="btn-gold rounded-full px-3 py-1.5 text-[11px] font-bold sm:text-sm">🔐 پنل مدیریت</button><button data-act="panel" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm">👤 حساب</button></div>`
+      ? `<div class="flex gap-1.5"><button data-act="admin" class="btn-gold rounded-full px-3 py-1.5 text-[11px] font-bold sm:text-sm">🔐 پنل مدیریت</button><a href="./account.html" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm inline-block">👤 حساب</a></div>`
       : `<a href="./account.html" class="rounded-full bg-honey px-3 py-1.5 text-xs font-bold text-grape sm:text-sm inline-block">👤 ${esc((me.full_name || me.username || "حساب من").split(" ")[0])}</a>`)
-    : `<div class="flex gap-1.5"><button data-act="login" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm">ورود</button><button data-act="register" class="btn-gold rounded-full px-3 py-1.5 text-xs sm:text-sm">ثبت‌نام</button></div>`;
+    : `<div class="flex gap-1.5"><a href="./account.html" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm inline-block">ورود</a><a href="./account.html" class="btn-gold rounded-full px-3 py-1.5 text-xs sm:text-sm inline-block">ثبت‌نام</a></div>`;
 }
 async function loadSiteContent() {
   try {
