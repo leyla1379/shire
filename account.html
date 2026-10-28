@@ -568,7 +568,7 @@ function paintOverview(p){
   var pts=S.points&&Number(S.points.points)||0;
   st.innerHTML='<div class="stats"><div class="stat"><b data-count="'+os.length+'">۰</b><span>کل سفارش‌ها</span></div><div class="stat"><b data-count="'+done+'">۰</b><span>تحویل‌شده</span></div><div class="stat"><b data-count="'+spend+'" data-money style="font-size:18px">۰</b><span>مجموع خرید (بدون لغوشده‌ها)</span></div><div class="stat"><b data-count="'+pts+'">۰</b><span>امتیاز باشگاه</span></div></div>';
   countUp(st);
-  if(!os.length){lt.innerHTML='<div class="card empty"><span class="em">🧁</span>هنوز سفارشی برای این حساب ثبت نشده است.<div style="margin-top:12px"><a class="btn gold" href="./">رفتن به فروشگاه</a></div></div>';return}
+  if(!os.length){lt.innerHTML='<div class="card empty">هنوز سفارشی برای این حساب ثبت نشده است.<div style="margin-top:12px"><a class="btn gold" href="./">رفتن به فروشگاه</a></div></div>';return}
   var o=os[0];
   lt.innerHTML='<div class="card"><div class="sec-h"><h2>آخرین سفارش</h2>'+badge(o.status)+'</div><div class="small muted">کد سفارش: <bdi class="ltr">'+esc(o.code)+'</bdi> · '+esc(dFa(o.created_at))+'</div>'+timeline(o.status)+
     (o.postal_tracking_code?'<p class="ok small" style="font-weight:700">کد رهگیری پستی: <bdi class="ltr">'+esc(o.postal_tracking_code)+'</bdi></p>':'')+
@@ -600,7 +600,7 @@ function paintOrders(p){
     if(String(o.code||"").toLowerCase().indexOf(qq)>-1)return true;
     return itemsOf(o).some(function(i){return norm(itemName(i)).toLowerCase().indexOf(qq)>-1});
   });
-  if(!S.orders.length){el.innerHTML='<div class="empty"><span class="em">🧁</span>هنوز سفارشی ثبت نکرده‌اید.<div style="margin-top:12px"><a class="btn gold" href="./">رفتن به فروشگاه</a></div></div>';return}
+  if(!S.orders.length){el.innerHTML='<div class="empty">هنوز سفارشی ثبت نکرده‌اید.<div style="margin-top:12px"><a class="btn gold" href="./">رفتن به فروشگاه</a></div></div>';return}
   if(!list.length){el.innerHTML='<div class="empty">سفارشی با این فیلتر پیدا نشد.</div>';return}
   el.innerHTML=list.map(function(o){
     return '<a class="ord" href="#orders/'+encodeURIComponent(o.code)+'"><div class="r1"><b>سفارش <bdi class="ltr">'+esc(o.code)+'</bdi></b>'+badge(o.status)+'</div>'+
