@@ -1200,7 +1200,7 @@ function renderAuth() {
   const el = document.getElementById("authArea");
   el.innerHTML = me
     ? (isOwner()
-      ? `<div class="flex gap-1.5"><button data-act="admin" class="btn-gold rounded-full px-3 py-1.5 text-[11px] font-bold sm:text-sm">🔐 پنل مدیریت</button><a href="./account.html" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm inline-block">👤 حساب</a></div>`
+      ? `<div class="flex gap-1.5"><a href="/admin.html" rel="nofollow" class="btn-gold rounded-full px-3 py-1.5 text-[11px] font-bold sm:text-sm inline-block">🔐 پنل مدیریت</a><a href="./account.html" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm inline-block">👤 حساب</a></div>`
       : `<a href="./account.html" class="rounded-full bg-honey px-3 py-1.5 text-xs font-bold text-grape sm:text-sm inline-block">👤 ${esc((me.full_name || me.username || "حساب من").split(" ")[0])}</a>`)
     : `<div class="flex gap-1.5"><a href="./account.html" class="rounded-full border border-honey/50 px-3 py-1.5 text-xs text-honey sm:text-sm inline-block">ورود</a><a href="./account.html" class="btn-gold rounded-full px-3 py-1.5 text-xs sm:text-sm inline-block">ثبت‌نام</a></div>`;
 }
@@ -1405,7 +1405,7 @@ async function panelModal() {
           <div class="flex items-center gap-3"><span class="text-3xl">💬</span><div class="flex-1"><h3 class="font-bold">پشتیبانی مشتریان</h3><p class="text-xs text-cream/60 mt-1">برای پرسش درباره سفارش یا محصولات با ما در ارتباط باشید.</p></div></div>
           <button type="button" data-act="support" class="btn-ghost mt-4 w-full rounded-xl px-4 py-3">گفت‌وگو با پشتیبان</button>
         </section>
-        ${isOwner() ? `<section class="sh-account-card"><h3 class="font-bold mb-3">مدیریت فروشگاه</h3><button data-act="admin" class="btn-gold w-full rounded-xl px-4 py-2.5">🛠 مدیریت سفارش‌ها</button><button data-act="supportAdmin" class="btn-ghost mt-2 w-full rounded-xl px-4 py-2.5">💬 مدیریت گفت‌وگوهای پشتیبانی</button></section>` : ""}
+        ${isOwner() ? `<section class="sh-account-card"><h3 class="font-bold mb-3">مدیریت فروشگاه</h3><a href="/admin.html" rel="nofollow" class="btn-gold block w-full rounded-xl px-4 py-2.5 text-center">🛠 ورود به پنل مدیریت</a><button data-act="supportAdmin" class="btn-ghost mt-2 w-full rounded-xl px-4 py-2.5">💬 مدیریت گفت‌وگوهای پشتیبانی</button></section>` : ""}
       </div>
     </div>`);
   modal.dataset.view = "profile";
