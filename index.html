@@ -1910,7 +1910,7 @@ document.addEventListener("submit", async (e) => {
       if (!sb) throw new Error("برای پرداخت آنلاین، اتصال پایگاه داده باید فعال باشد.");
       const paymentResponse = await fetch(CFG.url + "/functions/v1/nextpay", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "apikey": CFG.key, "Authorization": "Bearer " + (await sb.auth.getSession()).data.session?.access_token || CFG.key },
+        headers: { "Content-Type": "application/json", "apikey": CFG.key },
         body: JSON.stringify({ order_code: code })
       });
       const paymentData = await paymentResponse.json().catch(() => ({}));
