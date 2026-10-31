@@ -2282,6 +2282,7 @@ scheduleFrame();
   window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
   window.addEventListener("load", () => {
     if (payment === "success" && /^SH-[A-Z0-9]{8}$/.test(order)) {
+      state.cart = {}; state.productDiscountApplied = null; renderCart();
       showModal(head("✅ پرداخت با موفقیت انجام شد") +
         '<p class="text-sm leading-7">پرداخت شما تأیید شد و سفارش با موفقیت ثبت نهایی شد.</p>' +
         '<p class="mt-3 text-sm">کد رهگیری سفارش:</p><p class="my-3 rounded-xl bg-honey py-3 text-center text-2xl font-extrabold text-grape" dir="ltr">' + order + '</p>' +
