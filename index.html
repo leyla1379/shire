@@ -1184,11 +1184,19 @@ async track(code) {
 };
 refreshWeeklyOfferDiscount();
 
+const emergencyProductCatalogue = [
+  {id:"2",cat:"انگور",name:"شیره انگور سفید سنتی",note:"روشن و ملایم، 1 کیلوگرم",price:820000,c:"#b9701c",image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/2-1792769672798.webp",active:true,sort_order:2},
+  {id:"1792758389895",cat:"انگور",name:"شیره انگور سیاه سنتی",note:"وزن 1 کیلوگرم",price:820000,c:"#4a1a2c",image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792758389895-1792770614830.webp",active:true,sort_order:2},
+  {id:"1792758941561",cat:"انگور",name:"شیره انگور سیاه سنتی",note:"وزن 500 گرم",price:410000,c:"#4a1a2c",image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792758941561-1792770581333.webp",active:true,sort_order:3},
+  {id:"1792757877689",cat:"انگور",name:"شیره انگور سفید سنتی",note:"500 گرمی",price:410000,c:"#4a1a2c",image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792757877689-1792770445216.webp",active:true,sort_order:4},
+  {id:"1792780130028",cat:"سایر",name:"معجون چهار مغز",note:"وزن 400 گرم",price:590000,c:"#4a1a2c",image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792780130028-1792780222621.webp",active:true,sort_order:5},
+  {id:"1792949881464",cat:"سایر",name:"ترافل خرمایی",note:"باکس 22 عددی",price:690000,c:"#4a1a2c",image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792949881464-1792949884302.webp",active:true,sort_order:6}
+];
 async function loadPublicProducts() {
   try {
     const rows = await DB.getProducts();
-    // Always render only real active products returned by the database.
-    products = (Array.isArray(rows) ? rows : []).map((p,i)=>({
+    const safeRows = Array.isArray(rows) && rows.length ? rows : emergencyProductCatalogue;
+    products = safeRows.map((p,i)=>({
       ...p,
       id: String(p.id),
       cat: String(p.cat || "سایر").trim() || "سایر",
@@ -1217,10 +1225,10 @@ async function loadPublicProducts() {
       }
     } catch (handoffError) { console.warn("افزودن محصول از صفحه جزئیات انجام نشد:", handoffError); }
   } catch (err) {
-    console.warn("دریافت فهرست محصولات انجام نشد:", err.message);
-    products = [];
-    cats = ["همه"];
-    productLoadError = true;
+    console.error("خطای دریافت محصولات؛ نمایش فهرست پشتیبان:", err);
+    products = emergencyProductCatalogue.map(p=>({...p}));
+    cats = ["همه", ...new Set(products.map(p=>p.cat))];
+    productLoadError = false;
     renderPills();
     renderGrid();
   }
