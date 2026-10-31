@@ -1060,13 +1060,32 @@ const DB = {
     return LS.get("sh_support_messages", []).sort((a,b) => new Date(a.created_at)-new Date(b.created_at));
   },
   async getProducts() {
+    const columns = "id,cat,name,note,price,c,image_url,active,sort_order";
     if (sb) {
-      const { data, error } = await sb.from("product_catalog").select("id,cat,name,note,price,c,image_url,active,sort_order").eq("active", true).order("sort_order", { ascending: true });
-      if (error) throw error;
-      return data || [];
+      try {
+        const { data, error } = await sb.from("product_catalog").select(columns).eq("active", true).order("sort_order", { ascending: true });
+        if (error) throw error;
+        return data || [];
+      } catch (sdkError) {
+        console.warn("Supabase SDK product query failed; trying REST fallback:", sdkError);
+      }
     }
-    // بدون اتصال پایگاه داده، محصولات محلی/آزمایشی را به مشتری نشان نده؛ ویترین فقط از product_catalog خوانده می‌شود.
-    return [];
+    // Public REST fallback: the product catalogue remains readable if the Supabase JS CDN fails.
+    if (CFG.url && CFG.key) {
+      const endpoint = CFG.url + "/rest/v1/product_catalog?select=" + encodeURIComponent(columns) + "&active=eq.true&order=sort_order.asc";
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: { apikey: CFG.key, Authorization: "Bearer " + CFG.key, Accept: "application/json" },
+        cache: "no-store"
+      });
+      const raw = await response.text();
+      let rows;
+      try { rows = JSON.parse(raw); } catch { throw new Error("پاسخ پایگاه داده قابل خواندن نیست (HTTP " + response.status + ")."); }
+      if (!response.ok) throw new Error("دریافت محصولات از پایگاه داده ناموفق بود (HTTP " + response.status + "): " + String(rows?.message || rows?.hint || "").slice(0, 180));
+      if (!Array.isArray(rows)) throw new Error("ساختار پاسخ فهرست محصولات معتبر نیست.");
+      return rows;
+    }
+    throw new Error("اتصال پایگاه داده برای دریافت محصولات در دسترس نیست.");
   },
   async getAllProducts() {
     if (!isOwner()) throw new Error("دسترسی مدیر لازم است.");
