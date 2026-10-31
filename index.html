@@ -654,7 +654,19 @@ tailwind.config = { theme: { extend: {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 <script type="module">
-if (window.gsap && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
+/* Supabase CDN fallback: keep the storefront connected if jsDelivr is blocked or unavailable. */
+if (!window.supabase?.createClient) {
+  try {
+    const supabaseModule = await import("https://esm.sh/@supabase/supabase-js@2");
+    if (supabaseModule?.createClient) window.supabase = supabaseModule;
+  } catch (supabaseLoadError) {
+    console.error("بارگذاری کتابخانه Supabase ناموفق بود:", supabaseLoadError);
+  }
+}
+if (window.gsap && window.ScrollTrigger) {
+  try { window.gsap.registerPlugin(window.ScrollTrigger); }
+  catch (animationError) { console.warn("افزونه انیمیشن فعال نشد؛ فروشگاه بدون آن ادامه می‌دهد.", animationError); }
+}
 
 /* ---------------- Products ---------------- */
 const fa = (n) => Number(n).toLocaleString("fa-IR");
