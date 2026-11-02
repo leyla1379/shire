@@ -908,8 +908,7 @@ document.addEventListener("click", (e) => {
     }
   }
 });
-/* Do not render category pills or products until esc() and DB are initialized below. */
-renderCart();
+/* Do not call renderCart here: its cartLines dependency is initialized later (TDZ). */
 document.getElementById("specialJar").innerHTML = jarSVG("#2e1030", "sp");
 
 
@@ -1321,6 +1320,8 @@ const cartTotal = () => cartLines().reduce((sum,l)=>sum+Number(l.price)*l.q,0);
 const cartDiscountLines = () => {const d=state.productDiscountApplied;if(!d)return[];const ids=String(d.product_id||"").split(",").map(x=>x.trim());return cartLines().filter(l=>ids.includes(String(l.id))&&l.id!=="special").map(l=>{const base=Number(l.price)*l.q;const amount=d.discount_type==="fixed"?Math.min(base,Math.round(Number(d.discount_value)*l.q)):Math.min(base,Math.round(base*Number(d.discount_value)/100));return{product_id:l.id,product_name:l.name,code:d.code,discount_type:d.discount_type,discount_value:Number(d.discount_value),amount};}).filter(x=>x.amount>0);};
 const discountAmount = () => cartDiscountLines().reduce((sum,d)=>sum+d.amount,0);
 const finalCartTotal = () => Math.max(0,cartTotal()-discountAmount());
+// Initialize the cart only after all cart helper constants have been created.
+renderCart();
 
 function cartModal() {
   const lines = cartLines();
