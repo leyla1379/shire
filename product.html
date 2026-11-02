@@ -37,7 +37,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const CFG={url:"https://gppcrkyxthonpeyeuoyg.supabase.co",key:"sb_publishable_3KFoes-a0z3LW2Y5qkeIsw_SBryBY3g"};
-const sb=window.supabase.createClient(CFG.url,CFG.key);
+let sb=null;
+async function ensureSupabase(){
+  if(sb)return sb;
+  if(!window.supabase?.createClient){
+    try{const m=await import("https://esm.sh/@supabase/supabase-js@2");if(m?.createClient)window.supabase=m}
+    catch(e){console.error("بارگذاری کتابخانه Supabase ناموفق بود:",e)}
+  }
+  if(window.supabase?.createClient)sb=window.supabase.createClient(CFG.url,CFG.key);
+  return sb;
+}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n||0).toLocaleString("fa-IR");
@@ -48,6 +57,7 @@ let currentImageIndex=0;function selectImage(index){if(!images.length)return;cur
 async function load(){
  if(!id){showError("شناسه محصول مشخص نیست. از صفحه محصولات یک کالا را انتخاب کنید.");return}
  try{
+  if(!await ensureSupabase())throw new Error("supabase library unavailable");
   const {data,error}=await sb.from("product_catalog").select("id,cat,name,note,price,image_url,active").eq("id",id).eq("active",true).maybeSingle();
   if(error)throw error;if(!data){showError("این محصول پیدا نشد یا در حال حاضر فعال نیست.");return}
   product=data;images=Array.isArray(data.image_url)?data.image_url.filter(Boolean):[];
