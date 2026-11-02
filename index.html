@@ -36,6 +36,8 @@ tailwind.config = { theme: { extend: {
   .card:hover { transform: translateY(-6px); border-color: rgba(243,199,106,.7); }
   /* Fail-safe: content must remain visible even if GSAP/CDN scripts fail to load. */
   .reveal { opacity: 1; transform: none; }
+  /* Stable storefront: prevent delayed animation scripts from hiding primary content. */
+  #heroText, #heroText > *, #stageText, .reveal { opacity: 1 !important; visibility: visible !important; }
   .gold-text { background: linear-gradient(90deg, #f3c76a, #fff1c9, #e0a030); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .modal-bg { position: fixed; inset: 0; z-index: 100; display: none; place-items: center; padding: 16px; background: rgba(15,4,20,.72); backdrop-filter: blur(6px); }
   .modal-bg.show { display: grid; }
@@ -2145,7 +2147,7 @@ addEventListener("resize", layout); layout();
 /* Scroll choreography */
 const S = { ribbon: 0, cluster: 0, fruits: 0, camZ: 9, camY: 2.2, tilt: 0 };
 gsap.to(S, { fruits: .35, ribbon: .25, duration: 2.2, ease: "power3.out", delay: .2 });
-gsap.from("#heroText > *", { y: 40, opacity: 0, stagger: .12, duration: 1, ease: "power3.out" });
+// Hero visibility is kept static for reliable rendering on mobile browsers.
 
 const tl = gsap.timeline({ scrollTrigger: { trigger: "#home", start: "top top", endTrigger: "#stage", end: "bottom bottom", scrub: 1 } });
 tl.to(S, { fruits: 1, ribbon: 1, duration: 1, ease: "none" }, 0)
