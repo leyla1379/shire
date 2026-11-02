@@ -2164,15 +2164,24 @@ addEventListener("pointermove", (e) => { mouse.x = e.clientX / innerWidth - .5; 
 
 /* Loop: conserve battery/GPU while the tab is in the background. */
 const clock = new THREE.Clock(), tmp = new THREE.Vector3();
+const isMobileDevice = matchMedia("(max-width: 768px)").matches;
 let animationFrameId = null;
+let lastRenderAt = 0;
+let sceneInView = true;
 function scheduleFrame() {
-  if (!document.hidden && animationFrameId === null) {
+  if (!document.hidden && sceneInView && animationFrameId === null) {
     animationFrameId = requestAnimationFrame(tick);
   }
 }
-function tick() {
+function tick(now) {
   animationFrameId = null;
-  if (document.hidden) return;
+  if (document.hidden || !sceneInView) return;
+  // Limit expensive WebGL renders on phones to 30fps; desktop keeps its native refresh rate.
+  if (isMobileDevice && now - lastRenderAt < 1000 / 30) {
+    scheduleFrame();
+    return;
+  }
+  lastRenderAt = now;
   const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime, scrollY = window.scrollY;
 
   jar.rotation.y = t * .25;
@@ -2207,10 +2216,25 @@ function tick() {
   renderer.render(scene, camera);
   scheduleFrame();
 }
+// Stop rendering the 3D scene while it is outside the viewport.
+const sceneObserver = new IntersectionObserver((entries) => {
+  sceneInView = entries.some(entry => entry.isIntersecting);
+  if (sceneInView) {
+    clock.getDelta();
+    scheduleFrame();
+  } else if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+}, { threshold: 0 });
+sceneObserver.observe(canvas);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     clock.getDelta();
     scheduleFrame();
+  } else if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
   }
 });
 scheduleFrame();
