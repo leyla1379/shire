@@ -805,11 +805,27 @@ function renderGrid() {
         <button data-add="${p.id}" class="btn-gold rounded-full px-3 py-1 text-[11px]">افزودن</button>
       </div>
     </div>`).join("") : `<div class="col-span-full rounded-2xl border border-honey/20 p-8 text-center text-cream/80">هنوز محصولی ثبت نشده است. محصولات پس از ثبت توسط مدیریت نمایش داده می‌شوند.</div>`;
-  // Animation is optional: a blocked animation CDN must never prevent the product grid from rendering.
-  if (window.gsap && typeof window.gsap.from === "function") {
-    window.gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
+  // Product visibility must never depend on GSAP/ScrollTrigger or gallery animation.
+  // Clear any stale inline animation state left by a previous render.
+  grid.querySelectorAll(".card").forEach(card => {
+    card.style.opacity = "1";
+    card.style.visibility = "visible";
+    card.style.transform = "";
+  });
+  try {
+    if (window.gsap && typeof window.gsap.from === "function") {
+      window.gsap.from("#grid .card", { opacity: 0, y: 18, duration: .35, stagger: .04, ease: "power2.out", clearProps: "opacity,visibility,transform" });
+    }
+  } catch (animationError) {
+    console.warn("Product animation skipped; cards remain visible.", animationError);
+    grid.querySelectorAll(".card").forEach(card => {
+      card.style.opacity = "1";
+      card.style.visibility = "visible";
+      card.style.transform = "";
+    });
   }
-  setupProductPhotoGalleries();
+  try { setupProductPhotoGalleries(); }
+  catch (galleryError) { console.warn("Product gallery enhancement skipped.", galleryError); }
 }
 let productPhotoTimer = null;
 function setupProductPhotoGalleries() {
