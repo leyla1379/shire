@@ -546,13 +546,19 @@ function scene(){
 /* ───────── راه‌اندازی ───────── */
 async function boot(){
   sb=makeClient();
-  try{scene()}catch(e){console.warn("صحنه سه‌بعدی اجرا نشد",e)}
   if(!sb){$("#loginErr").textContent="کتابخانه Supabase بارگذاری نشد؛ اتصال اینترنت را بررسی کنید.";return}
   sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT"&&me)signOut()});
-  const {data}=await sb.auth.getSession();
-  if(data&&data.session)await enter(data.session.user);
+  try{
+    const {data}=await sb.auth.getSession();
+    if(data&&data.session)await enter(data.session.user);
+  }catch(e){console.warn("بازیابی نشست مدیر انجام نشد",e)}
+  // The decorative 3D background must never delay the admin login or dashboard.
+  const startScene=()=>{try{scene()}catch(e){console.warn("صحنه سه‌بعدی اجرا نشد",e)}};
+  if("requestIdleCallback" in window)requestIdleCallback(startScene,{timeout:1800});
+  else setTimeout(startScene,1200);
 }
-addEventListener("load",boot);
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});
+else boot();
 </script>
 </body>
 </html>
