@@ -2151,7 +2151,7 @@ const tl = gsap.timeline({ scrollTrigger: { trigger: "#home", start: "top top", 
 tl.to(S, { fruits: 1, ribbon: 1, duration: 1, ease: "none" }, 0)
   .to(S, { cluster: 1, duration: .6, ease: "back.out(1.6)" }, .3)
   .to(S, { camZ: 7.2, camY: 2.6, tilt: 1, duration: 1, ease: "power1.inOut" }, 0)
-  .to("#heroText", { y: -120, opacity: 0, duration: .4 }, 0)
+  // Keep hero copy visible; scroll-triggered opacity caused intermittent blank hero on mobile.
   .to("#stageText", { opacity: 1, duration: .3 }, .6);
 
 gsap.to("#gl", { opacity: .3, scrollTrigger: { trigger: "#menu", start: "top 80%", end: "top 20%", scrub: true } });
