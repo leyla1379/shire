@@ -651,13 +651,17 @@ tailwind.config = { theme: { extend: {
 <div class="toast" id="toast"></div>
 <button class="support-fab" data-act="support" aria-label="گفت‌وگو با پشتیبان">💬 گفت‌وگو با پشتیبان</button>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="vendor/supabase.js"></script>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 <script type="module">
 /* Supabase CDN fallback: keep the storefront connected if jsDelivr is blocked or unavailable. */
 if (!window.supabase?.createClient) {
   try {
-    const supabaseModule = await import("https://esm.sh/@supabase/supabase-js@2");
+    /* Never wait forever: a blocked CDN can hang silently and freeze the whole storefront script. */
+    const supabaseModule = await Promise.race([
+      import("https://esm.sh/@supabase/supabase-js@2"),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("بارگذاری کتابخانه Supabase بیش از حد طول کشید.")), 4000))
+    ]);
     if (supabaseModule?.createClient) window.supabase = supabaseModule;
   } catch (supabaseLoadError) {
     console.error("بارگذاری کتابخانه Supabase ناموفق بود:", supabaseLoadError);
@@ -2221,7 +2225,8 @@ scheduleFrame();
 <script>
 /* Independent storefront fallback: products remain visible if the main module/CDNs fail. */
 (function () {
-  window.addEventListener("load", function () {
+  /* Start the timer right away instead of on window "load": a hanging CDN script delays "load" indefinitely. */
+  (function () {
     window.setTimeout(async function () {
       const grid = document.getElementById("grid");
       const pills = document.getElementById("pills");
@@ -2254,7 +2259,7 @@ scheduleFrame();
         grid.innerHTML = '<div class="col-span-full rounded-2xl border border-red-400/30 p-6 text-center text-cream/80">بارگذاری محصولات ممکن نشد. لطفاً اتصال اینترنت را بررسی کنید.</div>';
       }
     }, 4500);
-  });
+  })();
 })();
 </script>
 
