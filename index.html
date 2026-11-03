@@ -5,11 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>شیرین کده پاریس — شیره انگور و خرمای اصیل</title>
 <meta name="description" content="فروشگاه شیرین کده پاریس؛ عرضه شیره انگور، شیره خرما و شیره‌های سنتی با تجربه‌ای سه‌بعدی." />
-<!-- Warm up the two account destinations so their navigation starts faster. -->
-<link rel="prefetch" href="./account.html" as="document" />
-<link rel="prefetch" href="./admin.html" as="document" />
-<link rel="preconnect" href="https://gppcrkyxthonpeyeuoyg.supabase.co" crossorigin />
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdn.tailwindcss.com"></script>
@@ -41,8 +36,6 @@ tailwind.config = { theme: { extend: {
   .card:hover { transform: translateY(-6px); border-color: rgba(243,199,106,.7); }
   /* Fail-safe: content must remain visible even if GSAP/CDN scripts fail to load. */
   .reveal { opacity: 1; transform: none; }
-  /* Stable storefront: prevent delayed animation scripts from hiding primary content. */
-  #heroText, #heroText > *, #stageText, .reveal { opacity: 1 !important; visibility: visible !important; }
   .gold-text { background: linear-gradient(90deg, #f3c76a, #fff1c9, #e0a030); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .modal-bg { position: fixed; inset: 0; z-index: 100; display: none; place-items: center; padding: 16px; background: rgba(15,4,20,.72); backdrop-filter: blur(6px); }
   .modal-bg.show { display: grid; }
@@ -658,16 +651,13 @@ tailwind.config = { theme: { extend: {
 <div class="toast" id="toast"></div>
 <button class="support-fab" data-act="support" aria-label="گفت‌وگو با پشتیبان">💬 گفت‌وگو با پشتیبان</button>
 
-<script src="vendor/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 <script type="module">
 /* Supabase CDN fallback: keep the storefront connected if jsDelivr is blocked or unavailable. */
 if (!window.supabase?.createClient) {
   try {
-    const supabaseModule = await Promise.race([
-      import("https://esm.sh/@supabase/supabase-js@2"),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("Supabase CDN timeout")), 4000))
-    ]);
+    const supabaseModule = await import("https://esm.sh/@supabase/supabase-js@2");
     if (supabaseModule?.createClient) window.supabase = supabaseModule;
   } catch (supabaseLoadError) {
     console.error("بارگذاری کتابخانه Supabase ناموفق بود:", supabaseLoadError);
@@ -808,27 +798,11 @@ function renderGrid() {
         <button data-add="${p.id}" class="btn-gold rounded-full px-3 py-1 text-[11px]">افزودن</button>
       </div>
     </div>`).join("") : `<div class="col-span-full rounded-2xl border border-honey/20 p-8 text-center text-cream/80">هنوز محصولی ثبت نشده است. محصولات پس از ثبت توسط مدیریت نمایش داده می‌شوند.</div>`;
-  // Product visibility must never depend on GSAP/ScrollTrigger or gallery animation.
-  // Clear any stale inline animation state left by a previous render.
-  grid.querySelectorAll(".card").forEach(card => {
-    card.style.opacity = "1";
-    card.style.visibility = "visible";
-    card.style.transform = "";
-  });
-  try {
-    if (window.gsap && typeof window.gsap.from === "function") {
-      window.gsap.from("#grid .card", { opacity: 0, y: 18, duration: .35, stagger: .04, ease: "power2.out", clearProps: "opacity,visibility,transform" });
-    }
-  } catch (animationError) {
-    console.warn("Product animation skipped; cards remain visible.", animationError);
-    grid.querySelectorAll(".card").forEach(card => {
-      card.style.opacity = "1";
-      card.style.visibility = "visible";
-      card.style.transform = "";
-    });
+  // Animation is optional: a blocked animation CDN must never prevent the product grid from rendering.
+  if (window.gsap && typeof window.gsap.from === "function") {
+    window.gsap.from("#grid .card", { opacity: 0, y: 30, duration: .5, stagger: .06, ease: "power3.out" });
   }
-  try { setupProductPhotoGalleries(); }
-  catch (galleryError) { console.warn("Product gallery enhancement skipped.", galleryError); }
+  setupProductPhotoGalleries();
 }
 let productPhotoTimer = null;
 function setupProductPhotoGalleries() {
@@ -934,7 +908,8 @@ document.addEventListener("click", (e) => {
     }
   }
 });
-/* Do not call renderCart here: its cartLines dependency is initialized later (TDZ). */
+/* Do not render category pills or products until esc() and DB are initialized below. */
+renderCart();
 document.getElementById("specialJar").innerHTML = jarSVG("#2e1030", "sp");
 
 
@@ -1018,10 +993,7 @@ const DB = {
     const users = LS.get("sh_users", []); const u = users.find(x => x.id === LS.get("sh_session", null)); if (u) { u.full_name = full_name; LS.set("sh_users", users); }
   },
   async createOrder(o) {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    const randomBytes = new Uint8Array(8);
-    crypto.getRandomValues(randomBytes);
-    const code = "SH-" + Array.from(randomBytes, b => alphabet[b % alphabet.length]).join("");
+    const code = "SH-" + Math.random().toString(36).slice(2, 10).toUpperCase();
     const row = { code, user_id:o.user_id||null, name:o.name, phone:o.phone, address:o.address, items:o.items, subtotal:o.subtotal??o.total, discount_total:o.discount_total||0, discount_details:o.discount_details||[], total:o.total, status:"در انتظار تأیید", payment_provider:null, payment_status:"unpaid" };
     if (sb) { const { error } = await sb.from("orders").insert(row); if (error) throw error; return code; }
     const all = LS.get("sh_orders", []); all.unshift({ ...row, created_at: new Date().toISOString() }); LS.set("sh_orders", all); return code;
@@ -1224,9 +1196,6 @@ async function loadPublicProducts() {
   try {
     const rows = await DB.getProducts();
     const safeRows = Array.isArray(rows) && rows.length ? rows : emergencyProductCatalogue;
-    // Restore the original product photos when a database row has an empty image_url.
-    // The catalogue and order data remain in Supabase; this is only a display fallback.
-    const originalPhotos = new Map(emergencyProductCatalogue.map(item => [String(item.id), item.image_url]));
     products = safeRows.map((p,i)=>({
       ...p,
       id: String(p.id),
@@ -1235,9 +1204,6 @@ async function loadPublicProducts() {
       note: String(p.note || ""),
       price: Number(p.price) || 0,
       c: p.c || "#4a1a2c",
-      image_url: (Array.isArray(p.image_url) ? p.image_url.length > 0 : String(p.image_url || "").trim().length > 0)
-        ? p.image_url
-        : (originalPhotos.get(String(p.id)) || p.image_url || null),
       sort_order: p.sort_order ?? i
     }));
     productLoadError = false;
@@ -1355,8 +1321,6 @@ const cartTotal = () => cartLines().reduce((sum,l)=>sum+Number(l.price)*l.q,0);
 const cartDiscountLines = () => {const d=state.productDiscountApplied;if(!d)return[];const ids=String(d.product_id||"").split(",").map(x=>x.trim());return cartLines().filter(l=>ids.includes(String(l.id))&&l.id!=="special").map(l=>{const base=Number(l.price)*l.q;const amount=d.discount_type==="fixed"?Math.min(base,Math.round(Number(d.discount_value)*l.q)):Math.min(base,Math.round(base*Number(d.discount_value)/100));return{product_id:l.id,product_name:l.name,code:d.code,discount_type:d.discount_type,discount_value:Number(d.discount_value),amount};}).filter(x=>x.amount>0);};
 const discountAmount = () => cartDiscountLines().reduce((sum,d)=>sum+d.amount,0);
 const finalCartTotal = () => Math.max(0,cartTotal()-discountAmount());
-// Initialize the cart only after all cart helper constants have been created.
-renderCart();
 
 function cartModal() {
   const lines = cartLines();
@@ -2180,13 +2144,13 @@ addEventListener("resize", layout); layout();
 /* Scroll choreography */
 const S = { ribbon: 0, cluster: 0, fruits: 0, camZ: 9, camY: 2.2, tilt: 0 };
 gsap.to(S, { fruits: .35, ribbon: .25, duration: 2.2, ease: "power3.out", delay: .2 });
-// Hero visibility is kept static for reliable rendering on mobile browsers.
+gsap.from("#heroText > *", { y: 40, opacity: 0, stagger: .12, duration: 1, ease: "power3.out" });
 
 const tl = gsap.timeline({ scrollTrigger: { trigger: "#home", start: "top top", endTrigger: "#stage", end: "bottom bottom", scrub: 1 } });
 tl.to(S, { fruits: 1, ribbon: 1, duration: 1, ease: "none" }, 0)
   .to(S, { cluster: 1, duration: .6, ease: "back.out(1.6)" }, .3)
   .to(S, { camZ: 7.2, camY: 2.6, tilt: 1, duration: 1, ease: "power1.inOut" }, 0)
-  // Keep hero copy visible; scroll-triggered opacity caused intermittent blank hero on mobile.
+  .to("#heroText", { y: -120, opacity: 0, duration: .4 }, 0)
   .to("#stageText", { opacity: 1, duration: .3 }, .6);
 
 gsap.to("#gl", { opacity: .3, scrollTrigger: { trigger: "#menu", start: "top 80%", end: "top 20%", scrub: true } });
@@ -2197,24 +2161,15 @@ addEventListener("pointermove", (e) => { mouse.x = e.clientX / innerWidth - .5; 
 
 /* Loop: conserve battery/GPU while the tab is in the background. */
 const clock = new THREE.Clock(), tmp = new THREE.Vector3();
-const isMobileDevice = matchMedia("(max-width: 768px)").matches;
 let animationFrameId = null;
-let lastRenderAt = 0;
-let sceneInView = true;
 function scheduleFrame() {
-  if (!document.hidden && sceneInView && animationFrameId === null) {
+  if (!document.hidden && animationFrameId === null) {
     animationFrameId = requestAnimationFrame(tick);
   }
 }
-function tick(now) {
+function tick() {
   animationFrameId = null;
-  if (document.hidden || !sceneInView) return;
-  // Limit expensive WebGL renders on phones to 30fps; desktop keeps its native refresh rate.
-  if (isMobileDevice && now - lastRenderAt < 1000 / 30) {
-    scheduleFrame();
-    return;
-  }
-  lastRenderAt = now;
+  if (document.hidden) return;
   const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime, scrollY = window.scrollY;
 
   jar.rotation.y = t * .25;
@@ -2249,25 +2204,10 @@ function tick(now) {
   renderer.render(scene, camera);
   scheduleFrame();
 }
-// Stop rendering the 3D scene while it is outside the viewport.
-const sceneObserver = new IntersectionObserver((entries) => {
-  sceneInView = entries.some(entry => entry.isIntersecting);
-  if (sceneInView) {
-    clock.getDelta();
-    scheduleFrame();
-  } else if (animationFrameId !== null) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
-}, { threshold: 0 });
-sceneObserver.observe(canvas);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
     clock.getDelta();
     scheduleFrame();
-  } else if (animationFrameId !== null) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
   }
 });
 scheduleFrame();
@@ -2279,65 +2219,42 @@ scheduleFrame();
 </script>
 
 <script>
-/* Independent catalogue safety net: only runs when the primary product renderer did not render cards. */
+/* Independent storefront fallback: products remain visible if the main module/CDNs fail. */
 (function () {
-  const catalogue = [
-    {id:"2",cat:"انگور",name:"شیره انگور سفید سنتی",note:"وزن 1 کیلوگرم",price:820000,image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/2-1792769672798.webp"},
-    {id:"1792758389895",cat:"انگور",name:"شیره انگور سیاه سنتی",note:"وزن 1 کیلوگرم",price:820000,image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792758389895-1792770614830.webp"},
-    {id:"1792758941561",cat:"انگور",name:"شیره انگور سیاه سنتی",note:"وزن 500 گرم",price:410000,image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792758941561-1792770581333.webp"},
-    {id:"1792757877689",cat:"انگور",name:"شیره انگور سفید سنتی",note:"وزن 500 گرم",price:410000,image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792757877689-1792770445216.webp"},
-    {id:"1792780130028",cat:"سایر",name:"معجون چهار مغز",note:"وزن 400 گرم",price:590000,image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792780130028-1792780222621.webp"},
-    {id:"1792949881464",cat:"سایر",name:"ترافل خرمایی",note:"باکس 22 عددی",price:690000,image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792949881464-1792949884302.webp"}
-  ];
-  const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-  const money = value => Number(value || 0).toLocaleString("fa-IR");
-  async function renderSafetyCatalogue() {
-    const grid = document.getElementById("grid");
-    const pills = document.getElementById("pills");
-    if (!grid || grid.querySelector("[data-product-detail]")) return;
-    let rows = catalogue;
-    try {
+  window.addEventListener("load", function () {
+    window.setTimeout(async function () {
+      const grid = document.getElementById("grid");
+      const pills = document.getElementById("pills");
+      if (!grid || grid.querySelector(".card")) return;
+      const endpoint = "https://gppcrkyxthonpeyeuoyg.supabase.co/rest/v1/product_catalog?select=id,cat,name,note,price,c,image_url,active,sort_order&active=eq.true&order=sort_order.asc";
       const key = "sb_publishable_3KFoes-a0z3LW2Y5qkeIsw_SBryBY3g";
-      const endpoint = "https://gppcrkyxthonpeyeuoyg.supabase.co/rest/v1/product_catalog?select=id,cat,name,note,price,image_url,active,sort_order&active=eq.true&order=sort_order.asc";
-      const response = await fetch(endpoint, {headers:{apikey:key,Authorization:"Bearer "+key,Accept:"application/json"},cache:"no-store"});
-      if (!response.ok) throw new Error("HTTP "+response.status);
-      const liveRows = await response.json();
-      if (Array.isArray(liveRows) && liveRows.length) rows = liveRows;
-    } catch (error) {
-      console.warn("نمایش فهرست پشتیبان محصولات:", error);
-    }
-    if (grid.querySelector("[data-product-detail]")) return;
-    const categories = ["همه", ...new Set(rows.map(p => String(p.cat || "سایر")))];
-    if (pills) {
-      pills.innerHTML = categories.map((c,i) => '<button type="button" class="pill rounded-full px-5 py-1.5 text-xs font-semibold '+(i===0?'active':'')+'" data-safety-cat="'+esc(c)+'">'+esc(c)+'</button>').join("");
-      if (!pills.dataset.safetyBound) {
-        pills.dataset.safetyBound = "1";
-        pills.addEventListener("click", event => {
-          const button = event.target.closest("[data-safety-cat]");
-          if (!button) return;
-          const category = button.dataset.safetyCat;
-          pills.querySelectorAll("[data-safety-cat]").forEach(x => x.classList.toggle("active", x === button));
-          grid.querySelectorAll("[data-safety-product]").forEach(card => card.hidden = category !== "همه" && card.dataset.category !== category);
-        });
+      const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+      const money = value => Number(value || 0).toLocaleString("fa-IR");
+      try {
+        const response = await fetch(endpoint, { headers: { apikey: key, Authorization: "Bearer " + key, Accept: "application/json" }, cache: "no-store" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const rows = await response.json();
+        if (!Array.isArray(rows) || !rows.length) throw new Error("فهرست محصولات خالی است");
+        const categories = ["همه", ...new Set(rows.map(p => String(p.cat || "سایر")))];
+        if (pills) pills.innerHTML = categories.map(c => '<span class="pill rounded-full px-5 py-1.5 text-xs font-semibold">' + escapeHtml(c) + '</span>').join("");
+        grid.innerHTML = rows.map(p => {
+          let images = [];
+          if (Array.isArray(p.image_url)) images = p.image_url;
+          else if (typeof p.image_url === "string" && p.image_url.trim()) {
+            try { const parsed = JSON.parse(p.image_url); images = Array.isArray(parsed) ? parsed : [p.image_url]; }
+            catch (_) { images = [p.image_url]; }
+          }
+          const image = images.length ? '<img src="' + escapeHtml(images[0]) + '" alt="' + escapeHtml(p.name) + '" loading="lazy" style="width:100%;height:180px;object-fit:contain;border-radius:12px">' : '<div class="py-12 text-center text-4xl">🍯</div>';
+          return '<article class="card flex flex-col rounded-2xl p-3"><a href="product.html?id=' + encodeURIComponent(p.id) + '" class="block">' + image + '<h3 class="mt-3 text-base font-bold text-honey">' + escapeHtml(p.name) + '</h3><p class="mt-1 text-xs text-cream/70">' + escapeHtml(p.note || "") + '</p></a><p class="mt-3 text-sm font-bold">' + money(p.price) + ' تومان</p></article>';
+        }).join("");
+        grid.dataset.fallbackRendered = "true";
+        console.warn("فهرست محصولات با مسیر پشتیبان مستقل نمایش داده شد؛ اسکریپت اصلی فروشگاه اجرا نشده است.");
+      } catch (error) {
+        console.error("مسیر پشتیبان نمایش محصولات نیز ناموفق بود:", error);
+        grid.innerHTML = '<div class="col-span-full rounded-2xl border border-red-400/30 p-6 text-center text-cream/80">بارگذاری محصولات ممکن نشد. لطفاً اتصال اینترنت را بررسی کنید.</div>';
       }
-    }
-    grid.innerHTML = rows.map(p => {
-      let images = Array.isArray(p.image_url) ? p.image_url : [];
-      if (typeof p.image_url === "string" && p.image_url.trim()) {
-        try { const parsed = JSON.parse(p.image_url); images = Array.isArray(parsed) ? parsed : [p.image_url]; }
-        catch (_) { images = [p.image_url]; }
-      }
-      const image = images[0] || "";
-      const url = "product.html?id=" + encodeURIComponent(p.id);
-      return '<article class="card flex flex-col rounded-2xl p-3" data-safety-product data-category="'+esc(p.cat||"سایر")+'"><a href="'+url+'" class="block">'+(image?'<img src="'+esc(image)+'" alt="'+esc(p.name)+'" loading="lazy" decoding="async" style="width:100%;height:clamp(240px,65vw,340px);object-fit:contain;border-radius:12px">':'<div class="py-12 text-center text-4xl">🍯</div>')+'<h3 class="mt-3 text-base font-bold text-honey">'+esc(p.name)+'</h3><p class="mt-1 text-xs text-cream/70">'+esc(p.note||"")+'</p></a><div class="mt-auto flex items-center justify-between gap-3 pt-4"><strong class="text-sm">'+money(p.price)+' تومان</strong><a href="'+url+'" class="btn-gold rounded-full px-4 py-2 text-xs font-bold">مشاهده و خرید</a></div></article>';
-    }).join("");
-    grid.dataset.safetyRendered = "true";
-  }
-  function start() {
-    setTimeout(() => renderSafetyCatalogue().catch(error => console.error("فهرست پشتیبان نیز اجرا نشد:", error)), 2200);
-  }
-  if (document.readyState === "complete") start();
-  else window.addEventListener("load", start, {once:true});
+    }, 4500);
+  });
 })();
 </script>
 
