@@ -1193,11 +1193,19 @@ const emergencyProductCatalogue = [
   {id:"1792949881464",cat:"سایر",name:"ترافل خرمایی",note:"باکس 22 عددی",price:690000,c:"#4a1a2c",image_url:"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792949881464-1792949884302.webp",active:true,sort_order:6}
 ];
 async function loadPublicProducts() {
+  // نمایش فوری ویترین از تصاویر و اطلاعات پشتیبان؛ منتظر پاسخ شبکه/Supabase نمی‌مانیم.
+  products = emergencyProductCatalogue.map(p => ({ ...p }));
+  cats = ["همه", ...new Set(products.map(p => p.cat).filter(Boolean))];
+  productLoadError = false;
+  renderPills();
+  renderGrid();
+
   try {
     const rows = await DB.getProducts();
     const safeRows = Array.isArray(rows) && rows.length ? rows : emergencyProductCatalogue;
     products = safeRows.map((p,i)=>({
       ...p,
+      image_url: p.image_url || emergencyProductCatalogue.find(fallback => String(fallback.id) === String(p.id))?.image_url || null,
       id: String(p.id),
       cat: String(p.cat || "سایر").trim() || "سایر",
       name: String(p.name || ""),
