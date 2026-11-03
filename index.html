@@ -1224,6 +1224,9 @@ async function loadPublicProducts() {
   try {
     const rows = await DB.getProducts();
     const safeRows = Array.isArray(rows) && rows.length ? rows : emergencyProductCatalogue;
+    // Restore the original product photos when a database row has an empty image_url.
+    // The catalogue and order data remain in Supabase; this is only a display fallback.
+    const originalPhotos = new Map(emergencyProductCatalogue.map(item => [String(item.id), item.image_url]));
     products = safeRows.map((p,i)=>({
       ...p,
       id: String(p.id),
@@ -1232,6 +1235,9 @@ async function loadPublicProducts() {
       note: String(p.note || ""),
       price: Number(p.price) || 0,
       c: p.c || "#4a1a2c",
+      image_url: (Array.isArray(p.image_url) ? p.image_url.length > 0 : String(p.image_url || "").trim().length > 0)
+        ? p.image_url
+        : (originalPhotos.get(String(p.id)) || p.image_url || null),
       sort_order: p.sort_order ?? i
     }));
     productLoadError = false;
