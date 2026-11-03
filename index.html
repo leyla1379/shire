@@ -997,8 +997,7 @@ const DB = {
     if (sb) {
       const { data, error } = await sb.auth.signUp({
         email: cleanEmail,
-        password,
-        options: {
+        password,        options: {
           emailRedirectTo: window.location.origin + window.location.pathname,
           data: { full_name: full_name.trim(), username: username.trim(), phone: cleanPhone }
         }
@@ -1997,8 +1996,7 @@ document.addEventListener("submit", async (e) => {
       window.location.href = paymentData.payment_url;
       return;
     } else if (kind === "track") {
-      trackModal(await DB.track(v.code));
-    } else if (kind === "supportSend") {
+      trackModal(await DB.track(v.code));    } else if (kind === "supportSend") {
       await DB.sendMessage(v.message); toast("پیام شما برای پشتیبانی ارسال شد."); await supportModal();
     } else if (kind === "siteContentSave") {
       if (!isOwner()) throw new Error("فقط مالک فروشگاه اجازه تغییر محتوا را دارد.");
