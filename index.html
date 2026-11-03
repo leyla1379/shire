@@ -651,13 +651,16 @@ tailwind.config = { theme: { extend: {
 <div class="toast" id="toast"></div>
 <button class="support-fab" data-act="support" aria-label="گفت‌وگو با پشتیبان">💬 گفت‌وگو با پشتیبان</button>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="vendor/supabase.js"></script>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 <script type="module">
 /* Supabase CDN fallback: keep the storefront connected if jsDelivr is blocked or unavailable. */
 if (!window.supabase?.createClient) {
   try {
-    const supabaseModule = await import("https://esm.sh/@supabase/supabase-js@2");
+    const supabaseModule = await Promise.race([
+      import("https://esm.sh/@supabase/supabase-js@2"),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Supabase CDN timeout")), 4000))
+    ]);
     if (supabaseModule?.createClient) window.supabase = supabaseModule;
   } catch (supabaseLoadError) {
     console.error("بارگذاری کتابخانه Supabase ناموفق بود:", supabaseLoadError);
