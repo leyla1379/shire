@@ -1018,7 +1018,10 @@ const DB = {
     const users = LS.get("sh_users", []); const u = users.find(x => x.id === LS.get("sh_session", null)); if (u) { u.full_name = full_name; LS.set("sh_users", users); }
   },
   async createOrder(o) {
-    const code = "SH-" + Math.random().toString(36).slice(2, 10).toUpperCase();
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const randomBytes = new Uint8Array(8);
+    crypto.getRandomValues(randomBytes);
+    const code = "SH-" + Array.from(randomBytes, b => alphabet[b % alphabet.length]).join("");
     const row = { code, user_id:o.user_id||null, name:o.name, phone:o.phone, address:o.address, items:o.items, subtotal:o.subtotal??o.total, discount_total:o.discount_total||0, discount_details:o.discount_details||[], total:o.total, status:"در انتظار تأیید", payment_provider:null, payment_status:"unpaid" };
     if (sb) { const { error } = await sb.from("orders").insert(row); if (error) throw error; return code; }
     const all = LS.get("sh_orders", []); all.unshift({ ...row, created_at: new Date().toISOString() }); LS.set("sh_orders", all); return code;
