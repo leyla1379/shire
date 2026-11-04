@@ -2098,7 +2098,7 @@ document.addEventListener("submit", async (e) => {
       ].join("، ");
       const code = await DB.createOrder({ user_id:me?.id, name:v.name.trim(), phone:v.phone.trim(), address:fullAddress, subtotal, discount_total:saving, discount_details:cartDiscountLines(), total:finalTotal, items:orderItems });
       if (!sb) throw new Error("برای پرداخت آنلاین، اتصال پایگاه داده باید فعال باشد.");
-      const paymentResponse = await fetch(CFG.url + "/functions/v1/nextpay", {
+      const paymentResponse = await fetch(CFG.url + "/functions/v1/zibal", {
         method: "POST",
         headers: { "Content-Type": "application/json", "apikey": CFG.key },
         body: JSON.stringify({ order_code: code })
@@ -2482,7 +2482,7 @@ scheduleFrame();
         '<p class="mt-3 text-xs text-cream/70">برای پیگیری وضعیت سفارش، این کد را در بخش «پیگیری سفارش» وارد کنید. کد رهگیری پستی پس از ارسال کالا در حساب شما ثبت می‌شود.</p>');
     } else {
       showModal(head("⚠️ پرداخت تأیید نشد") +
-        '<p class="text-sm leading-7">پرداخت توسط نکست‌پی تأیید نشد یا اطلاعات بازگشت کامل نبود. اگر مبلغ از حسابتان کسر شده، کد سفارش را نگه دارید و با پشتیبانی تماس بگیرید.</p>' +
+        '<p class="text-sm leading-7">پرداخت توسط درگاه تأیید نشد یا اطلاعات بازگشت کامل نبود. اگر مبلغ از حسابتان کسر شده، کد سفارش را نگه دارید و با پشتیبانی تماس بگیرید.</p>' +
         (order ? '<p class="my-3 rounded-xl bg-white/5 p-3 text-center font-bold" dir="ltr">' + order + '</p>' : ''));
     }
   });
