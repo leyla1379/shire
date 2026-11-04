@@ -2285,7 +2285,7 @@ scheduleFrame();
 <script>
 /* Independent storefront fallback: render the six known products even if the main module fails. */
 (function () {
-  window.addEventListener("load", function () {
+  const startStorefrontFallback = function () {
     window.setTimeout(async function () {
       const grid = document.getElementById("grid");
       const pills = document.getElementById("pills");
@@ -2339,8 +2339,13 @@ scheduleFrame();
       } catch (error) {
         console.error("دریافت زنده محصولات انجام نشد؛ شش محصول پشتیبان حفظ شدند:", error);
       }
-    }, 4500);
-  });
+    }, 1500);
+  };
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startStorefrontFallback, { once: true });
+  } else {
+    startStorefrontFallback();
+  }
 })();
 </script>
 
