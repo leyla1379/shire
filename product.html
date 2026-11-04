@@ -34,11 +34,8 @@
 </div></section>
 </main>
 <footer class="mt-10 border-t border-amber-100/10 py-6 text-center text-xs text-amber-50/50">© شیرین‌کده پاریس</footer>
-<script src="./vendor/supabase.js" onerror="console.error('بارگذاری کتابخانه محلی Supabase ناموفق بود')"></script>
-<script>if (!window.supabase?.createClient && typeof supabase !== "undefined" && supabase?.createClient) window.supabase = supabase;</script>
 <script>
 const CFG={url:"https://bporqhbfwhvuzfdxfrbi.supabase.co",key:"sb_publishable_wd5snyoGuYYEnLp6URaD6A_ElOkMdnv"};
-const sb=window.supabase.createClient(CFG.url,CFG.key);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money=n=>Number(n||0).toLocaleString("fa-IR");
@@ -49,7 +46,8 @@ let currentImageIndex=0;function selectImage(index){if(!images.length)return;cur
 async function load(){
  if(!id){showError("شناسه محصول مشخص نیست. از صفحه محصولات یک کالا را انتخاب کنید.");return}
  try{
-  const {data,error}=await sb.from("product_catalog").select("id,cat,name,note,price,image_url,active").eq("id",id).eq("active",true).maybeSingle();
+  const resp=await fetch(CFG.url+"/rest/v1/product_catalog?select="+encodeURIComponent("id,cat,name,note,price,image_url,active")+"&id=eq."+encodeURIComponent(id)+"&active=eq.true&limit=1",{headers:{apikey:CFG.key,Authorization:"Bearer "+CFG.key,Accept:"application/json"}});
+  const rows=resp.ok?await resp.json():null;const error=resp.ok?null:new Error("HTTP "+resp.status);const data=Array.isArray(rows)?(rows[0]||null):null;
   if(error)throw error;if(!data){showError("این محصول پیدا نشد یا در حال حاضر فعال نیست.");return}
   product=data;images=Array.isArray(data.image_url)?data.image_url.filter(Boolean):[];
   if(typeof data.image_url==="string"&&data.image_url.trim()){try{const parsed=JSON.parse(data.image_url);images=Array.isArray(parsed)?parsed.filter(Boolean):[data.image_url]}catch{images=[data.image_url]}}
