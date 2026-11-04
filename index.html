@@ -703,7 +703,7 @@ tailwind.config = { theme: { extend: {
 <div class="toast" id="toast"></div>
 <button class="support-fab" data-act="support" aria-label="گفت‌وگو با پشتیبان">💬 گفت‌وگو با پشتیبان</button>
 
-<script src="/vendor/supabase.js" onerror="console.error('بارگذاری فایل محلی Supabase ناموفق بود')"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4" onerror="this.onerror=null;this.src='./vendor/supabase.js';"></script>
 <script>if (!window.supabase?.createClient && typeof supabase !== "undefined" && supabase?.createClient) window.supabase = supabase;</script>
 <script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 <script type="module">
