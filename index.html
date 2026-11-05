@@ -711,7 +711,7 @@ tailwind.config = { theme: { extend: {
     window.setTimeout(async function () {
       const grid = document.getElementById("grid");
       const pills = document.getElementById("pills");
-      if (!grid || grid.querySelector(".card")) return;
+      if (!grid) return;
       const fallbackRows = [
         {id:"2",cat:"انگور",name:"شیره انگور سفید سنتی",note:"روشن و ملایم، 1 کیلوگرم",price:820000,image_url:"https://bporqhbfwhvuzfdxfrbi.supabase.co/storage/v1/object/public/product-images/2-1792769672798.webp"},
         {id:"1792758389895",cat:"انگور",name:"شیره انگور سیاه سنتی",note:"وزن 1 کیلوگرم",price:820000,image_url:"https://bporqhbfwhvuzfdxfrbi.supabase.co/storage/v1/object/public/product-images/1792758389895-1792770614830.webp"},
@@ -751,8 +751,16 @@ tailwind.config = { theme: { extend: {
           });
         }
       };
-      render(fallbackRows);
-      console.warn("شش محصول از فهرست پشتیبان مستقل نمایش داده شدند.");
+      // Keep a visible storefront if the main module clears the grid or fails before rendering.
+      const repairIfEmpty = function () {
+        if (!grid.querySelector(".card")) render(fallbackRows);
+      };
+      if (window.MutationObserver) {
+        const observer = new MutationObserver(repairIfEmpty);
+        observer.observe(grid, { childList: true });
+      }
+      repairIfEmpty();
+      console.warn("فهرست پشتیبان مستقل محصولات فعال شد.");
       try {
         const response = await fetch(endpoint, { headers: { apikey: key, Accept: "application/json" }, cache: "no-store" });
         if (!response.ok) throw new Error("HTTP " + response.status);
