@@ -11,6 +11,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script>
+if (!window.supabase) {
+  document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.45.4"><\/script>');
+}
+</script>
 <style>
 :root{
   --ivory:#fbf6ec;--cream:#f4e9d4;--cream-2:#ead9bb;
