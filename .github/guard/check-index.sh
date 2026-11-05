@@ -7,7 +7,8 @@ has_safeguards() {
   local f; f="$(mktemp)"; cat > "$f"
   grep -q 'const CFG = { url: "https://bporqhbfwhvuzfdxfrbi.supabase.co"' "$f" \
     && grep -q '__sbReady' "$f" \
-    && grep -q 'Mobile layout: the story section' "$f"
+    && grep -q 'Mobile layout: the story section' "$f" \
+    && grep -q 'data-static-products' "$f"
 }
 
 if has_safeguards < index.html; then
