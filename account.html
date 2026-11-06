@@ -10,10 +10,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="vendor/supabase.js"></script>
 <script>
-if (!window.supabase) {
-  document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.45.4"><\/script>');
+/* Local copy first (supports sb_publishable keys); CDN only as a fallback. */
+if (!window.supabase || !window.supabase.createClient) {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>');
+}
+if (!window.supabase || !window.supabase.createClient) {
+  document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');
 }
 </script>
 <style>
