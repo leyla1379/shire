@@ -51,6 +51,7 @@ async function load(){
   if(error)throw error;if(!data){showError("این محصول پیدا نشد یا در حال حاضر فعال نیست.");return}
   product=data;images=Array.isArray(data.image_url)?data.image_url.filter(Boolean):[];
   if(typeof data.image_url==="string"&&data.image_url.trim()){try{const parsed=JSON.parse(data.image_url);images=Array.isArray(parsed)?parsed.filter(Boolean):[data.image_url]}catch{images=[data.image_url]}}
+  if(!images.length){const legacyImageById={"1792758941561":"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792758941561-1792770581333.webp","1792780130028":"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792780130028-1792780131495.webp","1792949881464":"https://gppcrkyxthonpeyeuoyg.supabase.co/storage/v1/object/public/product-images/1792949881464-1793026462635.webp"};if(legacyImageById[String(data.id)])images=[legacyImageById[String(data.id)]]}
   $("status").classList.add("hidden");$("detail").classList.remove("hidden");
   document.title=data.name+" | شیرین‌کده پاریس";$("crumb").textContent=data.name;$("name").textContent=data.name;$("cat").textContent=data.cat||"محصول فروشگاه";$("note").textContent=data.note||"برای این محصول توضیحات بیشتری ثبت نشده است.";$("price").textContent=money(data.price);
   if(!images.length){$("gallery").innerHTML='<div class="p-8 text-center gold">تصویر محصول ثبت نشده است</div>'}
