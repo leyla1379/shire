@@ -250,7 +250,7 @@ $("#loginForm").addEventListener("submit",async e=>{
   btn.disabled=true;btn.textContent="در حال ورود…";
   try{
     const {data,error}=await sb.auth.signInWithPassword({email,password});
-    if(error){err.textContent="ایمیل یا رمز عبور درست نیست.";return}
+    if(error){const detail=[error.message,error.code&&("کد: "+error.code),error.status&&("وضعیت: "+error.status)].filter(Boolean).join(" | ");err.textContent="خطای ورود از Supabase: "+(detail||"خطای نامشخص");return}
     await enter(data.user);
   }catch(x){err.textContent="خطا در ورود: "+(x.message||x)}
   finally{btn.disabled=false;btn.textContent="ورود"}
